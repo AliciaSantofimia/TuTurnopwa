@@ -1,71 +1,67 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Clases() {
+  const navigate = useNavigate();
+
   const clases = [
     {
       id: 1,
       titulo: "Edición Premium",
+      color: "bg-[#fef6c4]",
       imagen: "/img/edicionpremium.png",
-      color: "bg-yellow-50",
-      textoColor: "text-yellow-900",
-      horario: ["10:00 – 15:00 (mañana)", "16:00 – 21:00 (tarde)"],
+      horarios: ["10:00 – 15:00 (mañana)", "16:00 – 21:00 (tarde)"],
     },
     {
       id: 2,
       titulo: "Creativo Plus",
+      color: "bg-[#ffe0e4]",
       imagen: "/img/creativoplus.png",
-      color: "bg-rose-100",
-      textoColor: "text-rose-900",
-      horario: ["11:00 – 15:00 (mañana)", "17:00 – 20:00 (tarde)"],
+      horarios: ["11:00 – 15:00 (mañana)", "17:00 – 20:00 (tarde)"],
     },
     {
       id: 3,
       titulo: "Básico Esencial",
+      color: "bg-[#fff2b2]",
       imagen: "/img/esencialbasico.png",
-      color: "bg-amber-100",
-      textoColor: "text-amber-900",
-      horario: ["12:00 – 15:00 (mañana)", "18:00 – 21:00 (tarde)"],
+      horarios: ["12:00 – 15:00 (mañana)", "18:00 – 21:00 (tarde)"],
     },
     {
       id: 4,
       titulo: "Bono 4 Clases",
+      color: "bg-[#d9f9ea]",
       imagen: "/img/bono4.png",
-      color: "bg-emerald-100",
-      textoColor: "text-emerald-900",
-      horario: ["12:00 - 15:00 (mañana)", "18:00 - 21:00 (tarde)"],
+      horarios: ["12:00 – 15:00 (mañana)", "18:00 – 21:00 (tarde)"],
     },
     {
       id: 5,
       titulo: "Bono 2 Clases",
+      color: "bg-[#eee7ff]",
       imagen: "/img/bono2.png",
-      color: "bg-sky-100",
-      textoColor: "text-sky-900",
-      horario: ["Horario flexible (según clase elegida)"],
+      horarios: ["Horario flexible (según clase elegida)"],
     },
     {
       id: 6,
       titulo: "Fundamental Mini",
-      imagen: "/img/fundamentalmini.png",
-      color: "bg-orange-100",
-      textoColor: "text-orange-900",
-      horario: [
-        "12:00 - 14:00 (Turno 1 mañana)",
-        "10:00 - 12:00 (Turno 2 mañana)",
-        "18:00 - 20:00 (Turno 1 tarde)",
-        "16:00 - 18:00 (Turno 2 tarde)",
+      color: "bg-[#ffe4c2]",
+      imagen: "/img/mini.png",
+      horarios: [
+        "12:00 – 14:00 (Turno 1 mañana)",
+        "10:00 – 12:00 (Turno 2 mañana)",
+        "18:00 – 20:00 (Turno 1 tarde)",
+        "16:00 – 18:00 (Turno 2 tarde)",
       ],
     },
     {
       id: 7,
       titulo: "Pintar Cerámica",
-      imagen: "/img/pintarceramica.png",
-      color: "bg-lime-100",
-      textoColor: "text-lime-900",
-      horario: [
-        "12:00 - 14:00 (Turno 1 mañana)",
-        "10:00 - 12:00 (Turno 2 mañana)",
-        "18:00 - 20:00 (Turno 1 tarde)",
-        "16:00 - 18:00 (Turno 2 tarde)",
+      color: "bg-[#efffcf]",
+      imagen: "/img/pintar.png",
+      horarios: [
+        "12:00 – 14:00 (Turno 1 mañana)",
+        "10:00 – 12:00 (Turno 2 mañana)",
+        "18:00 – 20:00 (Turno 1 tarde)",
+        "16:00 – 18:00 (Turno 2 tarde)",
       ],
     },
   ];
@@ -74,18 +70,14 @@ export default function Clases() {
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
       <div className="flex items-center mb-6">
         <img
-          src="/img/logoPC.png"
+          src="/img/logoPCsin.png"
           alt="Logo La Purísima Conchi"
           className="h-20 w-auto mr-4"
         />
-        <h1
-          className="text-4xl font-bold text-yellow-900 text-center"
-          style={{ fontFamily: 'Barriecito' }}
-        >
+        <h1 className="text-4xl font-bold text-yellow-900 font-serif">
           Clases disponibles
         </h1>
       </div>
-  
 
       <div className="grid gap-5">
         {clases.map((clase) => (
@@ -98,15 +90,18 @@ export default function Clases() {
                 {clase.id}
               </div>
               <div>
-                <h3 className={`text-lg font-semibold ${clase.textoColor}`}>
+                <h3 className="text-lg font-semibold text-gray-800">
                   {clase.titulo}
                 </h3>
                 <ul className="text-sm text-gray-700 list-disc ml-4">
-                  {clase.horario.map((turno, idx) => (
+                  {clase.horarios.map((turno, idx) => (
                     <li key={idx}>{turno}</li>
                   ))}
                 </ul>
-                <button className="mt-2 px-4 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition">
+                <button
+                  className="mt-2 px-4 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
+                  onClick={() => navigate(`/reserva-${clase.titulo.toLowerCase().replace(/ /g, "-")}`)}
+                >
                   Reservar
                 </button>
               </div>
@@ -122,5 +117,3 @@ export default function Clases() {
     </div>
   );
 }
-
-

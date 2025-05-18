@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export default function EdicionPremium() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div className="bg-white text-gray-800 font-sans max-w-md mx-auto shadow-lg rounded-lg overflow-hidden">
@@ -37,12 +36,11 @@ export default function EdicionPremium() {
         </p>
 
         <button
-  onClick={() => navigate("/reserva-edicionpremium")}
-  className="w-full bg-yellow-500 text-white py-2 rounded-full hover:bg-yellow-600 transition"
->
-  RESERVAR AHORA
-</button>
-
+          onClick={() => navigate("/reserva-edicion-premium")}
+          className="w-full bg-yellow-500 text-white py-2 rounded-full hover:bg-yellow-600 transition"
+        >
+          RESERVAR AHORA
+        </button>
       </div>
     </div>
   );
