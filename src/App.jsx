@@ -18,6 +18,8 @@ import ReservaBasicoEsencial from "./ReservaBasicoEsencial.jsx";
 import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
 import ReservaBono2Clases from "./ReservaBono2Clases.jsx";
 import ReservaFundamentalMini from "./ReservaFundamentalMini.jsx";
+import Menu from "./Menu.jsx";
+
 
 function App() {
   return (
@@ -42,6 +44,7 @@ function App() {
         <Route path="/reserva-bono-4-clases" element={<ReservaBono4Clases />} />
         <Route path="/reserva-bono-2-clases" element={<ReservaBono2Clases />} />
         <Route path="/reserva-fundamental-mini" element={<ReservaFundamentalMini />} />
+        <Route path="/menu" element={<Menu />} />
 
 
 
