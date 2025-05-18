@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Portada from "./portada.jsx";
-import Login from "./login.jsx";
-import Registro from "./registro.jsx";
+import Portada from "./Portada.jsx";
+import Login from "./Login.jsx";
+import Registro from "./Registro.jsx";
 import Clases from "./Clases.jsx";
 import EdicionPremium from "./EdicionPremium.jsx";
 import ReservaEdicionPremium from "./ReservaEdicionPremium.jsx";
@@ -25,7 +25,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Portada />} />
+        <Route path="/portada" element={<Portada />} />
         <Route path="/clases" element={<Clases />} />
         <Route path="/edicion-premium" element={<EdicionPremium />} />
         <Route path="/reserva-edicion-premium" element={<ReservaEdicionPremium />} />
