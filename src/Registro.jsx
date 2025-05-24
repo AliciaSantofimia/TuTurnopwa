@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, set } from "firebase/database";
+import { auth, db } from "./firebase";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -7,14 +10,30 @@ export default function Registro() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmar, setConfirmar] = useState("");
+  const [error, setError] = useState("");
 
-  const handleregistro = (e) => {
+  const handleRegistro = async (e) => {
     e.preventDefault();
-    // Aquí iría la lógica de registro (validación, Firebase, etc.)
-    console.log("Nombre:", nombre);
-    console.log("Email:", email);
-    console.log("Password:", password);
-    console.log("Confirmar contraseña:", confirmar);
+
+    if (password !== confirmar) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+
+      // Guardo nombre y email en la base de datos
+      await set(ref(db, "usuarios/" + uid), {
+        nombre: nombre,
+        email: email
+      });
+
+      navigate("/perfil");
+    } catch (error) {
+      setError("Error al registrar: " + error.message);
+    }
   };
 
   return (
@@ -28,9 +47,13 @@ export default function Registro() {
       <h1 className="text-2xl font-serif text-[#5c2e00] mb-4">Crear cuenta</h1>
 
       <form
-        onSubmit={handleregistro}
+        onSubmit={handleRegistro}
         className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md flex flex-col gap-4"
       >
+        {error && (
+          <div className="text-red-600 text-sm text-center">{error}</div>
+        )}
+
         <div>
           <label htmlFor="nombre" className="block font-bold text-sm mb-1">
             Nombre

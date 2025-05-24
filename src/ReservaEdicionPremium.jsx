@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import es from "date-fns/locale/es";
 import { db } from "./firebase.js";
 import { ref, push, get, child } from "firebase/database";
+import { useNavigate } from "react-router-dom";
 
 registerLocale("es", es);
 
@@ -13,8 +14,8 @@ export default function ReservaEdicionPremium() {
   const [tipo, setTipo] = useState("");
   const [plazas, setPlazas] = useState(1);
   const [plazasDisponibles, setPlazasDisponibles] = useState(null);
+  const navigate = useNavigate();
 
-  // Habilitación de turno 2 (simulado)
   const esTurno1Completo = false;
   const reservasTurno2 = 2;
   const turno2Habilitado = esTurno1Completo && reservasTurno2 >= 3;
@@ -51,6 +52,11 @@ export default function ReservaEdicionPremium() {
       return;
     }
 
+    if (plazas > plazasDisponibles) {
+      alert("No hay suficientes plazas disponibles.");
+      return;
+    }
+
     const reserva = {
       clase: "Edición Premium",
       fecha: fecha.toISOString().split("T")[0],
@@ -61,10 +67,20 @@ export default function ReservaEdicionPremium() {
 
     push(ref(db, `reservas/Edición Premium/${reserva.fecha}/${turno}/${tipo}`), reserva)
       .then(() => {
-        alert("Reserva guardada con éxito");
+        navigate("/resumen-pago", {
+          state: {
+            clase: reserva.clase,
+            fecha: reserva.fecha,
+            turno: reserva.turno,
+            metodo: reserva.tipo,
+            precio: "65€",
+            plazas: reserva.plazas
+          }
+        });
       })
       .catch((error) => {
         console.error("Error al guardar la reserva:", error);
+        alert("Ocurrió un error al guardar tu reserva.");
       });
   };
 
@@ -78,7 +94,6 @@ export default function ReservaEdicionPremium() {
           Reserva - Edición Premium
         </h1>
 
-        {/* Fecha */}
         <label className="block mb-2 font-semibold text-sm text-gray-700">
           Selecciona el día:
         </label>
@@ -93,7 +108,6 @@ export default function ReservaEdicionPremium() {
           placeholderText="Elige una fecha de 2025"
         />
 
-        {/* Turno */}
         <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
           Selecciona el turno:
         </label>
@@ -113,7 +127,6 @@ export default function ReservaEdicionPremium() {
           )}
         </select>
 
-        {/* Tipo de modelado */}
         <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
           Tipo de modelado:
         </label>
@@ -141,15 +154,12 @@ export default function ReservaEdicionPremium() {
           </button>
         </div>
 
-        {/* Plazas disponibles */}
         {plazasDisponibles !== null && (
           <p className="text-sm mt-2 text-gray-600">
-            Quedan {plazasDisponibles} plazas disponibles para este turno y
-            método
+            Quedan {plazasDisponibles} plazas disponibles para este turno y método
           </p>
         )}
 
-        {/* Número de plazas */}
         <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
           ¿Cuántas plazas deseas reservar?
         </label>
@@ -162,7 +172,6 @@ export default function ReservaEdicionPremium() {
           className="w-full p-2 border rounded"
         />
 
-        {/* Botón confirmar */}
         <button
           className="w-full bg-yellow-500 text-white py-2 rounded-full mt-6 hover:bg-yellow-600 transition"
           onClick={handleReserva}
@@ -172,15 +181,15 @@ export default function ReservaEdicionPremium() {
         </button>
       </div>
 
-      {/* Logo en el pie */}
       <div className="mt-10 text-center">
-      <img
-  src="/img/logoPC.png"
-  alt="TuTurno logo"
-  className="mx-auto w-24 h-auto"
-/>
+        <img
+          src="/img/logoPC.png"
+          alt="TuTurno logo"
+          className="mx-auto w-24 h-auto"
+        />
       </div>
     </div>
   );
 }
+
 

@@ -1,13 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { auth, db } from "./firebase";
+import { ref, get } from "firebase/database";
+import { signOut } from "firebase/auth";
+import Menu from "./Menu.jsx";
+
 
 export default function PerfilUsuario() {
   const navigate = useNavigate();
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      setEmail(user.email);
+      const userRef = ref(db, "usuarios/" + user.uid);
+      get(userRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            setNombre(snapshot.val().nombre);
+          }
+        })
+        .catch((error) => {
+          console.error("Error al obtener datos del perfil:", error);
+        });
+    }
+  }, []);
 
   const handleLogout = () => {
-    // Aquí iría la lógica de cerrar sesión (por ejemplo, con Firebase)
-    console.log("Cerrar sesión");
-    // navigate("/"); // Si quieres redirigir tras logout
+    signOut(auth).then(() => {
+      navigate("/");
+    });
   };
 
   return (
@@ -19,10 +43,10 @@ export default function PerfilUsuario() {
 
         <div className="mb-6">
           <p className="mb-1 text-sm">
-            <strong>Nombre:</strong> Alicia
+            <strong>Nombre:</strong> {nombre}
           </p>
           <p className="text-sm">
-            <strong>Email:</strong> alicia@example.com
+            <strong>Email:</strong> {email}
           </p>
         </div>
 
@@ -40,52 +64,14 @@ export default function PerfilUsuario() {
             Cerrar sesión
           </button>
         </div>
+        <div style={{ marginTop: "40px" }}>
+  <Menu />
+</div>
 
-        <div className="mb-6">
-          <h2 className="text-[#6b3700] text-sm font-semibold mb-2">
-            Reservas activas
-          </h2>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Edición Premium - 15/07/2025 - 10:00
-          </div>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Pintar cerámica - 20/07/2025 - 12:00
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-[#6b3700] text-sm font-semibold mb-2">
-            Historial de reservas
-          </h2>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Creativo Plus - 10/04/2025
-          </div>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Torno intensivo - 22/03/2025
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-[#6b3700] text-sm font-semibold mb-2">
-            Bonos y tarjetas regalo
-          </h2>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Bono 4 clases - Usadas: 2 / 4
-          </div>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 mb-2 text-sm">
-            Tarjeta regalo: Crea tu pieza favorita
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-[#6b3700] text-sm font-semibold mb-2">
-            Notificaciones
-          </h2>
-          <div className="bg-[#f9f5ef] rounded-lg px-3 py-2 text-sm">
-            ¡Te quedan 2 clases por usar este mes!
-          </div>
-        </div>
+        {/* Aquí seguiría el resto de tus reservas, historial, etc. */}
       </div>
     </div>
   );
 }
+
+

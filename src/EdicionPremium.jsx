@@ -4,6 +4,11 @@ import { useNavigate } from "react-router-dom";
 export default function EdicionPremium() {
   const navigate = useNavigate();
 
+  // cuando el usuario pulsa reservar, le llevo a la pantalla de reserva de esta clase
+  const handleReserva = () => {
+    navigate("/reserva-edicion-premium");
+  };
+
   return (
     <div className="bg-white text-gray-800 font-sans max-w-md mx-auto shadow-lg rounded-lg overflow-hidden">
       <img
@@ -36,10 +41,10 @@ export default function EdicionPremium() {
         </p>
 
         <button
-          onClick={() => navigate("/reserva-edicion-premium")}
+          onClick={handleReserva}
           className="w-full bg-yellow-500 text-white py-2 rounded-full hover:bg-yellow-600 transition"
         >
-          RESERVAR AHORA
+          Reservar ahora
         </button>
       </div>
     </div>
