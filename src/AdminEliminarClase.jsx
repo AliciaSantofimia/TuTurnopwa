@@ -1,28 +1,24 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import { doc, deleteDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, remove } from "firebase/database";
+import { dbRealtime } from "../firebase";
 
 const AdminEliminarClase = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // aquí recibo el ID de la clase desde la URL
+  const { id } = useParams(); // recibo el ID de la clase desde la URL
 
-  // cuando pulse eliminar, aquí eliminaré la clase desde Firebase
   const handleEliminar = async () => {
-    /*
     try {
-      await deleteDoc(doc(db, "clases", id));
+      const claseRef = ref(dbRealtime, `clases/${id}`);
+      await remove(claseRef);
       alert("Clase eliminada correctamente");
       navigate("/admin/clases/listado");
     } catch (error) {
       console.error("Error al eliminar la clase:", error);
+      alert("Error al intentar eliminar la clase");
     }
-    */
-    alert("Clase eliminada (simulado)");
-    navigate("/admin/clases/listado");
   };
 
-  // si cancelo, vuelvo atrás al listado
   const handleCancelar = () => {
     navigate("/admin/clases/listado");
   };
@@ -79,4 +75,3 @@ const styles = {
 };
 
 export default AdminEliminarClase;
-

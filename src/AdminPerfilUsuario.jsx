@@ -1,35 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import { doc, getDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminPerfilUsuario = () => {
-  const { id } = useParams(); // aquí recibo el ID del usuario desde la URL
+  const { id } = useParams(); // recibo el ID del usuario desde la URL
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
 
-  // aquí cargo los datos del usuario real desde Firebase
   useEffect(() => {
-    /*
     const cargarUsuario = async () => {
-      const ref = doc(db, "usuarios", id);
-      const snapshot = await getDoc(ref);
-      if (snapshot.exists()) {
-        setUsuario({ id: snapshot.id, ...snapshot.data() });
-      } else {
-        console.error("Usuario no encontrado");
+      try {
+        const snapshot = await get(child(ref(dbRealtime), `usuarios/${id}`));
+        if (snapshot.exists()) {
+          setUsuario(snapshot.val());
+        } else {
+          console.error("Usuario no encontrado");
+        }
+      } catch (error) {
+        console.error("Error al obtener datos del usuario:", error);
       }
     };
 
     cargarUsuario();
-    */
-
-    // Ejemplo temporal
-    setUsuario({
-      nombre: "Ana Pérez",
-      email: "ana@email.com",
-      reservas: 3
-    });
   }, [id]);
 
   if (!usuario) {
@@ -41,7 +35,7 @@ const AdminPerfilUsuario = () => {
       <div style={styles.perfil}>
         <h2>🦉 {usuario.nombre}</h2>
         <p><strong>Email:</strong> {usuario.email}</p>
-        <p><strong>Reservas realizadas:</strong> {usuario.reservas}</p>
+        <p><strong>Reservas realizadas:</strong> {usuario.reservas || 0}</p>
         <div style={styles.acciones}>
           <button
             onClick={() => navigate(`/admin/usuarios/bloquear/${id}`)}
@@ -50,7 +44,7 @@ const AdminPerfilUsuario = () => {
             🚫 Bloquear
           </button>
           <button
-            onClick={() => navigate(`/admin/usuarios/aviso/${id}`)} // si en App.jsx es /enviar-aviso cambia esto
+            onClick={() => navigate(`/admin/usuarios/aviso/${id}`)}
             style={styles.boton}
           >
             📩 Enviar aviso
@@ -65,7 +59,6 @@ const AdminPerfilUsuario = () => {
       </div>
     </div>
   );
-  
 };
 
 const styles = {

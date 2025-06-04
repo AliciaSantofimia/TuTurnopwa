@@ -1,44 +1,50 @@
 import React, { useEffect, useState } from "react";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminListadoReservas = () => {
   const [reservas, setReservas] = useState([]);
 
-  // aquí cargo todas las reservas reales desde Firebase
   useEffect(() => {
-    /*
     const obtenerReservas = async () => {
-      const querySnapshot = await getDocs(collection(db, "reservas"));
-      const datos = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setReservas(datos);
+      try {
+        const snapshot = await get(child(ref(dbRealtime), "reservas"));
+        const datos = [];
+
+        snapshot.forEach((claseSnap) => {
+          const clase = claseSnap.key;
+
+          claseSnap.forEach((fechaSnap) => {
+            const fecha = fechaSnap.key;
+
+            fechaSnap.forEach((turnoSnap) => {
+              const turno = turnoSnap.key;
+
+              turnoSnap.forEach((tipoSnap) => {
+                tipoSnap.forEach((reservaSnap) => {
+                  const reserva = reservaSnap.val();
+                  datos.push({
+                    id: reservaSnap.key,
+                    clase,
+                    usuario: reserva.nombre || "Sin nombre",
+                    fecha,
+                    turno,
+                    estado: reserva.estado || "Activa",
+                  });
+                });
+              });
+            });
+          });
+        });
+
+        setReservas(datos);
+      } catch (error) {
+        console.error("Error al obtener reservas:", error);
+      }
     };
 
     obtenerReservas();
-    */
-
-    // datos simulados mientras no está Firebase conectado
-    setReservas([
-      {
-        id: "r1",
-        clase: "Edición Premium",
-        usuario: "Ana Pérez",
-        fecha: "10/06/2025",
-        turno: "Mañana",
-        estado: "Activa",
-      },
-      {
-        id: "r2",
-        clase: "Crea tu pieza",
-        usuario: "Juan López",
-        fecha: "11/06/2025",
-        turno: "Tarde",
-        estado: "Completada",
-      },
-    ]);
   }, []);
 
   return (

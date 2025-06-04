@@ -1,20 +1,52 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import CryptoJS from "crypto-js";
 
 const RedirigiendoPago = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const datosReserva = location.state;
+  const datos = location.state;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      // Aquí se insertará la lógica real para redirigir o crear formulario de Redsys
-      console.log("Reserva enviada a Redsys:", datosReserva);
-      window.location.href = "https://sis-t.redsys.es:25443/sis/realizarPago"; // URL de entorno pruebas Redsys
-    }, 3000);
+    if (!datos || !datos.tipo || !datos.clase || !datos.precio) {
+      console.error("Faltan datos para el pago.");
+      navigate("/");
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, [datosReserva]);
+    const claveSecreta = "Mk9m98IfEblmPfrpsawt7BmxObt98Jev"; // clave de pruebas
+
+    const merchantData = {
+      DS_MERCHANT_AMOUNT: `${datos.precio * 100}`, // en céntimos
+      DS_MERCHANT_ORDER: "ORD" + new Date().getTime(),
+      DS_MERCHANT_MERCHANTCODE: "999008881",
+      DS_MERCHANT_CURRENCY: "978",
+      DS_MERCHANT_TRANSACTIONTYPE: "0",
+      DS_MERCHANT_TERMINAL: "1",
+      DS_MERCHANT_MERCHANTURL: "https://tuturnoapp.es/notificacion",
+      DS_MERCHANT_URLOK: "https://tuturnoapp.es/generarcodigotarjetaregalo",
+      DS_MERCHANT_URLKO: "https://tuturnoapp.es/pago-fallido",
+      DS_MERCHANT_PRODUCTDESCRIPTION: datos.clase,
+    };
+
+    const paramsBase64 = btoa(JSON.stringify(merchantData));
+    const clave = CryptoJS.enc.Base64.parse(claveSecreta);
+    const orderKey = CryptoJS.HmacSHA256(merchantData.DS_MERCHANT_ORDER, clave).toString(CryptoJS.enc.Base64);
+    const signature = CryptoJS.HmacSHA256(paramsBase64, CryptoJS.enc.Base64.parse(orderKey)).toString(CryptoJS.enc.Base64);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "https://sis-t.redsys.es:25443/sis/realizarPago"; // entorno pruebas Redsys
+
+    form.innerHTML = `
+      <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
+      <input type="hidden" name="Ds_MerchantParameters" value="${paramsBase64}" />
+      <input type="hidden" name="Ds_Signature" value="${signature}" />
+    `;
+
+    document.body.appendChild(form);
+    form.submit();
+  }, [datos, navigate]);
 
   return (
     <div style={styles.body}>

@@ -1,35 +1,43 @@
 import React, { useState } from "react";
-// import { collection, getDocs, query, where } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "../firebase";
 
 const AdminBuscarUsuario = () => {
   const [busqueda, setBusqueda] = useState("");
   const [resultados, setResultados] = useState([]);
 
-  // cuando pulse buscar, aquí buscaré por nombre o email más adelante
   const handleBuscar = async () => {
     if (!busqueda.trim()) {
       alert("Por favor, introduce un nombre o email");
       return;
     }
 
-    // Simulación por ahora, pero luego buscaré en Firebase
-    /*
-    const usuariosRef = collection(db, "usuarios");
-    const q = query(usuariosRef, where("nombre", ">=", busqueda));
-    const snapshot = await getDocs(q);
-    const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setResultados(datos);
-    */
+    try {
+      const snapshot = await get(ref(dbRealtime, "usuarios"));
+      const encontrados = [];
 
-    setResultados([
-      {
-        id: "u1",
-        nombre: "Ana Pérez",
-        email: "ana@email.com",
-        reservas: 3
-      }
-    ]);
+      snapshot.forEach((childSnap) => {
+        const data = childSnap.val();
+        const id = childSnap.key;
+        const nombre = data.nombre?.toLowerCase() || "";
+        const email = data.email?.toLowerCase() || "";
+        const term = busqueda.toLowerCase();
+
+        if (nombre.includes(term) || email.includes(term)) {
+          encontrados.push({
+            id,
+            nombre: data.nombre,
+            email: data.email,
+            reservas: data.reservas?.length || 0,
+          });
+        }
+      });
+
+      setResultados(encontrados);
+    } catch (error) {
+      console.error("Error al buscar usuario:", error);
+      alert("Hubo un error al buscar. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -116,4 +124,3 @@ const styles = {
 };
 
 export default AdminBuscarUsuario;
-

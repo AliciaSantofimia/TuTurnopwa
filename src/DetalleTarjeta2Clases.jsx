@@ -4,23 +4,28 @@ import { useNavigate } from "react-router-dom";
 const DetalleTarjeta2Clases = () => {
   const navigate = useNavigate();
 
-  const handleComprar = () => {
-    // Puedes pasar datos a la pantalla de pago si lo necesitas
+  const handleCanjear = () => {
     navigate("/resumen-pago", {
       state: {
-        clase: "2 clases de 3h al mes (tarjeta regalo)",
-        fecha: "", // si se elige más adelante
-        turno: "", // si aplica
-        metodo: "", // si aplica
-        precio: "70€"
+        desdeTarjeta: true,
+        tipo: "2clases",
+        clase: "2 clases de 4 horas al mes",
+        precio: 70
       }
     });
   };
+  
 
   return (
     <div style={styles.body}>
       <div style={styles.container}>
-        <img src="/2clases.jpg" alt="2 clases al mes" style={styles.imagen} />
+        <img
+          src="/img/2clasesregalo.jpg"
+          alt="2 clases al mes"
+          style={styles.imagen}
+          onError={(e) => (e.target.style.display = "none")}
+        />
+
         <div style={styles.content}>
           <h1 style={styles.titulo}>2 clases de 3h al mes</h1>
           <div style={styles.precio}>70€</div>
@@ -29,7 +34,10 @@ const DetalleTarjeta2Clases = () => {
             Una opción ideal para iniciarte o mantenerte en contacto con la cerámica.
             Incluye todos los materiales, esmaltes y la cocción de tus piezas.
           </p>
-          <button onClick={handleComprar} style={styles.btn}>COMPRAR</button>
+
+          <button onClick={handleCanjear} style={styles.btn}>
+            PAGAR
+          </button>
         </div>
       </div>
     </div>
@@ -57,6 +65,8 @@ const styles = {
     width: "100%",
     height: "auto",
     display: "block",
+    borderRadius: "12px",
+    marginBottom: "20px",
   },
   content: {
     padding: 20,
@@ -89,7 +99,8 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     transition: "background-color 0.3s ease",
-  }
+  },
 };
 
 export default DetalleTarjeta2Clases;
+

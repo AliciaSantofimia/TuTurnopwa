@@ -1,44 +1,37 @@
 import React, { useEffect, useState } from "react";
-// import { collection, getDocs, query, where } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 const AdminHistorialBonos = () => {
   const [bonos, setBonos] = useState([]);
   const [fechaFiltro, setFechaFiltro] = useState("");
 
   useEffect(() => {
-    // Cuando conecte con Firebase, usaré esta lógica:
-    /*
     const cargarBonos = async () => {
-      const ref = collection(db, "bonos");
-      const q = fechaFiltro
-        ? query(ref, where("fechaCompra", "==", fechaFiltro))
-        : ref;
-      const snapshot = await getDocs(q);
-      const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setBonos(datos);
-    };
-    cargarBonos();
-    */
+      try {
+        const snapshot = await get(child(ref(dbRealtime), `bonos`));
+        const datos = [];
 
-    // Simulación de datos mientras tanto
-    setBonos([
-      {
-        id: "b1",
-        usuario: "Ana Pérez",
-        tipo: "Bono 4 clases",
-        fechaCompra: "2025-06-01",
-        clasesIncluidas: 4,
-      },
-      {
-        id: "b2",
-        usuario: "Carlos Ruiz",
-        tipo: "Bono 2 clases",
-        fechaCompra: "2025-06-10",
-        clasesIncluidas: 2,
-      },
-    ]);
-  }, [fechaFiltro]);
+        snapshot.forEach((bonoSnap) => {
+          const bono = bonoSnap.val();
+          datos.push({
+            id: bonoSnap.key,
+            usuario: bono.nombre || "Sin nombre",
+            tipo: bono.tipo || "Desconocido",
+            fechaCompra: bono.fechaCompra || "Sin fecha",
+            clasesIncluidas: bono.clasesIncluidas || 0,
+          });
+        });
+
+        setBonos(datos);
+      } catch (error) {
+        console.error("Error al cargar bonos:", error);
+        alert("No se pudieron cargar los bonos.");
+      }
+    };
+
+    cargarBonos();
+  }, []);
 
   return (
     <div style={styles.body}>

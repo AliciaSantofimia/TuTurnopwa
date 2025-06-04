@@ -1,28 +1,24 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import { doc, deleteDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, remove } from "firebase/database";
+import { dbRealtime } from "../firebase";
 
 const AdminEliminarUsuario = () => {
-  const { id } = useParams(); // aquí recibo el ID del usuario desde la URL
+  const { id } = useParams(); // recibo el ID del usuario desde la URL
   const navigate = useNavigate();
 
-  // cuando pulse "Eliminar", aquí borro al usuario (más adelante con Firebase)
   const handleEliminar = async () => {
-    /*
     try {
-      await deleteDoc(doc(db, "usuarios", id));
+      const userRef = ref(dbRealtime, `usuarios/${id}`);
+      await remove(userRef);
       alert("Usuario eliminado correctamente");
       navigate("/admin/usuarios/listado");
     } catch (error) {
       console.error("Error al eliminar el usuario:", error);
+      alert("Error al intentar eliminar al usuario");
     }
-    */
-    alert("Usuario eliminado (simulado)");
-    navigate("/admin/usuarios/listado");
   };
 
-  // si cancelo, vuelvo al perfil del usuario
   const handleCancelar = () => {
     navigate(`/admin/usuarios/perfil/${id}`);
   };
@@ -82,4 +78,3 @@ const styles = {
 };
 
 export default AdminEliminarUsuario;
-

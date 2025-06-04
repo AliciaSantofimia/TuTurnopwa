@@ -1,9 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva";
 
 export default function FundamentalMini() {
-  const navigate = useNavigate();
-
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden relative">
@@ -39,14 +37,10 @@ export default function FundamentalMini() {
             Ideal si buscas una experiencia accesible y creativa. También puedes pedir asesoramiento para enfocar tus piezas hacia una línea de marca o proyecto personal.
           </p>
 
-          <button
-            onClick={() => navigate("/reserva-fundamental-mini")}
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-base py-3 rounded-full transition text-center"
-          >
-            RESERVAR AHORA
-          </button>
+          <BotonReserva destino="/reserva-fundamental-mini" />
         </div>
       </div>
     </div>
   );
 }
+

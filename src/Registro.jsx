@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set } from "firebase/database";
-import { auth, db } from "./firebase";
+import { auth, dbRealtime } from "./firebase"; // ✅ sin Firestore
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -24,10 +24,18 @@ export default function Registro() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
-      // Guardo nombre y email en la base de datos
-      await set(ref(db, "usuarios/" + uid), {
-        nombre: nombre,
-        email: email
+      await updateProfile(userCredential.user, {
+        displayName: nombre
+      });
+
+      // Guardar en Realtime Database
+      await set(ref(dbRealtime, `usuarios/${uid}`), {
+        uid,
+        nombre,
+        email,
+        fechaRegistro: new Date().toISOString(),
+        reservas: 0,
+        bonos: []
       });
 
       navigate("/perfil");

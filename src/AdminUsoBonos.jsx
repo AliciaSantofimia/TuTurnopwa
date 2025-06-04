@@ -1,38 +1,30 @@
 import React, { useEffect, useState } from "react";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminUsoBonos = () => {
   const [bonos, setBonos] = useState([]);
 
   useEffect(() => {
-    // aquí cargaré los bonos reales desde Firebase
-    /*
     const cargarBonos = async () => {
-      const snapshot = await getDocs(collection(db, "bonos"));
-      const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setBonos(datos);
+      try {
+        const snapshot = await get(child(ref(dbRealtime), "bonos"));
+        if (snapshot.exists()) {
+          const datos = [];
+          snapshot.forEach((snap) => {
+            datos.push({ id: snap.key, ...snap.val() });
+          });
+          setBonos(datos);
+        } else {
+          console.log("No hay bonos disponibles.");
+        }
+      } catch (error) {
+        console.error("Error al cargar los bonos:", error);
+      }
     };
-    cargarBonos();
-    */
 
-    // simulación mientras tanto
-    setBonos([
-      {
-        id: "b1",
-        usuario: "Ana Pérez",
-        tipo: "Bono 4 clases",
-        utilizadas: 3,
-        restantes: 1,
-      },
-      {
-        id: "b2",
-        usuario: "Carlos Ruiz",
-        tipo: "Bono 2 clases",
-        utilizadas: 1,
-        restantes: 1,
-      },
-    ]);
+    cargarBonos();
   }, []);
 
   return (

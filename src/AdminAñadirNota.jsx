@@ -1,43 +1,48 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import { doc, updateDoc, arrayUnion } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, update } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminAñadirNota = () => {
   const { id } = useParams(); // ID de la reserva
   const navigate = useNavigate();
   const [nota, setNota] = useState("");
 
-  // ejemplo temporal de datos de la reserva (puedes usar getDoc en el futuro)
+  // Ejemplo temporal (puedes cargar datos reales si lo deseas)
   const reserva = {
     clase: "Pinta tu pieza",
     usuario: "Marta Ruiz",
   };
 
-  // cuando pulse guardar, añado la nota interna a Firebase
   const handleGuardarNota = async () => {
     if (!nota.trim()) {
       alert("Por favor, escribe una nota.");
       return;
     }
 
-    /*
     try {
-      const ref = doc(db, "reservas", id);
-      await updateDoc(ref, {
-        notasInternas: arrayUnion({
-          texto: nota,
-          fecha: new Date().toISOString(),
-        }),
+      const notaObj = {
+        texto: nota,
+        fecha: new Date().toISOString(),
+      };
+
+      const refReserva = ref(dbRealtime, `reservasNotas/${id}`);
+      const snapshot = await get(refReserva);
+      const datosActuales = snapshot.exists() ? snapshot.val() : { notasInternas: [] };
+
+      const nuevasNotas = [...(datosActuales.notasInternas || []), notaObj];
+
+      await update(refReserva, {
+        notasInternas: nuevasNotas,
       });
+
       alert("Nota guardada correctamente");
       navigate("/admin/reservas/listado");
     } catch (error) {
-      console.error("Error al guardar la nota:", error);
+      console.error("❌ Error al guardar la nota:", error);
+      alert("Ocurrió un error al guardar la nota.");
     }
-    */
-    alert("Nota guardada (simulado)");
-    navigate("/admin/reservas/listado");
   };
 
   return (
@@ -98,4 +103,3 @@ const styles = {
 };
 
 export default AdminAñadirNota;
-

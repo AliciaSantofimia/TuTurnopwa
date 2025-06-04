@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { ref, get, update } from "firebase/database";
+import { dbRealtime } from "./firebase"; // Asegúrate de que esté bien la ruta
 
 const CanjearTarjetaRegalo = () => {
   const [codigo, setCodigo] = useState("");
@@ -7,16 +10,67 @@ const CanjearTarjetaRegalo = () => {
   const [codigoValido, setCodigoValido] = useState(false);
   const navigate = useNavigate();
 
-  const handleValidar = () => {
-    if (codigo.trim() === "") {
+  const rutasPorTipo = {
+    "2 clases de 3h al mes (tarjeta regalo)": "/reserva-bono-2-clases",
+    "4 clases de 3h al mes (tarjeta regalo)": "/reserva-bono-4-clases",
+    "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creativo-plus",
+    "Pinta tu pieza (tarjeta regalo)": "/reserva-pintar-ceramica",
+    "Torno intensivo individual (tarjeta regalo)": "/reserva-edicion-premium"
+  };
+
+  const handleValidar = async () => {
+    setMensaje("");
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!codigo.trim()) {
       setMensaje("Por favor, introduce un código.");
-      setCodigoValido(false);
-    } else if (codigo === "TUTURNO2025") {
-      setMensaje("🎉 Código válido. ¡Ya puedes reservar tu taller!");
-      setCodigoValido(true);
-    } else {
-      setMensaje("❌ Código no válido. Revisa que lo has escrito bien.");
-      setCodigoValido(false);
+      return;
+    }
+
+    if (!user) {
+      setMensaje("Debes iniciar sesión para canjear tu tarjeta.");
+      return;
+    }
+
+    try {
+      const snapshot = await get(ref(dbRealtime, `tarjetas_regalo/${codigo}`));
+
+      if (!snapshot.exists()) {
+        setMensaje("❌ Código no válido. Revisa que lo has escrito bien.");
+        return;
+      }
+
+      const tarjeta = snapshot.val();
+
+      if (tarjeta.usado) {
+        setMensaje("❌ Este código ya ha sido canjeado.");
+        return;
+      }
+
+      // Marcar como usada
+      await update(ref(dbRealtime, `tarjetas_regalo/${codigo}`), {
+        usado: true,
+        canjeadoPorUID: user.uid,
+        fechaCanje: new Date().toISOString()
+      });
+
+      const ruta = rutasPorTipo[tarjeta.tipo];
+
+      if (ruta) {
+        navigate(ruta, {
+          state: {
+            desdeTarjeta: true,
+            codigo: codigo,
+            tipo: tarjeta.tipo
+          }
+        });
+      } else {
+        setMensaje("✅ Código válido, pero no se encontró la ruta del taller.");
+      }
+    } catch (error) {
+      console.error("Error al validar el código:", error);
+      setMensaje("⚠️ Ocurrió un error al validar el código.");
     }
   };
 
@@ -38,14 +92,6 @@ const CanjearTarjetaRegalo = () => {
           VALIDAR CÓDIGO
         </button>
         {mensaje && <div style={styles.mensaje}>{mensaje}</div>}
-        {codigoValido && (
-          <button
-            onClick={() => navigate("/clases")}
-            style={{ ...styles.btn, marginTop: 16 }}
-          >
-            VER CLASES DISPONIBLES
-          </button>
-        )}
       </div>
     </div>
   );

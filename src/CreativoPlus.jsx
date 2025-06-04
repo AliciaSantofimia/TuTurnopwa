@@ -1,14 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva";
 
 export default function CreativoPlus() {
-  const navigate = useNavigate();
-  // cuando el usuario pulsa reservar, le llevo a la pantalla de reserva de esta clase
-const handleReserva = () => {
-  navigate("/reserva-creativo-plus");
-};
-
-
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden">
@@ -41,12 +34,7 @@ const handleReserva = () => {
             Incluye: formación completa, materiales y el proceso de esmaltado y cocción realizado por nuestro equipo. Si el tiempo lo permite, podrás realizar más de una pieza.
           </p>
 
-          <button
-            onClick={() => navigate("/reserva-creativo-plus")}
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-base py-3 rounded-full transition text-center"
-          >
-            Reservar ahora
-          </button>
+          <BotonReserva destino="/reserva-creativo-plus" />
         </div>
       </div>
     </div>

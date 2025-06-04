@@ -4,33 +4,41 @@ import { useNavigate } from "react-router-dom";
 const DetalleTarjetaPintaTuPieza = () => {
   const navigate = useNavigate();
 
-  const handleComprar = () => {
+  const handleCanjear = () => {
     navigate("/resumen-pago", {
       state: {
-        clase: "Pinta tu pieza (tarjeta regalo)",
-        fecha: "", // se puede elegir más adelante
-        turno: "",
-        metodo: "",
-        precio: "Desde 25€"
+        desdeTarjeta: true,
+        tipo: "pintatupieza",
+        clase: "Pinta tu pieza de cerámica",
+        precio: 25
       }
     });
   };
+  
 
   return (
     <div style={styles.body}>
       <div style={styles.container}>
-        <div style={styles.imagen}></div>
+        <img
+          src="/img/pintatupiezaregalo.jpg"
+          alt="Pinta tu pieza"
+          style={styles.imagen}
+          onError={(e) => (e.target.style.display = "none")}
+        />
 
         <div style={styles.content}>
           <h1 style={styles.titulo}>Pinta tu pieza</h1>
           <div style={styles.precio}>Desde 25€</div>
           <p style={styles.descripcion}>
-            Sesión de 3 horas para decorar una pieza ya hecha, eligiendo entre diferentes formas y tamaños. 
-            Cada pieza tiene su precio individual. Podrás pintar con esmaltes cerámicos y tu pieza se cocerá en el horno 
+            Sesión de 3 horas para decorar una pieza ya hecha, eligiendo entre
+            diferentes formas y tamaños. Cada pieza tiene su precio individual.
+            Podrás pintar con esmaltes cerámicos y tu pieza se cocerá en el horno
             para llevártela lista para usar o regalar.
           </p>
 
-          <button onClick={handleComprar} style={styles.btn}>COMPRAR</button>
+          <button onClick={handleCanjear} style={styles.btn}>
+            PAGAR
+          </button>
         </div>
       </div>
     </div>
@@ -56,11 +64,10 @@ const styles = {
   },
   imagen: {
     width: "100%",
-    height: 250,
-    backgroundImage: "url('/pintarceramica1.jpg')",
-    backgroundPosition: "center center",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "cover",
+    height: "auto",
+    display: "block",
+    borderRadius: "12px",
+    marginBottom: "20px",
   },
   content: {
     padding: 20,
@@ -93,8 +100,10 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     transition: "background-color 0.3s ease",
-  }
+  },
 };
 
 export default DetalleTarjetaPintaTuPieza;
+
+
 

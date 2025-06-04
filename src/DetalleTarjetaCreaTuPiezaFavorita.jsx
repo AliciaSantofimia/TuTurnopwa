@@ -4,25 +4,26 @@ import { useNavigate } from "react-router-dom";
 const DetalleTarjetaCreaTuPiezaFavorita = () => {
   const navigate = useNavigate();
 
-  const handleComprar = () => {
+  const handleCanjear = () => {
     navigate("/resumen-pago", {
       state: {
-        clase: "Crea tu pieza favorita (tarjeta regalo)",
-        fecha: "",
-        turno: "",
-        metodo: "",
-        precio: "45€"
+        desdeTarjeta: true,
+        tipo: "creapiezafavorita",
+        clase: "Crea tu pieza favorita",
+        precio: 55
       }
     });
   };
+  
 
   return (
     <div style={styles.body}>
       <div style={styles.container}>
         <img
-          src="/creatupiezafavorita.jpg"
+          src="/img/creatupiezafavoritaregalo.jpg"
           alt="Crea tu pieza favorita"
           style={styles.imagen}
+          onError={(e) => (e.target.style.display = "none")}
         />
         <div style={styles.content}>
           <h1 style={styles.titulo}>Crea tu pieza favorita</h1>
@@ -31,7 +32,7 @@ const DetalleTarjetaCreaTuPiezaFavorita = () => {
             Clase de 3 horas en la que podrás crear tu pieza favorita desde cero. Puedes elegir torno o técnicas a mano.
             Incluye todos los materiales, esmalte y cocción de tu pieza para que puedas llevártela lista para usar o regalar.
           </p>
-          <button onClick={handleComprar} style={styles.btn}>COMPRAR</button>
+          <button onClick={handleCanjear} style={styles.btn}>PAGAR</button>
         </div>
       </div>
     </div>
@@ -59,6 +60,8 @@ const styles = {
     width: "100%",
     height: "auto",
     display: "block",
+    borderRadius: "12px 12px 0 0",
+    marginBottom: 20
   },
   content: {
     padding: 20,
@@ -95,4 +98,6 @@ const styles = {
 };
 
 export default DetalleTarjetaCreaTuPiezaFavorita;
+
+
 

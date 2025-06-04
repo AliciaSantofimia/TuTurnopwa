@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "./firebase";
+import { auth, dbRealtime } from "./firebase";
 import { ref, get } from "firebase/database";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import Menu from "./Menu.jsx";
-
+import HistorialTarjetasRegalo from "./HistorialTarjetasRegalo.jsx";
+import HistorialReservasUsuario from "./HistorialReservasUsuario.jsx";
 
 export default function PerfilUsuario() {
   const navigate = useNavigate();
@@ -12,21 +13,26 @@ export default function PerfilUsuario() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (user) {
-      setEmail(user.email);
-      const userRef = ref(db, "usuarios/" + user.uid);
-      get(userRef)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            setNombre(snapshot.val().nombre);
-          }
-        })
-        .catch((error) => {
-          console.error("Error al obtener datos del perfil:", error);
-        });
-    }
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setEmail(user.email);
+        const userRef = ref(dbRealtime, "usuarios/" + user.uid);
+        get(userRef)
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              setNombre(snapshot.val().nombre);
+            }
+          })
+          .catch((error) => {
+            console.error("Error al obtener datos del perfil:", error);
+          });
+      } else {
+        navigate("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogout = () => {
     signOut(auth).then(() => {
@@ -64,14 +70,45 @@ export default function PerfilUsuario() {
             Cerrar sesión
           </button>
         </div>
-        <div style={{ marginTop: "40px" }}>
-  <Menu />
-</div>
 
-        {/* Aquí seguiría el resto de tus reservas, historial, etc. */}
+        {/* Historial de tarjetas regalo */}
+        <div className="mb-8">
+          <HistorialTarjetasRegalo />
+        </div>
+
+        {/* Historial de reservas realizadas */}
+        <div className="mb-8">
+          <HistorialReservasUsuario />
+        </div>
+
+        {/* Enlaces legales */}
+        <div className="text-center mt-4">
+          <button
+            onClick={() => navigate("/politica-privacidad")}
+            className="text-sm text-red-500 underline hover:text-red-700 transition"
+          >
+            Ver Política de Privacidad
+          </button>
+        </div>
+
+        <div className="text-center mt-2">
+          <button
+            onClick={() => navigate("/condiciones-pago")}
+            className="text-sm text-red-500 underline hover:text-red-700 transition"
+          >
+            Ver Condiciones del Servicio de Pago
+          </button>
+        </div>
+
+        <div style={{ marginTop: "40px" }}>
+          <Menu />
+        </div>
       </div>
     </div>
   );
 }
+
+
+
 
 

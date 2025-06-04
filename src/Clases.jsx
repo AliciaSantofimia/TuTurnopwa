@@ -6,50 +6,54 @@ import Footer from "./Footer";
 
 export default function Clases() {
   const navigate = useNavigate();
-  const auth = getAuth();
-  const user = auth.currentUser;
 
   const clases = [
     {
       id: 1,
       titulo: "Edición Premium",
+      slug: "edicion-premium",
       color: "border-[#f1c40f]",
-      imagen: "/img/edicionpremium.png",
+      imagen: "/img/vasijaedicionpremium.png",
       horarios: ["10:00 – 15:00 (mañana)", "16:00 – 21:00 (tarde)"],
     },
     {
       id: 2,
       titulo: "Creativo Plus",
+      slug: "creativo-plus",
       color: "border-[#f58cb4]",
-      imagen: "/img/creativoplus.png",
+      imagen: "/img/vasijacreativoplus.png",
       horarios: ["11:00 – 15:00 (mañana)", "17:00 – 20:00 (tarde)"],
     },
     {
       id: 3,
       titulo: "Básico Esencial",
+      slug: "basico-esencial",
       color: "border-[#f7c974]",
-      imagen: "/img/esencialbasico.png",
+      imagen: "/img/vasijabasicoesencial.png",
       horarios: ["12:00 – 15:00 (mañana)", "18:00 – 21:00 (tarde)"],
     },
     {
       id: 4,
       titulo: "Bono 4 Clases",
+      slug: "bono-4-clases",
       color: "border-[#96dec3]",
-      imagen: "/img/bono4.png",
+      imagen: "/img/vasijabono4.png",
       horarios: ["12:00 – 15:00 (mañana)", "18:00 – 21:00 (tarde)"],
     },
     {
       id: 5,
       titulo: "Bono 2 Clases",
+      slug: "bono-2-clases",
       color: "border-[#cdbaf7]",
-      imagen: "/img/bono2.png",
+      imagen: "/img/vasijabono2.png",
       horarios: ["Horario flexible (según clase elegida)"],
     },
     {
       id: 6,
       titulo: "Fundamental Mini",
+      slug: "fundamental-mini",
       color: "border-[#f2c29b]",
-      imagen: "/img/mini.png",
+      imagen: "/img/vasijafundamentalmini.png",
       horarios: [
         "12:00 – 14:00 (Turno 1 mañana)",
         "10:00 – 12:00 (Turno 2 mañana)",
@@ -60,8 +64,9 @@ export default function Clases() {
     {
       id: 7,
       titulo: "Pintar Cerámica",
+      slug: "pintar-ceramica",
       color: "border-[#c9e6a3]",
-      imagen: "/img/pintar.png",
+      imagen: "/img/vasijapintarceramica.png",
       horarios: [
         "12:00 – 14:00 (Turno 1 mañana)",
         "10:00 – 12:00 (Turno 2 mañana)",
@@ -72,8 +77,9 @@ export default function Clases() {
     {
       id: 8,
       titulo: "Exprés Continuo",
+      slug: "exprescontinuo",
       color: "border-[#e06c75]",
-      imagen: "/img/exprescontinuo1.jpg",
+      imagen: "/img/vasijaexprescontinuo.png",
       horarios: [
         "Tú eliges el ritmo",
         "Clases sueltas, personalizadas",
@@ -83,8 +89,9 @@ export default function Clases() {
     {
       id: 9,
       titulo: "Tarjeta Regalo",
+      slug: "tarjetaregalo",
       color: "border-[#e06c75]",
-      imagen: "/img/tarjetaregalo.jpg",
+      imagen: "/img/vasijatarjetaregalo.png",
       horarios: [
         "Regala un taller sin fecha fija",
         "Ideal para sorprender a alguien",
@@ -124,30 +131,30 @@ export default function Clases() {
                     <li key={idx}>{turno}</li>
                   ))}
                 </ul>
+
                 <button
                   className="mt-3 px-4 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
                   onClick={() => {
+                    const currentUser = getAuth().currentUser;
+
                     if (clase.titulo === "Tarjeta Regalo") {
-                      navigate("/tarjetaregalo-info");
-                    } else if (!user) {
+                      navigate("/tarjeta-regalo");
+                    } else if (!currentUser) {
                       navigate("/registro");
                     } else {
-                      navigate(
-                        `/reserva-${clase.titulo
-                          .toLowerCase()
-                          .replace(/ /g, "-")}`
-                      );
+                      navigate(`/${clase.slug}`);
                     }
                   }}
                 >
-                  Reservar
+                  Ver más / Reservar
                 </button>
               </div>
             </div>
+
             <img
               src={clase.imagen}
               alt={`Icono de ${clase.titulo}`}
-              className="h-16 w-16 object-contain mt-3 ml-auto"
+              className="w-32 h-32 object-contain mt-3 ml-auto opacity-90 hover:scale-110 transition-transform duration-300 drop-shadow-md"
             />
           </div>
         ))}
@@ -178,3 +185,4 @@ export default function Clases() {
     </div>
   );
 }
+

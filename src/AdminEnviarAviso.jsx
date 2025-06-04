@@ -1,38 +1,33 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import { doc, updateDoc, arrayUnion } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, push } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminEnviarAviso = () => {
-  const { id } = useParams(); // aquí obtengo el ID del usuario desde la URL
+  const { id } = useParams(); // ID del usuario desde la URL
   const navigate = useNavigate();
   const [mensaje, setMensaje] = useState("");
 
-  // cuando pulse enviar, este aviso se guardará en la ficha del usuario
   const handleEnviar = async () => {
     if (!mensaje.trim()) {
       alert("Por favor, escribe un mensaje.");
       return;
     }
 
-    // aquí añadiré el aviso al campo 'avisos' en Firebase
-    /*
     try {
-      const ref = doc(db, "usuarios", id);
-      await updateDoc(ref, {
-        avisos: arrayUnion({
-          texto: mensaje,
-          fecha: new Date().toISOString(),
-        }),
+      const avisosRef = ref(dbRealtime, `usuarios/${id}/avisos`);
+      await push(avisosRef, {
+        texto: mensaje,
+        fecha: new Date().toISOString(),
       });
+
       alert("Aviso enviado correctamente");
       navigate(`/admin/usuarios/perfil/${id}`);
     } catch (error) {
       console.error("Error al enviar el aviso:", error);
+      alert("Error al enviar el aviso");
     }
-    */
-    alert("Aviso enviado (simulado)");
-    navigate(`/admin/usuarios/perfil/${id}`);
   };
 
   return (
@@ -90,4 +85,5 @@ const styles = {
 };
 
 export default AdminEnviarAviso;
+
 

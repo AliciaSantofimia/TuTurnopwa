@@ -6,7 +6,7 @@ const AdminGestionClases = () => {
 
   return (
     <div style={styles.body}>
-      <h1 style={styles.titulo}>🎨 Panel de Administración</h1>
+      <h1 style={styles.titulo}>Panel Administración</h1>
       <div style={styles.panel}>
         <button className="btn" style={styles.btn} onClick={() => navigate("/admin/clases/listado")}>
           📋 Ver listado de clases

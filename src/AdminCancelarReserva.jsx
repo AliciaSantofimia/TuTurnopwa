@@ -1,32 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import { doc, updateDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref as dbRef, get, update } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminCancelarReserva = () => {
-  const { id } = useParams(); // aquí recibo el ID de la reserva desde la URL
+  const { id } = useParams(); // ID completo de la reserva
   const navigate = useNavigate();
+  const [reserva, setReserva] = useState(null);
 
-  // temporalmente uso estos datos simulados (luego los traeré de Firebase)
-  const reserva = {
-    clase: "Creativo Plus",
-    usuario: "Laura Gómez",
-  };
+  // Obtener datos de la reserva
+  useEffect(() => {
+    const obtenerReserva = async () => {
+      const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
+      const snapshot = await get(ref);
+      if (snapshot.exists()) {
+        setReserva(snapshot.val());
+      } else {
+        alert("Reserva no encontrada");
+        navigate("/admin/reservas/listado");
+      }
+    };
+    obtenerReserva();
+  }, [id, navigate]);
 
-  // cuando pulse cancelar, cambio el estado a "Cancelada"
+  // Cambiar estado de la reserva
   const handleCancelar = async () => {
-    /*
     try {
-      const ref = doc(db, "reservas", id);
-      await updateDoc(ref, { estado: "Cancelada" });
+      const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
+      await update(ref, { estado: "Cancelada" });
       alert("Reserva cancelada correctamente");
       navigate("/admin/reservas/listado");
     } catch (error) {
       console.error("Error al cancelar la reserva:", error);
+      alert("Hubo un error al cancelar la reserva");
     }
-    */
-    alert("Reserva cancelada (simulado)");
-    navigate("/admin/reservas/listado");
   };
 
   const handleVolver = () => {
@@ -37,16 +45,22 @@ const AdminCancelarReserva = () => {
     <div style={styles.body}>
       <div style={styles.bloque}>
         <h2>❌ ¿Cancelar esta reserva?</h2>
-        <p>
-          Clase: <strong>{reserva.clase}</strong><br />
-          Usuario: <strong>{reserva.usuario}</strong>
-        </p>
-        <button onClick={handleCancelar} style={{ ...styles.btn, ...styles.cancelar }}>
-          Cancelar reserva
-        </button>
-        <button onClick={handleVolver} style={{ ...styles.btn, ...styles.volver }}>
-          Volver
-        </button>
+        {reserva ? (
+          <>
+            <p>
+              Clase: <strong>{reserva.clase}</strong><br />
+              Usuario: <strong>{reserva.usuario}</strong>
+            </p>
+            <button onClick={handleCancelar} style={{ ...styles.btn, ...styles.cancelar }}>
+              Cancelar reserva
+            </button>
+            <button onClick={handleVolver} style={{ ...styles.btn, ...styles.volver }}>
+              Volver
+            </button>
+          </>
+        ) : (
+          <p>Cargando datos de la reserva...</p>
+        )}
       </div>
     </div>
   );

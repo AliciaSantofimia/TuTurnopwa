@@ -1,9 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva";
 
 export default function PintarCeramica() {
-  const navigate = useNavigate();
-
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden relative">
@@ -40,14 +38,10 @@ export default function PintarCeramica() {
             ¡Todo está incluido! Solo tienes que elegir la pieza que más te guste y disfrutar del proceso creativo sin preocuparte por nada.
           </p>
 
-          <button
-            onClick={() => navigate("/reserva-pintar-ceramica")}
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-base py-3 rounded-full transition text-center"
-          >
-            RESERVAR AHORA
-          </button>
+          <BotonReserva destino="/reserva-pintar-ceramica" />
         </div>
       </div>
     </div>
   );
 }
+

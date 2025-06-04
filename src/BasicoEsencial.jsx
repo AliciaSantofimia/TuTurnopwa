@@ -1,9 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva"; // Ajusta la ruta si está en otra carpeta
 
 export default function BasicoEsencial() {
-  const navigate = useNavigate();
-
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden relative">
@@ -38,12 +36,8 @@ export default function BasicoEsencial() {
             Incluye todos los materiales, formación paso a paso, y el proceso de esmaltado y cocción realizado por nuestro equipo.
           </p>
 
-          <button
-            onClick={() => navigate("/reserva-basico-esencial")}
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-base py-3 rounded-full transition text-center"
-          >
-            RESERVAR ESTA CLASE
-          </button>
+          {/* Botón reutilizable */}
+          <BotonReserva destino="/reserva-basico-esencial" />
         </div>
       </div>
     </div>

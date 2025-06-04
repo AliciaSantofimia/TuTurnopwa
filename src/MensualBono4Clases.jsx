@@ -1,9 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva";
 
 export default function MensualBono4Clases() {
-  const navigate = useNavigate();
-
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden">
@@ -46,12 +44,7 @@ export default function MensualBono4Clases() {
             Tú decides qué técnica y qué pieza desarrollar en cada sesión. La formación es personalizada y se adapta a tus preferencias.
           </p>
 
-          <button
-            onClick={() => navigate("/reserva-bono-4-clases")}
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-base py-3 rounded-full transition text-center"
-          >
-            RESERVAR AHORA
-          </button>
+          <BotonReserva destino="/reserva-bono-4-clases" />
         </div>
       </div>
     </div>

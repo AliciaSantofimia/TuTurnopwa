@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { db } from "../firebaseConfig";
-// import { collection, addDoc } from "firebase/firestore";
+import { ref, set } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminCrearClase = () => {
   const navigate = useNavigate();
@@ -26,24 +27,16 @@ const AdminCrearClase = () => {
       imagen,
     };
 
-    console.log("Clase a guardar:", nuevaClase);
-
-    // Cuando conecte Firebase, usaré esto:
-    /*
     try {
-      await addDoc(collection(db, "clases"), nuevaClase);
+      const claseRef = ref(dbRealtime, `clases/${nombre}`);
+      await set(claseRef, nuevaClase);
       alert("Clase creada con éxito");
       navigate("/admin/clases");
     } catch (error) {
       console.error("Error al crear la clase:", error);
+      alert("Hubo un error al guardar la clase.");
     }
-    */
-
-    // Simulación temporal
-    alert("Clase creada con éxito (simulado)");
-    navigate("/admin/clases");
   };
-
 
   return (
     <div style={styles.body}>
@@ -133,4 +126,3 @@ const styles = {
 };
 
 export default AdminCrearClase;
-

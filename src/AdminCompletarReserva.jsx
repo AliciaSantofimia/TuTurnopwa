@@ -1,44 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import { doc, updateDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref as dbRef, get, update } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminCompletarReserva = () => {
-  const { id } = useParams(); // aquí recibo el ID de la reserva desde la URL
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [reserva, setReserva] = useState(null);
 
-  // en un caso real, aquí traería los datos reales de la reserva con getDoc
-  const reserva = {
-    clase: "Básico Esencial",
-    usuario: "Juan López",
-    fecha: "11/06/2025",
-  };
+  // Cargar datos de la reserva
+  useEffect(() => {
+    const obtenerReserva = async () => {
+      const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
+      const snapshot = await get(ref);
+      if (snapshot.exists()) {
+        setReserva(snapshot.val());
+      } else {
+        alert("Reserva no encontrada");
+        navigate("/admin/reservas/listado");
+      }
+    };
+    obtenerReserva();
+  }, [id, navigate]);
 
-  // cuando pulse confirmar, cambiaré el estado a "completada"
+  // Confirmar y marcar como completada
   const handleConfirmar = async () => {
-    /*
     try {
-      const ref = doc(db, "reservas", id);
-      await updateDoc(ref, { estado: "Completada" });
+      const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
+      await update(ref, { estado: "Completada" });
       alert("Reserva marcada como completada");
       navigate("/admin/reservas/listado");
     } catch (error) {
       console.error("Error al actualizar la reserva:", error);
+      alert("Error al marcar como completada");
     }
-    */
-    alert("Reserva marcada como completada (simulado)");
-    navigate("/admin/reservas/listado");
   };
 
   return (
     <div style={styles.body}>
       <div style={styles.bloque}>
         <h2>✅ ¿Marcar esta reserva como completada?</h2>
-        <p>
-          Clase: <strong>{reserva.clase}</strong><br />
-          Usuario: <strong>{reserva.usuario}</strong><br />
-          Fecha: <strong>{reserva.fecha}</strong>
-        </p>
+        {reserva ? (
+          <p>
+            Clase: <strong>{reserva.clase}</strong><br />
+            Usuario: <strong>{reserva.usuario}</strong><br />
+            Fecha: <strong>{reserva.fecha}</strong>
+          </p>
+        ) : (
+          <p>Cargando reserva...</p>
+        )}
         <button onClick={handleConfirmar} style={styles.btn}>
           Confirmar
         </button>
@@ -76,4 +87,3 @@ const styles = {
 };
 
 export default AdminCompletarReserva;
-

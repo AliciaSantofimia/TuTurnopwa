@@ -1,40 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-// import { collection, query, where, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminVerInscripciones = () => {
-  const { id } = useParams(); // aquí obtengo el ID de la clase desde la URL
+  const { id } = useParams(); // id de la clase
   const [inscripciones, setInscripciones] = useState([]);
   const [nombreClase, setNombreClase] = useState("...");
 
-  // aquí buscaré todas las reservas que coincidan con esta clase
   useEffect(() => {
     const cargarInscripciones = async () => {
-      /*
-      const q = query(collection(db, "reservas"), where("claseId", "==", id));
-      const querySnapshot = await getDocs(q);
-      const datos = querySnapshot.docs.map(doc => doc.data());
-      setInscripciones(datos);
-      */
-      // Simulación temporal
-      setNombreClase("Edición Premium");
-      setInscripciones([
-        {
-          nombre: "Ana López",
-          email: "ana@email.com",
-          fecha: "12/06/2025",
-          turno: "Tarde",
-          tipo: "Torno"
-        },
-        {
-          nombre: "Carlos Ruiz",
-          email: "carlos@email.com",
-          fecha: "13/06/2025",
-          turno: "Mañana",
-          tipo: "General"
-        }
-      ]);
+      try {
+        const snapshot = await get(child(ref(dbRealtime), `reservas`));
+        const resultados = [];
+
+        snapshot.forEach((claseSnap) => {
+          const claseId = claseSnap.key;
+
+          if (claseId === id) {
+            setNombreClase(claseId); // o puedes mapearlo a un nombre más bonito si tienes ese dato
+
+            claseSnap.forEach((fechaSnap) => {
+              const fecha = fechaSnap.key;
+
+              fechaSnap.forEach((turnoSnap) => {
+                const turno = turnoSnap.key;
+
+                turnoSnap.forEach((tipoSnap) => {
+                  const tipo = tipoSnap.key;
+
+                  tipoSnap.forEach((reservaSnap) => {
+                    const data = reservaSnap.val();
+                    resultados.push({
+                      nombre: data.nombre || "—",
+                      email: data.email || "—",
+                      fecha,
+                      turno,
+                      tipo
+                    });
+                  });
+                });
+              });
+            });
+          }
+        });
+
+        setInscripciones(resultados);
+      } catch (error) {
+        console.error("Error al cargar inscripciones:", error);
+      }
     };
 
     cargarInscripciones();

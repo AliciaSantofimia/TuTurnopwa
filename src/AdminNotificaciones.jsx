@@ -1,19 +1,35 @@
 import React, { useEffect, useState } from "react";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminNotificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
 
   useEffect(() => {
-    // Cuando conecte con Firebase, aquí cargaré notificaciones globales
+    // Cargar desde Firebase Realtime Database
     /*
     const cargarNotificaciones = async () => {
-      const ref = collection(db, "notificaciones");
-      const snapshot = await getDocs(ref);
-      const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setNotificaciones(datos);
+      try {
+        const snapshot = await get(child(ref(dbRealtime), "notificaciones"));
+        const datos = [];
+
+        snapshot.forEach((snap) => {
+          const noti = snap.val();
+          datos.push({
+            id: snap.key,
+            usuario: noti.usuario || "Desconocido",
+            mensaje: noti.mensaje || "",
+            fecha: noti.fecha || "",
+          });
+        });
+
+        setNotificaciones(datos);
+      } catch (error) {
+        console.error("Error al obtener notificaciones:", error);
+      }
     };
+
     cargarNotificaciones();
     */
 

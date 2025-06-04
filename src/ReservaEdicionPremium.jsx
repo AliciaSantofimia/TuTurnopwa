@@ -1,54 +1,63 @@
 import React, { useState, useEffect } from "react";
-import DatePicker, { registerLocale } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import es from "date-fns/locale/es";
-import { db } from "./firebase.js";
-import { ref, push, get, child } from "firebase/database";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { ref, get, update, push } from "firebase/database";
+import { dbRealtime } from "./firebase";
+import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 
-registerLocale("es", es);
+const actualizarContadorReservas = async (uid) => {
+  const userRef = ref(dbRealtime, "usuarios/" + uid);
+  const snapshot = await get(userRef);
 
-export default function ReservaEdicionPremium() {
-  const [fecha, setFecha] = useState(null);
+  if (snapshot.exists()) {
+    const datos = snapshot.val();
+    const nuevasReservas = (datos.reservas || 0) + 1;
+
+    await update(userRef, {
+      reservas: nuevasReservas,
+    });
+  }
+};
+
+export default function ReservaBono4Clases() {
+  const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
-  const [tipo, setTipo] = useState("");
+  const [metodo, setMetodo] = useState("");
   const [plazas, setPlazas] = useState(1);
-  const [plazasDisponibles, setPlazasDisponibles] = useState(null);
-  const navigate = useNavigate();
+  const [ocupadasTorno, setOcupadasTorno] = useState(0);
+  const [ocupadasModelado, setOcupadasModelado] = useState(0);
 
-  const esTurno1Completo = false;
-  const reservasTurno2 = 2;
-  const turno2Habilitado = esTurno1Completo && reservasTurno2 >= 3;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const desdeTarjeta = location.state?.desdeTarjeta || false;
+
+  const maxTorno = 12;
+  const maxModelado = 33;
 
   useEffect(() => {
-    if (!fecha || !turno || !tipo) {
-      setPlazasDisponibles(null);
-      return;
-    }
-
-    const fechaStr = fecha.toISOString().split("T")[0];
-    const ruta = `reservas/Edición Premium/${fechaStr}/${turno}/${tipo}`;
-
-    get(child(ref(db), ruta))
-      .then((snapshot) => {
-        let totalReservadas = 0;
-        snapshot.forEach((child) => {
-          totalReservadas += child.val().plazas;
-        });
-
-        const maximo = tipo === "torno" ? 12 : 33;
-        const disponibles = maximo - totalReservadas;
-        setPlazasDisponibles(disponibles);
-      })
-      .catch((error) => {
-        console.error("Error al obtener plazas:", error);
-        setPlazasDisponibles(null);
+    if (fecha) {
+      contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+        setOcupadasTorno(torno);
+        setOcupadasModelado(modelado);
       });
-  }, [fecha, turno, tipo]);
+    }
+  }, [fecha]);
 
-  const handleReserva = () => {
-    if (!fecha || !turno || !tipo) {
-      alert("Por favor completa todos los campos antes de continuar.");
+  const plazasDisponibles =
+    metodo === "torno"
+      ? Math.max(maxTorno - ocupadasTorno, 0)
+      : metodo === "modelado a mano"
+      ? Math.max(maxModelado - ocupadasModelado, 0)
+      : 0;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      console.error("Usuario no autenticado.");
       return;
     }
 
@@ -58,138 +67,172 @@ export default function ReservaEdicionPremium() {
     }
 
     const reserva = {
-      clase: "Edición Premium",
-      fecha: fecha.toISOString().split("T")[0],
-      turno: turno,
-      tipo: tipo,
-      plazas: parseInt(plazas),
+      clase: "Bono 4 Clases",
+      fecha,
+      turno,
+      metodo,
+      precio: "79€",
+      plazas: Number(plazas),
+      timestamp: new Date().toISOString(),
+      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal"
     };
 
-    push(ref(db, `reservas/Edición Premium/${reserva.fecha}/${turno}/${tipo}`), reserva)
-      .then(() => {
-        navigate("/resumen-pago", {
-          state: {
-            clase: reserva.clase,
-            fecha: reserva.fecha,
-            turno: reserva.turno,
-            metodo: reserva.tipo,
-            precio: "65€",
-            plazas: reserva.plazas
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("Error al guardar la reserva:", error);
-        alert("Ocurrió un error al guardar tu reserva.");
+    try {
+      // Guardar en reservas generales
+      const generalRef = ref(
+        dbRealtime,
+        `reservas/Bono4Clases/${fecha}/${turno}/${metodo}`
+      );
+      await push(generalRef, {
+        uid: user.uid,
+        ...reserva
       });
+
+      // Guardar en historial de usuario
+      const userReservasRef = ref(
+        dbRealtime,
+        `usuarios/${user.uid}/listaReservas`
+      );
+      await push(userReservasRef, reserva);
+
+      await actualizarContadorReservas(user.uid);
+
+      if (desdeTarjeta) {
+        navigate("/generar-codigo", {
+          state: reserva,
+        });
+      } else {
+        navigate("/resumen-pago", {
+          state: reserva,
+        });
+      }
+    } catch (err) {
+      console.error("Error al guardar la reserva:", err);
+    }
   };
 
   return (
-    <div className="bg-[#fffef4] min-h-screen font-sans p-4 max-w-md mx-auto flex flex-col justify-between">
-      <div>
-        <h1
-          className="text-3xl font-bold text-yellow-900 text-center mb-4"
-          style={{ fontFamily: "Barriecito" }}
+    <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/menu");
+            }
+          }}
+          className="text-sm text-blue-600 underline mb-4"
         >
-          Reserva - Edición Premium
+          ← Volver
+        </button>
+
+        <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
+          Reserva – Bono 4 Clases
         </h1>
 
-        <label className="block mb-2 font-semibold text-sm text-gray-700">
-          Selecciona el día:
-        </label>
-        <DatePicker
-          locale="es"
-          selected={fecha}
-          onChange={(date) => setFecha(date)}
-          dateFormat="dd/MM/yyyy"
-          className="w-full p-2 border rounded"
-          minDate={new Date("2025-01-01")}
-          maxDate={new Date("2025-12-31")}
-          placeholderText="Elige una fecha de 2025"
-        />
-
-        <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
-          Selecciona el turno:
-        </label>
-        <select
-          value={turno}
-          onChange={(e) => setTurno(e.target.value)}
-          className="w-full p-2 border rounded"
-        >
-          <option value="">-- Elige turno --</option>
-          <option value="10:00 - 15:00">10:00 - 15:00</option>
-          {turno2Habilitado ? (
-            <option value="16:00 - 21:00">16:00 - 21:00</option>
-          ) : (
-            <option value="16:00 - 21:00" disabled>
-              16:00 - 21:00 (lista de espera)
-            </option>
-          )}
-        </select>
-
-        <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
-          Tipo de modelado:
-        </label>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setTipo("mano")}
-            className={`flex-1 py-2 rounded-full border ${
-              tipo === "mano"
-                ? "bg-yellow-300 text-white"
-                : "bg-white text-yellow-700 border-yellow-400"
-            }`}
-          >
-            ✋ A mano
-          </button>
-          <button
-            onClick={() => setTipo("torno")}
-            className={`flex-1 py-2 rounded-full border ${
-              tipo === "torno"
-                ? "bg-yellow-300 text-white"
-                : "bg-white text-yellow-700 border-yellow-400"
-            }`}
-            disabled={plazasDisponibles === 0 && tipo === "torno"}
-          >
-            ⚙️ Torno
-          </button>
-        </div>
-
-        {plazasDisponibles !== null && (
-          <p className="text-sm mt-2 text-gray-600">
-            Quedan {plazasDisponibles} plazas disponibles para este turno y método
+        {desdeTarjeta && (
+          <p className="text-sm text-green-700 text-center font-medium mb-4">
+            Estás usando una tarjeta regalo 🎁
           </p>
         )}
 
-        <label className="block mt-4 mb-2 font-semibold text-sm text-gray-700">
-          ¿Cuántas plazas deseas reservar?
-        </label>
-        <input
-          type="number"
-          min="1"
-          max={plazasDisponibles || 1}
-          value={plazas}
-          onChange={(e) => setPlazas(Number(e.target.value))}
-          className="w-full p-2 border rounded"
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="fecha" className="block font-bold text-sm mb-1">
+              Selecciona el día:
+            </label>
+            <input
+              type="date"
+              id="fecha"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              min="2025-01-01"
+              max="2025-12-31"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+              required
+            />
+          </div>
 
-        <button
-          className="w-full bg-yellow-500 text-white py-2 rounded-full mt-6 hover:bg-yellow-600 transition"
-          onClick={handleReserva}
-          disabled={plazas > (plazasDisponibles || 0)}
-        >
-          Confirmar y pagar
-        </button>
-      </div>
+          <div>
+            <label htmlFor="turno" className="block font-bold text-sm mb-1">
+              Selecciona el turno:
+            </label>
+            <select
+              id="turno"
+              value={turno}
+              onChange={(e) => setTurno(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+              required
+            >
+              <option value="">-- Elige turno --</option>
+              <option value="12:00-15:00">12:00 – 15:00 (mañana)</option>
+              <option value="18:00-21:00">18:00 – 21:00 (tarde)</option>
+            </select>
+          </div>
 
-      <div className="mt-10 text-center">
-        <img
-          src="/img/logoPC.png"
-          alt="TuTurno logo"
-          className="mx-auto w-24 h-auto"
-        />
+          <div>
+            <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+              Método:
+            </label>
+            <select
+              id="metodo"
+              value={metodo}
+              onChange={(e) => setMetodo(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+              required
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="torno">Torno</option>
+              <option value="modelado a mano">Modelado a mano</option>
+            </select>
+          </div>
+
+          {metodo && (
+            <div className="text-sm text-gray-600">
+              Quedan {plazasDisponibles} plazas disponibles para este método.
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="plazas" className="block font-bold text-sm mb-1">
+              ¿Cuántas plazas deseas reservar?
+            </label>
+            <input
+              type="number"
+              id="plazas"
+              value={plazas}
+              onChange={(e) => setPlazas(Number(e.target.value))}
+              min="1"
+              max={plazasDisponibles || 1}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={!metodo || plazas > plazasDisponibles}
+            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
+          >
+            Confirmar y pagar
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <img
+            src="/img/logoPCsin.png"
+            alt="La Purísima Conchi"
+            className="w-20 mx-auto"
+          />
+        </div>
       </div>
     </div>
   );
 }
+
+
+
+
 
 

@@ -1,38 +1,47 @@
 import React, { useState } from "react";
-// import { collection, query, where, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminFiltrarReservas = () => {
   const [fecha, setFecha] = useState("");
   const [resultados, setResultados] = useState([]);
 
-  // cuando pulse buscar, aquí filtro las reservas por fecha
   const handleBuscar = async () => {
     if (!fecha) {
       alert("Por favor, selecciona una fecha.");
       return;
     }
 
-    // consulta a Firebase
-    /*
-    const reservasRef = collection(db, "reservas");
-    const q = query(reservasRef, where("fecha", "==", fecha));
-    const snapshot = await getDocs(q);
-    const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setResultados(datos);
-    */
+    try {
+      const snapshot = await get(child(ref(dbRealtime), `reservas`));
+      const datos = [];
 
-    // ejemplo simulado
-    setResultados([
-      {
-        id: "r1",
-        clase: "Edición Premium",
-        usuario: "Ana Pérez",
-        turno: "Mañana",
-        estado: "Activa",
-        fecha,
-      },
-    ]);
+      snapshot.forEach((claseSnap) => {
+        const fechaSnap = claseSnap.child(fecha);
+        if (fechaSnap.exists()) {
+          fechaSnap.forEach((turnoSnap) => {
+            turnoSnap.forEach((metodoSnap) => {
+              metodoSnap.forEach((reservaSnap) => {
+                const reserva = reservaSnap.val();
+                datos.push({
+                  id: reservaSnap.key,
+                  clase: claseSnap.key,
+                  usuario: reserva.nombre || "Desconocido",
+                  turno: turnoSnap.key,
+                  estado: reserva.estado || "Pendiente",
+                });
+              });
+            });
+          });
+        }
+      });
+
+      setResultados(datos);
+    } catch (error) {
+      console.error("Error al cargar las reservas:", error);
+      alert("No se pudieron cargar las reservas.");
+    }
   };
 
   return (

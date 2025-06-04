@@ -1,7 +1,7 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
-import { getAuth } from "firebase/auth"; // 👉 Importa el módulo de autenticación
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBFQsRmXU7JKLpJp6O8RMJytIJQoxhNv7I",
@@ -15,8 +15,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-const db = getDatabase(app);
-const auth = getAuth(app); // 👉 Inicializa la autenticación
+const dbRealtime = getDatabase(app);  // ✅ Solo Realtime
+const auth = getAuth(app);            // ✅ Autenticación
 
-export { db, auth };
+export { dbRealtime, auth };          // ✅ Exporta solo lo que usas
+
+
 

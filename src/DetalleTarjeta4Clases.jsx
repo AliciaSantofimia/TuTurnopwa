@@ -4,25 +4,32 @@ import { useNavigate } from "react-router-dom";
 const DetalleTarjeta4Clases = () => {
   const navigate = useNavigate();
 
-  const handleComprar = () => {
+  const handleCanjear = () => {
     navigate("/resumen-pago", {
       state: {
-        clase: "4 clases de 3h al mes (tarjeta regalo)",
-        fecha: "",
-        turno: "",
-        metodo: "",
-        precio: "79€"
+        desdeTarjeta: true,
+        tipo: "4clases",
+        clase: "4 clases de 3h al mes",
+        precio: 125
       }
     });
   };
+  
 
   return (
     <div style={styles.body}>
       <div style={styles.container}>
-        <img
-          src="/cuatroclases.jpg"
-          alt="4 clases al mes"
-          style={styles.imagen}
+      <img
+  src="/img/4clasesregalo.jpg"
+  alt="4 clases al mes"
+  style={{
+    width: "100%",
+    maxWidth: "400px", // ✅ límite de ancho
+    height: "auto",
+    display: "block",
+    margin: "0 auto",
+    borderRadius: "12px"
+  }}
         />
         <div style={styles.content}>
           <h1 style={styles.titulo}>4 clases de 3h al mes</h1>
@@ -32,7 +39,7 @@ const DetalleTarjeta4Clases = () => {
             Ideal para aprender y desarrollar proyectos personales a tu ritmo.
             Incluye todos los materiales, esmaltes y cocción de tus piezas en el taller.
           </p>
-          <button onClick={handleComprar} style={styles.btn}>COMPRAR</button>
+          <button onClick={handleCanjear} style={styles.btn}>PAGAR</button>
         </div>
       </div>
     </div>
@@ -96,3 +103,5 @@ const styles = {
 };
 
 export default DetalleTarjeta4Clases;
+
+

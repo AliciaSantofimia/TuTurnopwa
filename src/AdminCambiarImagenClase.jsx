@@ -1,22 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-// import { db, storage } from "../firebaseConfig";
-// import { doc, updateDoc } from "firebase/firestore";
-// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref as dbRef, get, update } from "firebase/database";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { dbRealtime } from "./firebase";
+
 
 const AdminCambiarImagenClase = () => {
-  const { id } = useParams(); // aquí recibo el ID de la clase desde la URL
-  const [imagenActual, setImagenActual] = useState("/img/ejemplo-clase.jpg"); // esta será la imagen actual
+  const { id } = useParams();
+  const [imagenActual, setImagenActual] = useState("");
   const [nuevaImagen, setNuevaImagen] = useState(null);
 
-  // cuando selecciono una nueva imagen, la guardo en el estado
+  // Cargar la imagen actual desde Realtime DB
+  useEffect(() => {
+    const fetchImagen = async () => {
+      const snapshot = await get(dbRef(dbRealtime, `clases/${id}`));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setImagenActual(data.imagen || "/img/ejemplo-clase.jpg");
+      }
+    };
+    fetchImagen();
+  }, [id]);
+
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
       setNuevaImagen(e.target.files[0]);
     }
   };
 
-  // cuando pulse actualizar, se subirá la imagen (más adelante con Firebase)
   const handleActualizarImagen = async (e) => {
     e.preventDefault();
 
@@ -25,16 +36,22 @@ const AdminCambiarImagenClase = () => {
       return;
     }
 
-    // aquí iría la subida a Firebase Storage y actualización del documento
-    /*
-    const storageRef = ref(storage, `imagenes-clases/${id}`);
-    await uploadBytes(storageRef, nuevaImagen);
-    const url = await getDownloadURL(storageRef);
-    await updateDoc(doc(db, "clases", id), { imagen: url });
-    setImagenActual(url);
-    alert("Imagen actualizada correctamente");
-    */
-    alert("Imagen actualizada (simulado)");
+    try {
+      const storagePath = `imagenes-clases/${id}`;
+      const storageReference = storageRef(storage, storagePath);
+      await uploadBytes(storageReference, nuevaImagen);
+      const url = await getDownloadURL(storageReference);
+
+      await update(dbRef(dbRealtime, `clases/${id}`), {
+        imagen: url,
+      });
+
+      setImagenActual(url);
+      alert("Imagen actualizada correctamente");
+    } catch (error) {
+      console.error("Error al actualizar imagen:", error);
+      alert("Hubo un error al actualizar la imagen.");
+    }
   };
 
   return (

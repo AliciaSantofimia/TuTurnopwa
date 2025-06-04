@@ -1,29 +1,25 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import { doc, updateDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, update } from "firebase/database";
+import { dbRealtime } from "../firebase"; // ✅ Asegúrate de que esta ruta sea correcta
 
 const AdminBloquearUsuario = () => {
-  const { id } = useParams(); // aquí obtengo el ID del usuario desde la URL
+  const { id } = useParams(); // obtengo el ID del usuario desde la URL
   const navigate = useNavigate();
 
-  // cuando pulse "Bloquear", aquí actualizaré el estado del usuario
   const handleBloquear = async () => {
-    /*
     try {
-      const ref = doc(db, "usuarios", id);
-      await updateDoc(ref, { bloqueado: true });
+      const refUsuario = ref(dbRealtime, "usuarios/" + id);
+      await update(refUsuario, { bloqueado: true });
+
       alert("Usuario bloqueado correctamente");
       navigate("/admin/usuarios/listado");
     } catch (error) {
-      console.error("Error al bloquear usuario:", error);
+      console.error("❌ Error al bloquear usuario:", error);
+      alert("Ocurrió un error al bloquear el usuario.");
     }
-    */
-    alert("Usuario bloqueado (simulado)");
-    navigate("/admin/usuarios/listado");
   };
 
-  // si cancelo, simplemente vuelvo atrás
   const handleCancelar = () => {
     navigate("/admin/usuarios/perfil/" + id);
   };

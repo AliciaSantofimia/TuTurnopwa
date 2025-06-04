@@ -1,46 +1,51 @@
 import React, { useEffect, useState } from "react";
-// import { collection, getDocs, query, where } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, child } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminHistorialReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [fechaFiltro, setFechaFiltro] = useState("");
 
   useEffect(() => {
-    // aquí cargo las reservas reales desde Firebase más adelante
-    /*
     const cargarReservas = async () => {
-      let ref = collection(db, "reservas");
-      if (fechaFiltro) {
-        ref = query(ref, where("fecha", "==", fechaFiltro));
-      }
-      const snapshot = await getDocs(ref);
-      const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setReservas(datos);
-    };
-    cargarReservas();
-    */
+      try {
+        const snapshot = await get(child(ref(dbRealtime), "reservas"));
+        const datos = [];
 
-    // datos simulados mientras tanto
-    setReservas([
-      {
-        id: "r1",
-        clase: "Edición Premium",
-        usuario: "Ana Pérez",
-        fecha: "2025-06-10",
-        turno: "Mañana",
-        estado: "Completada",
-      },
-      {
-        id: "r2",
-        clase: "Creativo Plus",
-        usuario: "Carlos Ruiz",
-        fecha: "2025-06-12",
-        turno: "Tarde",
-        estado: "Activa",
-      },
-    ]);
-  }, [fechaFiltro]);
+        snapshot.forEach((claseSnap) => {
+          claseSnap.forEach((fechaSnap) => {
+            const fecha = fechaSnap.key;
+
+            fechaSnap.forEach((turnoSnap) => {
+              const turno = turnoSnap.key;
+
+              turnoSnap.forEach((tipoSnap) => {
+                tipoSnap.forEach((reservaSnap) => {
+                  const reserva = reservaSnap.val();
+                  datos.push({
+                    id: reservaSnap.key,
+                    clase: claseSnap.key,
+                    usuario: reserva.nombre || "Sin nombre",
+                    fecha,
+                    turno,
+                    estado: reserva.estado || "Activa",
+                  });
+                });
+              });
+            });
+          });
+        });
+
+        setReservas(datos);
+      } catch (error) {
+        console.error("Error al cargar reservas:", error);
+        alert("No se pudieron cargar las reservas.");
+      }
+    };
+
+    cargarReservas();
+  }, []);
 
   return (
     <div style={styles.body}>

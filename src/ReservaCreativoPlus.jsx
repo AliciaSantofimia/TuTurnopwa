@@ -1,36 +1,142 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { ref, get, update, push } from "firebase/database";
+import { dbRealtime } from "./firebase";
+import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
+
+const actualizarContadorReservas = async (uid) => {
+  const userRef = ref(dbRealtime, "usuarios/" + uid);
+  const snapshot = await get(userRef);
+
+  if (snapshot.exists()) {
+    const datos = snapshot.val();
+    const nuevasReservas = (datos.reservas || 0) + 1;
+
+    await update(userRef, {
+      reservas: nuevasReservas
+    });
+  }
+};
 
 export default function ReservaCreativoPlus() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
+  const [metodo, setMetodo] = useState("");
   const [plazas, setPlazas] = useState(1);
-  const navigate = useNavigate();
+  const [ocupadasTorno, setOcupadasTorno] = useState(0);
+  const [ocupadasModelado, setOcupadasModelado] = useState(0);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const desdeTarjeta = location.state?.desdeTarjeta || false;
+
+  const maxTorno = 12;
+  const maxModelado = 33;
+
+  useEffect(() => {
+    if (fecha) {
+      contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+        setOcupadasTorno(torno);
+        setOcupadasModelado(modelado);
+      });
+    }
+  }, [fecha]);
+
+  const plazasDisponibles =
+    metodo === "torno"
+      ? Math.max(maxTorno - ocupadasTorno, 0)
+      : metodo === "modelado a mano"
+      ? Math.max(maxModelado - ocupadasModelado, 0)
+      : 0;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Redirijo a la pantalla de resumen de pago con los datos de esta reserva
-    navigate("/resumen-pago", {
-      state: {
-        clase: "Creativo Plus",
-        fecha,
-        turno,
-        metodo: "", // puedes añadir más adelante si hay opción de torno/manual
-        precio: "60€", // o el precio correspondiente
-        plazas,
-      },
-    });
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      console.error("Usuario no autenticado.");
+      return;
+    }
+
+    if (plazas > plazasDisponibles) {
+      alert("No hay suficientes plazas disponibles para este método.");
+      return;
+    }
+
+    const reserva = {
+      clase: "Creativo Plus",
+      fecha,
+      turno,
+      metodo,
+      precio: "60€",
+      plazas: Number(plazas),
+      timestamp: new Date().toISOString(),
+      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal"
+    };
+
+    try {
+      const generalRef = ref(
+        dbRealtime,
+        `reservas/CreativoPlus/${fecha}/${turno}/${metodo}`
+      );
+      await push(generalRef, {
+        uid: user.uid,
+        ...reserva
+      });
+
+      const userHistorialRef = ref(
+        dbRealtime,
+        `usuarios/${user.uid}/historialReservas`
+      );
+      await push(userHistorialRef, reserva);
+
+      await actualizarContadorReservas(user.uid);
+
+      if (desdeTarjeta) {
+        navigate("/generar-codigo", {
+          state: reserva
+        });
+      } else {
+        navigate("/resumen-pago", {
+          state: reserva
+        });
+      }
+    } catch (err) {
+      console.error("Error al guardar la reserva:", err);
+    }
   };
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-6">
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/menu");
+            }
+          }}
+          className="text-sm text-blue-600 underline mb-4"
+        >
+          ← Volver
+        </button>
+
+        <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva – Creativo Plus
         </h1>
 
+        {desdeTarjeta && (
+          <p className="text-sm text-green-700 text-center font-medium mb-4">
+            Estás usando una tarjeta regalo 🎁
+          </p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Fecha */}
           <div>
             <label htmlFor="fecha" className="block font-bold text-sm mb-1">
               Selecciona el día:
@@ -47,6 +153,7 @@ export default function ReservaCreativoPlus() {
             />
           </div>
 
+          {/* Turno */}
           <div>
             <label htmlFor="turno" className="block font-bold text-sm mb-1">
               Selecciona el turno:
@@ -64,12 +171,36 @@ export default function ReservaCreativoPlus() {
             </select>
           </div>
 
-          <div className="text-sm text-gray-600">
-            Máximo 45 plazas por día.
-            <br />
-            12 plazas para torno y 33 para modelado a mano.
+          {/* Método */}
+          <div>
+            <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+              Método:
+            </label>
+            <select
+              id="metodo"
+              value={metodo}
+              onChange={(e) => setMetodo(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+              required
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="torno">Torno</option>
+              <option value="modelado a mano">Modelado a mano</option>
+            </select>
           </div>
 
+          {/* Disponibilidad */}
+          {metodo && (
+            <p className="text-sm text-green-700">
+              Quedan {plazasDisponibles} plazas disponibles para este método.
+            </p>
+          )}
+
+          <div className="text-sm text-gray-600">
+            Máximo 45 plazas por día (12 para torno y 33 para modelado a mano).
+          </div>
+
+          {/* Plazas */}
           <div>
             <label htmlFor="plazas" className="block font-bold text-sm mb-1">
               ¿Cuántas plazas deseas reservar?
@@ -78,24 +209,40 @@ export default function ReservaCreativoPlus() {
               type="number"
               id="plazas"
               value={plazas}
-              onChange={(e) => setPlazas(e.target.value)}
+              onChange={(e) => {
+                const valor = e.target.value;
+                if (valor === "") {
+                  setPlazas("");
+                  return;
+                }
+                const num = parseInt(valor, 10);
+                if (!isNaN(num) && num >= 1) {
+                  setPlazas(num);
+                }
+              }}
               min="1"
-              max="8"
+              max={plazasDisponibles || 1}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
               required
             />
           </div>
 
+          {/* Botón */}
           <button
             type="submit"
             className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
+            disabled={!metodo || plazas > plazasDisponibles}
           >
             Confirmar y pagar
           </button>
         </form>
 
         <div className="mt-8 text-center">
-          <img src="/img/logoPCsin.png" alt="La Purísima Conchi" className="w-20 mx-auto" />
+          <img
+            src="/img/logoPCsin.png"
+            alt="La Purísima Conchi"
+            className="w-20 mx-auto"
+          />
         </div>
       </div>
     </div>

@@ -4,36 +4,39 @@ import { useNavigate } from "react-router-dom";
 const DetalleTarjetaTornoIntensivo = () => {
   const navigate = useNavigate();
 
-  const handleComprar = () => {
+  const handleCanjear = () => {
     navigate("/resumen-pago", {
       state: {
-        clase: "Torno intensivo individual (tarjeta regalo)",
-        fecha: "",
-        turno: "",
-        metodo: "Torno",
-        precio: "85€"
+        desdeTarjeta: true,
+        tipo: "tornointensivo",
+        clase: "Torno intensivo individual",
+        precio: 85
       }
     });
   };
+  
 
   return (
     <div style={styles.body}>
       <div style={styles.container}>
         <img
-          src="/tornoalfarero.png"
+          src="/img/tornointensivoregalo.jpg"
           alt="Torno intensivo"
           style={styles.imagen}
+          onError={(e) => {
+            e.target.style.display = "none";
+            console.warn("No se pudo cargar la imagen tornointensivoindividualregalo.jpg");
+          }}
         />
         <div style={styles.content}>
           <h1 style={styles.titulo}>Torno intensivo individual (1 día)</h1>
           <div style={styles.precio}>85€</div>
           <p style={styles.descripcion}>
-            Vive una jornada completa de modelado con torno en una clase
-            totalmente personalizada. Ideal para quien busca una experiencia
-            única, en profundidad y centrada en torno. Todos los materiales,
-            cocciones y asesoramiento incluidos.
+            Vive una jornada completa de modelado con torno en una clase totalmente personalizada. Ideal para quien busca una experiencia única, en profundidad y centrada en torno. Todos los materiales, cocciones y asesoramiento incluidos.
           </p>
-          <button onClick={handleComprar} style={styles.btn}>COMPRAR</button>
+          <button onClick={handleCanjear} style={styles.btn}>
+            PAGAR
+          </button>
         </div>
       </div>
     </div>
@@ -93,7 +96,8 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     transition: "background-color 0.3s ease",
-  }
+  },
 };
 
 export default DetalleTarjetaTornoIntensivo;
+

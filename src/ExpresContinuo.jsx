@@ -1,14 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import BotonReserva from "./BotonReserva";
 
 const ExpresContinuo = () => {
-  const navigate = useNavigate();
-
-  // cuando el usuario pulsa reservar, le llevo a la pantalla de reserva de esta clase
-  const handleReserva = () => {
-    navigate("/reserva-exprescontinuo");
-  };
-
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -55,9 +48,10 @@ const ExpresContinuo = () => {
           parte del estudio.
         </p>
 
-        <button style={styles.boton} onClick={handleReserva}>
-          RESERVAR AHORA
-        </button>
+        {/* Botón reutilizable */}
+        <div style={{ textAlign: "center" }}>
+          <BotonReserva destino="/reserva-exprescontinuo" />
+        </div>
       </div>
     </div>
   );
@@ -133,17 +127,7 @@ const styles = {
     lineHeight: 1.5,
     marginBottom: 20,
   },
-  boton: {
-    display: "block",
-    margin: "auto",
-    padding: "12px 24px",
-    backgroundColor: "#f59e8f",
-    color: "white",
-    border: "none",
-    borderRadius: 30,
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
 };
 
 export default ExpresContinuo;
+

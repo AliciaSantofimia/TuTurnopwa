@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import { doc, getDoc, updateDoc } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get, update } from "firebase/database";
+import { dbRealtime } from "./firebase";
+
 
 const AdminEditarClase = () => {
-  const { id } = useParams(); // obtengo el ID de la clase desde la URL
+  const { id } = useParams(); // obtengo el ID (nombre de la clase)
   const navigate = useNavigate();
 
   const [clase, setClase] = useState({
@@ -16,20 +17,21 @@ const AdminEditarClase = () => {
   });
 
   useEffect(() => {
-    // más adelante conectaré con Firebase
-    /*
     const cargarClase = async () => {
-      const docRef = doc(db, "clases", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setClase(docSnap.data());
-      } else {
-        console.error("Clase no encontrada");
+      try {
+        const claseRef = ref(dbRealtime, `clases/${id}`);
+        const snapshot = await get(claseRef);
+        if (snapshot.exists()) {
+          setClase(snapshot.val());
+        } else {
+          console.error("Clase no encontrada");
+        }
+      } catch (error) {
+        console.error("Error al obtener la clase:", error);
       }
     };
 
     cargarClase();
-    */
   }, [id]);
 
   const handleChange = (e) => {
@@ -42,21 +44,16 @@ const AdminEditarClase = () => {
       return;
     }
 
-    /*
     try {
-      const ref = doc(db, "clases", id);
-      await updateDoc(ref, clase);
+      const claseRef = ref(dbRealtime, `clases/${id}`);
+      await update(claseRef, clase);
       alert("Clase actualizada correctamente");
       navigate("/admin/clases");
     } catch (error) {
       console.error("Error al actualizar la clase:", error);
+      alert("Error al guardar los cambios.");
     }
-    */
-    console.log("Clase editada:", clase);
-    alert("Clase actualizada correctamente (simulado)");
-    navigate("/admin/clases");
   };
-
 
   return (
     <div style={styles.body}>
@@ -151,4 +148,5 @@ const styles = {
 };
 
 export default AdminEditarClase;
+
 
