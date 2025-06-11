@@ -82,6 +82,18 @@ import AdminListadoUsuarios from "./AdminListadoUsuarios.jsx";
 import AdminPerfilUsuario from "./AdminPerfilUsuario.jsx";
 import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 
+// Opciones para reservar
+import DondeReservar from "./DondeReservar.jsx";
+import TheClub from "./TheClub.jsx";
+
+import ReservaTheClub from "./ReservaTheClub.jsx";
+import ReservaTearium from "./ReservaTearium.jsx";
+import ReservaKarma from "./ReservaKarma.jsx";
+
+import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
+import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
+import ResumenPagoKarma from "./ResumenPagoKarma.jsx";
+import TeariumKarma from "./TeariumKarma.jsx";
 
 
 // Legales
@@ -163,6 +175,21 @@ function App() {
         <Route path="/admin/usuarios/listado" element={<AdminListadoUsuarios />} />
         <Route path="/admin/usuarios/buscar" element={<AdminBuscarUsuario />} />
 
+        {/* Opciones de reservas*/}
+        <Route path="/dondereservar" element={<DondeReservar />} />
+        <Route path="/theclub" element={<TheClub />} />
+        
+        
+
+        <Route path="/reservatheclub" element={<ReservaTheClub />} />
+        <Route path="/reservatearium" element={<ReservaTearium />} />
+        <Route path="/reservakarma" element={<ReservaKarma />} />
+
+        <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />
+        <Route path="/resumenpagotearium" element={<ResumenPagoTearium />} />
+        <Route path="/resumenpagokarma" element={<ResumenPagoKarma />} />
+        <Route path="/teariumkarma" element={<TeariumKarma />} />
+        
 
 
         

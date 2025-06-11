@@ -14,7 +14,7 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/perfil");
+      navigate("/dondereservar");
     } catch (error) {
       setError("Error al iniciar sesión: " + error.message);
     }

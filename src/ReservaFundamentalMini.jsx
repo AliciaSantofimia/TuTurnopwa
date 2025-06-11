@@ -5,7 +5,7 @@ import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-// 🔄 Suma 1 al contador de reservas del usuario en Realtime DB
+//  Suma 1 al contador de reservas del usuario en Realtime DB
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
   const snapshot = await get(userRef);
@@ -27,6 +27,7 @@ export default function ReservaFundamentalMini() {
   const [plazas, setPlazas] = useState(1);
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
+  const [usuarioLogueado, setUsuarioLogueado] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,6 +35,14 @@ export default function ReservaFundamentalMini() {
 
   const maxTorno = 12;
   const maxModelado = 33;
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUsuarioLogueado(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (fecha) {
@@ -80,7 +89,6 @@ export default function ReservaFundamentalMini() {
       const user = auth.currentUser;
 
       if (user) {
-        // 1. Guardar en nodo global de reservas
         const generalRef = ref(
           dbRealtime,
           `reservas/FundamentalMini/${fecha}/${turno}/${metodo}`
@@ -90,18 +98,15 @@ export default function ReservaFundamentalMini() {
           ...reserva
         });
 
-        // 2. Guardar en historial del usuario
         const historialRef = ref(
           dbRealtime,
           `usuarios/${user.uid}/listaReservas`
         );
         await push(historialRef, reserva);
 
-        // 3. Actualizar contador
         await actualizarContadorReservas(user.uid);
       }
 
-      // 4. Redirigir según tipo
       if (desdeTarjeta) {
         navigate("/generar-codigo", { state: reserva });
       } else {
@@ -139,100 +144,104 @@ export default function ReservaFundamentalMini() {
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Fecha */}
-          <div>
-            <label htmlFor="fecha" className="block font-bold text-sm mb-1">
-              Selecciona el día:
-            </label>
-            <input
-              type="date"
-              id="fecha"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              min="2025-01-01"
-              max="2025-12-31"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            />
+        {!usuarioLogueado ? (
+          <div className="text-center bg-orange-100 text-orange-800 p-4 rounded-xl font-semibold text-base">
+            🔒 Inicia sesión para poder reservar esta clase.
           </div>
-
-          {/* Turno */}
-          <div>
-            <label htmlFor="turno" className="block font-bold text-sm mb-1">
-              Selecciona el turno:
-            </label>
-            <select
-              id="turno"
-              value={turno}
-              onChange={(e) => setTurno(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            >
-              <option value="">-- Elige turno --</option>
-              <option value="10:00-12:00">10:00 – 12:00</option>
-              <option value="12:00-14:00">12:00 – 14:00</option>
-              <option value="16:00-18:00">16:00 – 18:00</option>
-              <option value="18:00-20:00">18:00 – 20:00</option>
-            </select>
-          </div>
-
-          {/* Método */}
-          <div>
-            <label htmlFor="metodo" className="block font-bold text-sm mb-1">
-              Método:
-            </label>
-            <select
-              id="metodo"
-              value={metodo}
-              onChange={(e) => setMetodo(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            >
-              <option value="">-- Selecciona --</option>
-              <option value="torno">Torno</option>
-              <option value="modelado a mano">Modelado a mano</option>
-            </select>
-          </div>
-
-          {/* Disponibilidad */}
-          {metodo && (
-            <div className="text-sm text-gray-600">
-              Quedan {plazasDisponibles} plazas disponibles para este método.
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="fecha" className="block font-bold text-sm mb-1">
+                Selecciona el día:
+              </label>
+              <input
+                type="date"
+                id="fecha"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                min="2025-01-01"
+                max="2025-12-31"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              />
             </div>
-          )}
 
-          {/* Plazas */}
-          <div>
-            <label htmlFor="plazas" className="block font-bold text-sm mb-1">
-              ¿Cuántas plazas deseas reservar?
-            </label>
-            <input
-              type="number"
-              id="plazas"
-              value={plazas}
-              onChange={(e) => setPlazas(Number(e.target.value))}
-              min="1"
-              max={plazasDisponibles || 1}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                Selecciona el turno:
+              </label>
+              <select
+                id="turno"
+                value={turno}
+                onChange={(e) => setTurno(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              >
+                <option value="">-- Elige turno --</option>
+                <option value="10:00-12:00">10:00 – 12:00</option>
+                <option value="12:00-14:00">12:00 – 14:00</option>
+                <option value="16:00-18:00">16:00 – 18:00</option>
+                <option value="18:00-20:00">18:00 – 20:00</option>
+              </select>
+            </div>
 
-          <button
-            type="submit"
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-            disabled={!metodo || plazas > plazasDisponibles}
-          >
-            Confirmar y pagar
-          </button>
-        </form>
+            <div>
+              <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+                Método:
+              </label>
+              <select
+                id="metodo"
+                value={metodo}
+                onChange={(e) => setMetodo(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              >
+                <option value="">-- Selecciona --</option>
+                <option value="torno">Torno</option>
+                <option value="modelado a mano">Modelado a mano</option>
+              </select>
+            </div>
+
+            {metodo && (
+              <div className="text-sm text-gray-600">
+                Quedan {plazasDisponibles} plazas disponibles para este método.
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="plazas" className="block font-bold text-sm mb-1">
+                ¿Cuántas plazas deseas reservar?
+              </label>
+              <input
+                type="number"
+                id="plazas"
+                value={plazas}
+                onChange={(e) => setPlazas(Number(e.target.value))}
+                min="1"
+                max={plazasDisponibles || 1}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
+              disabled={!metodo || plazas > plazasDisponibles}
+            >
+              Confirmar y pagar
+            </button>
+          </form>
+        )}
 
         <div className="mt-8 text-center">
-          <img src="/img/logoPCsin.png" alt="La Purísima Conchi" className="w-20 mx-auto" />
+          <img
+            src="/img/logoPCsin.png"
+            alt="La Purísima Conchi"
+            className="w-20 mx-auto"
+          />
         </div>
       </div>
     </div>
   );
 }
-

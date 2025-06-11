@@ -14,7 +14,7 @@ const actualizarContadorReservas = async (uid) => {
     const nuevasReservas = (datos.reservas || 0) + 1;
 
     await update(userRef, {
-      reservas: nuevasReservas
+      reservas: nuevasReservas,
     });
   }
 };
@@ -26,6 +26,7 @@ const ReservaExpresContinuo = () => {
   const [plazas, setPlazas] = useState(1);
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
+  const [usuarioLogueado, setUsuarioLogueado] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +34,14 @@ const ReservaExpresContinuo = () => {
 
   const maxTorno = 12;
   const maxModelado = 33;
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUsuarioLogueado(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (fecha) {
@@ -71,7 +80,7 @@ const ReservaExpresContinuo = () => {
       precio,
       plazas: Number(plazas),
       timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal"
+      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",
     };
 
     try {
@@ -83,14 +92,12 @@ const ReservaExpresContinuo = () => {
         return;
       }
 
-      // Guardar en reservas generales
       const reservaRef = ref(
         dbRealtime,
         `reservas/ExpresContinuo/${fecha}/${turno}/${metodo}`
       );
       await push(reservaRef, { uid: user.uid, ...reserva });
 
-      // Guardar en historial del usuario
       const historialRef = ref(
         dbRealtime,
         `usuarios/${user.uid}/listaReservas`
@@ -119,67 +126,91 @@ const ReservaExpresContinuo = () => {
           <p style={styles.mensaje}>Estás usando una tarjeta regalo 🎁</p>
         )}
 
-        <label>Selecciona fecha:</label>
-        <input
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
-          style={styles.input}
-          min="2025-01-01"
-          max="2025-12-31"
-        />
+        {!usuarioLogueado ? (
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "1.1rem",
+              fontWeight: "bold",
+              color: "#ba4b3a",
+              backgroundColor: "#ffe9e4",
+              padding: "12px",
+              borderRadius: "12px",
+            }}
+          >
+            🔒 Inicia sesión para poder reservar esta clase.
+          </div>
+        ) : (
+          <>
+            <label>Selecciona fecha:</label>
+            <input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              style={styles.input}
+              min="2025-01-01"
+              max="2025-12-31"
+            />
 
-        <label>Selecciona turno:</label>
-        <select
-          value={turno}
-          onChange={(e) => setTurno(e.target.value)}
-          style={styles.input}
-        >
-          <option value="">-- Selecciona --</option>
-          <option value="10:00 - 13:00">Mañana (10:00 - 13:00)</option>
-          <option value="17:00 - 20:00">Tarde (17:00 - 20:00)</option>
-        </select>
+            <label>Selecciona turno:</label>
+            <select
+              value={turno}
+              onChange={(e) => setTurno(e.target.value)}
+              style={styles.input}
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="10:00 - 13:00">Mañana (10:00 - 13:00)</option>
+              <option value="17:00 - 20:00">Tarde (17:00 - 20:00)</option>
+            </select>
 
-        <label>Método:</label>
-        <select
-          value={metodo}
-          onChange={(e) => setMetodo(e.target.value)}
-          style={styles.input}
-        >
-          <option value="">-- Selecciona --</option>
-          <option value="torno">Torno - 27€</option>
-          <option value="general">General - 32€</option>
-        </select>
+            <label>Método:</label>
+            <select
+              value={metodo}
+              onChange={(e) => setMetodo(e.target.value)}
+              style={styles.input}
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="torno">Torno - 27€</option>
+              <option value="general">General - 32€</option>
+            </select>
 
-        {metodo && (
-          <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: 10 }}>
-            Quedan {plazasDisponibles} plazas disponibles para este método.
-          </p>
+            {metodo && (
+              <p
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#666",
+                  marginBottom: 10,
+                }}
+              >
+                Quedan {plazasDisponibles} plazas disponibles para este método.
+              </p>
+            )}
+
+            <label>¿Cuántas plazas?</label>
+            <input
+              type="number"
+              value={plazas}
+              onChange={(e) => {
+                const valor = e.target.value;
+                const num = parseInt(valor, 10);
+                if (!isNaN(num) && num >= 1) {
+                  setPlazas(num);
+                }
+              }}
+              min="1"
+              max={plazasDisponibles || 1}
+              style={styles.input}
+            />
+
+            <button
+              style={styles.boton}
+              onClick={handleReserva}
+              disabled={!metodo || plazas > plazasDisponibles}
+            >
+              Confirmar y pagar
+            </button>
+          </>
         )}
-
-        <label>¿Cuántas plazas?</label>
-        <input
-          type="number"
-          value={plazas}
-          onChange={(e) => {
-            const valor = e.target.value;
-            const num = parseInt(valor, 10);
-            if (!isNaN(num) && num >= 1) {
-              setPlazas(num);
-            }
-          }}
-          min="1"
-          max={plazasDisponibles || 1}
-          style={styles.input}
-        />
-
-        <button
-          style={styles.boton}
-          onClick={handleReserva}
-          disabled={!metodo || plazas > plazasDisponibles}
-        >
-          Confirmar y pagar
-        </button>
 
         <button
           onClick={() => {
@@ -258,6 +289,7 @@ const styles = {
 };
 
 export default ReservaExpresContinuo;
+
 
 
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasTotalesPorDia } from "./utils/contarPlazasDia";
@@ -9,7 +9,6 @@ const actualizarContadorReservas = async (uid) => {
   try {
     const userRef = ref(dbRealtime, `usuarios/${uid}`);
     const snapshot = await get(userRef);
-
     if (snapshot.exists()) {
       const datos = snapshot.val();
       const nuevasReservas = (datos.reservas || 0) + 1;
@@ -25,6 +24,7 @@ export default function ReservaPintarCeramica() {
   const [turno, setTurno] = useState("");
   const [plazas, setPlazas] = useState(1);
   const [plazasOcupadas, setPlazasOcupadas] = useState(0);
+  const [usuarioAutenticado, setUsuarioAutenticado] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,6 +32,14 @@ export default function ReservaPintarCeramica() {
 
   const maxPlazas = 33;
   const plazasDisponibles = Math.max(maxPlazas - plazasOcupadas, 0);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUsuarioAutenticado(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (fecha) {
@@ -76,19 +84,14 @@ export default function ReservaPintarCeramica() {
     };
 
     try {
-      // 1. Guardar en nodo global sin espacios
-      const reservaRef = ref(dbRealtime, `reservas/Pinta tu pieza de cerámica/${fecha}/${turno}/general`)
-
+      const reservaRef = ref(dbRealtime, `reservas/Pinta tu pieza de cerámica/${fecha}/${turno}/general`);
       await push(reservaRef, { uid, ...reserva });
 
-      // 2. Guardar en historial del usuario
       const userHistorialRef = ref(dbRealtime, `usuarios/${uid}/listaReservas`);
       await push(userHistorialRef, reserva);
 
-      // 3. Actualizar contador
       await actualizarContadorReservas(uid);
 
-      // 4. Redirigir según si viene de tarjeta
       if (desdeTarjeta) {
         navigate("/generar-codigo", { state: reserva });
       } else {
@@ -120,87 +123,83 @@ export default function ReservaPintarCeramica() {
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Fecha */}
-          <div>
-            <label htmlFor="fecha" className="block font-bold text-sm mb-1">
-              Selecciona el día:
-            </label>
-            <input
-              type="date"
-              id="fecha"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              min="2025-01-01"
-              max="2025-12-31"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            />
+        {!usuarioAutenticado ? (
+          <div className="text-center text-red-600 font-medium">
+            🔒 Inicia sesión para poder reservar esta clase.
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="fecha" className="block font-bold text-sm mb-1">
+                Selecciona el día:
+              </label>
+              <input
+                type="date"
+                id="fecha"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                min="2025-01-01"
+                max="2025-12-31"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              />
+            </div>
 
-          {/* Turno */}
-          <div>
-            <label htmlFor="turno" className="block font-bold text-sm mb-1">
-              Selecciona el turno:
-            </label>
-            <select
-              id="turno"
-              value={turno}
-              onChange={(e) => setTurno(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
+            <div>
+              <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                Selecciona el turno:
+              </label>
+              <select
+                id="turno"
+                value={turno}
+                onChange={(e) => setTurno(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              >
+                <option value="">-- Elige turno --</option>
+                <option value="10:00-12:00">10:00 – 12:00</option>
+                <option value="12:00-14:00">12:00 – 14:00</option>
+                <option value="16:00-18:00">16:00 – 18:00</option>
+                <option value="18:00-20:00">18:00 – 20:00</option>
+              </select>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              Máximo {maxPlazas} plazas por día.
+              <br />
+              Quedan {plazasDisponibles} plazas disponibles para este día.
+            </div>
+
+            <div>
+              <label htmlFor="plazas" className="block font-bold text-sm mb-1">
+                ¿Cuántas plazas deseas reservar?
+              </label>
+              <input
+                type="number"
+                id="plazas"
+                value={plazas}
+                onChange={(e) => setPlazas(e.target.value)}
+                min="1"
+                max={plazasDisponibles || 1}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
+              disabled={!plazas || plazas > plazasDisponibles}
             >
-              <option value="">-- Elige turno --</option>
-              <option value="10:00-12:00">10:00 – 12:00</option>
-              <option value="12:00-14:00">12:00 – 14:00</option>
-              <option value="16:00-18:00">16:00 – 18:00</option>
-              <option value="18:00-20:00">18:00 – 20:00</option>
-            </select>
-          </div>
-
-          {/* Info plazas */}
-          <div className="text-sm text-gray-600">
-            Máximo {maxPlazas} plazas por día.
-            <br />
-            Quedan {plazasDisponibles} plazas disponibles para este día.
-          </div>
-
-          {/* Plazas */}
-          <div>
-            <label htmlFor="plazas" className="block font-bold text-sm mb-1">
-              ¿Cuántas plazas deseas reservar?
-            </label>
-            <input
-              type="number"
-              id="plazas"
-              value={plazas}
-              onChange={(e) => setPlazas(e.target.value)}
-              min="1"
-              max={plazasDisponibles || 1}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-              required
-            />
-          </div>
-
-          {/* Botón */}
-          <button
-            type="submit"
-            className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-            disabled={!plazas || plazas > plazasDisponibles}
-          >
-            Confirmar y pagar
-          </button>
-        </form>
+              Confirmar y pagar
+            </button>
+          </form>
+        )}
 
         <div className="mt-8 text-center">
-          <img
-            src="/img/logoPCsin.png"
-            alt="La Purísima Conchi"
-            className="w-20 mx-auto"
-          />
+          <img src="/img/logoPCsin.png" alt="La Purísima Conchi" className="w-20 mx-auto" />
         </div>
       </div>
     </div>
   );
 }
-
