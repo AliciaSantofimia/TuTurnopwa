@@ -63,7 +63,7 @@ export default function ReservaPintarCeramica() {
 
     const uid = user.uid;
     const reserva = {
-      clase: "Pintar Cerámica",
+      clase: "Pinta tu pieza de cerámica",
       fecha,
       turno,
       metodo: "general",
@@ -77,7 +77,8 @@ export default function ReservaPintarCeramica() {
 
     try {
       // 1. Guardar en nodo global sin espacios
-      const reservaRef = ref(dbRealtime, `reservas/PintarCeramica/${fecha}/${turno}/general`);
+      const reservaRef = ref(dbRealtime, `reservas/Pinta tu pieza de cerámica/${fecha}/${turno}/general`)
+
       await push(reservaRef, { uid, ...reserva });
 
       // 2. Guardar en historial del usuario

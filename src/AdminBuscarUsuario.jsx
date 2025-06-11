@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { ref, get } from "firebase/database";
-import { dbRealtime } from "../firebase";
+import { dbRealtime } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 const AdminBuscarUsuario = () => {
   const [busqueda, setBusqueda] = useState("");
   const [resultados, setResultados] = useState([]);
+  const navigate = useNavigate();
 
   const handleBuscar = async () => {
-    if (!busqueda.trim()) {
+    const term = busqueda.trim().toLowerCase();
+    if (!term) {
       alert("Por favor, introduce un nombre o email");
       return;
     }
@@ -21,14 +24,13 @@ const AdminBuscarUsuario = () => {
         const id = childSnap.key;
         const nombre = data.nombre?.toLowerCase() || "";
         const email = data.email?.toLowerCase() || "";
-        const term = busqueda.toLowerCase();
 
         if (nombre.includes(term) || email.includes(term)) {
           encontrados.push({
             id,
             nombre: data.nombre,
             email: data.email,
-            reservas: data.reservas?.length || 0,
+            reservas: data.reservas || 0,
           });
         }
       });
@@ -52,6 +54,7 @@ const AdminBuscarUsuario = () => {
           style={styles.input}
         />
         <button onClick={handleBuscar} style={styles.btn}>Buscar</button>
+        <button onClick={() => navigate("/admin/usuarios")} style={styles.volverBtn}>🔙 Volver</button>
       </div>
 
       {resultados.length > 0 && (
@@ -62,7 +65,13 @@ const AdminBuscarUsuario = () => {
               <li key={usuario.id} style={styles.usuario}>
                 <strong>{usuario.nombre}</strong><br />
                 <span>{usuario.email}</span><br />
-                <span>Reservas: {usuario.reservas}</span>
+                <span>Reservas: {usuario.reservas}</span><br />
+                <button
+                  style={styles.verBtn}
+                  onClick={() => navigate(`/admin/usuarios/perfil/${usuario.id}`)}
+                >
+                  Ver perfil
+                </button>
               </li>
             ))}
           </ul>
@@ -78,7 +87,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     padding: 30,
     textAlign: "center",
-    minHeight: "100vh"
+    minHeight: "100vh",
   },
   contenedor: {
     maxWidth: 500,
@@ -90,7 +99,7 @@ const styles = {
   },
   titulo: {
     marginBottom: 20,
-    color: "#444"
+    color: "#444",
   },
   input: {
     width: "100%",
@@ -109,6 +118,17 @@ const styles = {
     color: "white",
     fontSize: 16,
     cursor: "pointer",
+    marginRight: 10,
+  },
+  volverBtn: {
+    marginTop: 20,
+    padding: "12px 24px",
+    borderRadius: 12,
+    backgroundColor: "#e1e1e1",
+    border: "none",
+    color: "#333",
+    fontSize: 16,
+    cursor: "pointer",
   },
   resultados: {
     marginTop: 40,
@@ -120,7 +140,17 @@ const styles = {
     borderRadius: 12,
     boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
     maxWidth: 400,
-  }
+  },
+  verBtn: {
+    marginTop: 10,
+    padding: "8px 16px",
+    borderRadius: 10,
+    backgroundColor: "#ccd8ff",
+    border: "none",
+    cursor: "pointer",
+  },
 };
 
 export default AdminBuscarUsuario;
+
+

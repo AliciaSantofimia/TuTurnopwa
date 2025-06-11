@@ -1,50 +1,43 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ref, get, child } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-
 const AdminVerInscripciones = () => {
-  const { id } = useParams(); // id de la clase
+  const { id } = useParams(); // id de la clase, como "BásicoEsencial"
   const [inscripciones, setInscripciones] = useState([]);
-  const [nombreClase, setNombreClase] = useState("...");
+  const [nombreClase, setNombreClase] = useState(id || "...");
 
   useEffect(() => {
     const cargarInscripciones = async () => {
       try {
-        const snapshot = await get(child(ref(dbRealtime), `reservas`));
+        const snapshot = await get(ref(dbRealtime, `reservas/${id}`));
         const resultados = [];
 
-        snapshot.forEach((claseSnap) => {
-          const claseId = claseSnap.key;
+        if (snapshot.exists()) {
+          snapshot.forEach((fechaSnap) => {
+            const fecha = fechaSnap.key;
 
-          if (claseId === id) {
-            setNombreClase(claseId); // o puedes mapearlo a un nombre más bonito si tienes ese dato
+            fechaSnap.forEach((turnoSnap) => {
+              const turno = turnoSnap.key;
 
-            claseSnap.forEach((fechaSnap) => {
-              const fecha = fechaSnap.key;
+              turnoSnap.forEach((tipoSnap) => {
+                const tipo = tipoSnap.key;
 
-              fechaSnap.forEach((turnoSnap) => {
-                const turno = turnoSnap.key;
-
-                turnoSnap.forEach((tipoSnap) => {
-                  const tipo = tipoSnap.key;
-
-                  tipoSnap.forEach((reservaSnap) => {
-                    const data = reservaSnap.val();
-                    resultados.push({
-                      nombre: data.nombre || "—",
-                      email: data.email || "—",
-                      fecha,
-                      turno,
-                      tipo
-                    });
+                tipoSnap.forEach((reservaSnap) => {
+                  const data = reservaSnap.val();
+                  resultados.push({
+                    nombre: data.nombre || "—",
+                    email: data.email || "—",
+                    fecha: data.fecha || fecha,
+                    turno: data.turno || turno,
+                    tipo: data.metodo || tipo,
                   });
                 });
               });
             });
-          }
-        });
+          });
+        }
 
         setInscripciones(resultados);
       } catch (error) {
@@ -78,6 +71,13 @@ const AdminVerInscripciones = () => {
               <td style={styles.td}>{item.tipo}</td>
             </tr>
           ))}
+          {inscripciones.length === 0 && (
+            <tr>
+              <td colSpan="5" style={{ textAlign: "center", padding: 20 }}>
+                No hay inscripciones registradas para esta clase.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

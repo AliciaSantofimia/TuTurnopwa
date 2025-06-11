@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { ref, get, child } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
-
+import { useNavigate } from "react-router-dom";
 
 const AdminHistorialReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [fechaFiltro, setFechaFiltro] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarReservas = async () => {
       try {
-        const snapshot = await get(child(ref(dbRealtime), "reservas"));
+        const snapshot = await get(ref(dbRealtime, "reservas"));
         const datos = [];
 
-        snapshot.forEach((claseSnap) => {
-          claseSnap.forEach((fechaSnap) => {
+        if (snapshot.exists()) {
+          snapshot.forEach((fechaSnap) => {
             const fecha = fechaSnap.key;
 
             fechaSnap.forEach((turnoSnap) => {
@@ -23,19 +24,21 @@ const AdminHistorialReservas = () => {
               turnoSnap.forEach((tipoSnap) => {
                 tipoSnap.forEach((reservaSnap) => {
                   const reserva = reservaSnap.val();
+
                   datos.push({
                     id: reservaSnap.key,
-                    clase: claseSnap.key,
-                    usuario: reserva.nombre || "Sin nombre",
+                    clase: reserva.clase || "—",
+                    usuario: reserva.usuario || "—",
                     fecha,
                     turno,
                     estado: reserva.estado || "Activa",
+                    tieneNotas: reserva.notasInternas?.length > 0 || false,
                   });
                 });
               });
             });
           });
-        });
+        }
 
         setReservas(datos);
       } catch (error) {
@@ -58,10 +61,7 @@ const AdminHistorialReservas = () => {
           onChange={(e) => setFechaFiltro(e.target.value)}
           style={styles.input}
         />
-        <button
-          style={styles.btn}
-          onClick={() => setFechaFiltro("")}
-        >
+        <button style={styles.btn} onClick={() => setFechaFiltro("")}>
           Limpiar filtro
         </button>
       </div>
@@ -78,14 +78,23 @@ const AdminHistorialReservas = () => {
         </thead>
         <tbody>
           {reservas
-            .filter(r => !fechaFiltro || r.fecha === fechaFiltro)
+            .filter((r) => !fechaFiltro || r.fecha === fechaFiltro)
             .map((r) => (
               <tr key={r.id}>
                 <td style={styles.td}>{r.clase}</td>
                 <td style={styles.td}>{r.usuario}</td>
                 <td style={styles.td}>{r.fecha}</td>
                 <td style={styles.td}>{r.turno}</td>
-                <td style={styles.td}>{r.estado}</td>
+                <td style={styles.td}>
+                  {r.estado}
+                  <br />
+                  <button
+                    style={styles.btnNota}
+                    onClick={() => navigate(`/admin/reservas/nota/${r.id}`)}
+                  >
+                    📝 Nota {r.tieneNotas && "📌"}
+                  </button>
+                </td>
               </tr>
             ))}
         </tbody>
@@ -147,6 +156,19 @@ const styles = {
     borderBottom: "1px solid #eee",
     textAlign: "left",
   },
+  btnNota: {
+    marginTop: 5,
+    backgroundColor: "#4a90e2",
+    color: "#fff",
+    border: "none",
+    borderRadius: 6,
+    padding: "5px 10px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+  },
 };
 
 export default AdminHistorialReservas;
+
+
+

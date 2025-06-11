@@ -7,6 +7,44 @@ import Menu from "./Menu.jsx";
 import HistorialTarjetasRegalo from "./HistorialTarjetasRegalo.jsx";
 import HistorialReservasUsuario from "./HistorialReservasUsuario.jsx";
 
+// Componente para mostrar avisos
+const AvisosUsuario = () => {
+  const [avisos, setAvisos] = useState([]);
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const avisosRef = ref(dbRealtime, `usuarios/${user.uid}/avisos`);
+    get(avisosRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const lista = Object.values(data);
+        // Ordena por fecha descendente si lo deseas
+        setAvisos(lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)));
+      }
+    });
+  }, []);
+
+  if (avisos.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-lg font-semibold mb-2 text-red-700">📢 Avisos recibidos</h2>
+      <ul className="text-sm">
+        {avisos.map((aviso, index) => (
+          <li
+            key={index}
+            className="mb-2 bg-red-50 p-2 rounded-lg border border-red-200"
+          >
+            <strong>{new Date(aviso.fecha).toLocaleDateString("es-ES")}:</strong> {aviso.mensaje}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
 export default function PerfilUsuario() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
@@ -71,17 +109,18 @@ export default function PerfilUsuario() {
           </button>
         </div>
 
-        {/* Historial de tarjetas regalo */}
+        {/* Avisos */}
+        <AvisosUsuario />
+
+        {/* Historial */}
         <div className="mb-8">
           <HistorialTarjetasRegalo />
         </div>
 
-        {/* Historial de reservas realizadas */}
         <div className="mb-8">
           <HistorialReservasUsuario />
         </div>
 
-        {/* Enlaces legales */}
         <div className="text-center mt-4">
           <button
             onClick={() => navigate("/politica-privacidad")}
@@ -107,8 +146,3 @@ export default function PerfilUsuario() {
     </div>
   );
 }
-
-
-
-
-

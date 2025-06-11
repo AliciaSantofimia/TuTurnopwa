@@ -19,7 +19,7 @@ export default function CondicionesUso() {
             1. Información General
           </h2>
           <p>
-            Este sitio es gestionado por [Nombre del Taller]. Al acceder y utilizar esta aplicación o sitio web, aceptas cumplir con las condiciones aquí descritas.
+            Este sitio es gestionado por La Purísima Conchi. Al acceder y utilizar esta aplicación o sitio web, aceptas cumplir con las condiciones aquí descritas.
           </p>
         </section>
 
@@ -55,7 +55,7 @@ export default function CondicionesUso() {
             5. Propiedad Intelectual
           </h2>
           <p>
-            Todo el contenido (imágenes, textos, logotipos, diseños) es propiedad de [Nombre del Taller] o se usa con licencia. Queda prohibida su reproducción total o parcial sin autorización expresa.
+            Todo el contenido (imágenes, textos, logotipos, diseños) es propiedad de La Pursísima Conchi o se usa con licencia. Queda prohibida su reproducción total o parcial sin autorización expresa.
           </p>
         </section>
 

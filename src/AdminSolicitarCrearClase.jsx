@@ -1,47 +1,49 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ref, set } from "firebase/database";
+import { ref, push } from "firebase/database";
+import { getAuth } from "firebase/auth";
 import { dbRealtime } from "./firebase";
-
 
 const AdminCrearClase = () => {
   const navigate = useNavigate();
-
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [horario, setHorario] = useState("");
   const [plazas, setPlazas] = useState("");
   const [imagen, setImagen] = useState("");
 
-  const handleCrearClase = async () => {
+  const handleEnviarSolicitud = async () => {
     if (!nombre || !descripcion || !horario || !plazas) {
       alert("Por favor, completa todos los campos.");
       return;
     }
 
-    const nuevaClase = {
-      nombre,
-      descripcion,
-      horario,
-      plazas: parseInt(plazas),
-      imagen,
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const email = user?.email || "—";
+
+    const solicitud = {
+      clase: nombre.trim(),
+      tipo: "crear",
+      mensaje: `Descripción: ${descripcion}\nHorario: ${horario}\nPlazas: ${plazas}\nImagen: ${imagen || "—"}`,
+      fecha: new Date().toISOString(),
+      autor: email,
     };
 
     try {
-      const claseRef = ref(dbRealtime, `clases/${nombre}`);
-      await set(claseRef, nuevaClase);
-      alert("Clase creada con éxito");
-      navigate("/admin/clases");
+      await push(ref(dbRealtime, "solicitudesCambiosClases"), solicitud);
+      alert("✅ Solicitud de creación enviada correctamente.");
+      navigate("/admin");
     } catch (error) {
-      console.error("Error al crear la clase:", error);
-      alert("Hubo un error al guardar la clase.");
+      console.error("Error al enviar solicitud:", error);
+      alert("❌ No se pudo enviar la solicitud.");
     }
   };
 
   return (
     <div style={styles.body}>
       <div style={styles.formulario}>
-        <h2 style={styles.titulo}>Crear nueva clase</h2>
+        <h2 style={styles.titulo}>📋 Solicitar nueva clase</h2>
         <input
           type="text"
           placeholder="Nombre de la clase"
@@ -71,13 +73,13 @@ const AdminCrearClase = () => {
         />
         <input
           type="text"
-          placeholder="Ruta de la imagen"
+          placeholder="Ruta de la imagen (opcional)"
           value={imagen}
           onChange={(e) => setImagen(e.target.value)}
           style={styles.input}
         />
-        <button onClick={handleCrearClase} style={styles.btn}>
-          Crear clase
+        <button onClick={handleEnviarSolicitud} style={styles.btn}>
+          📩 Enviar solicitud
         </button>
       </div>
     </div>
@@ -126,3 +128,4 @@ const styles = {
 };
 
 export default AdminCrearClase;
+

@@ -37,7 +37,9 @@ export default function Portada() {
 
       <button
         className="text-sm text-gray-700 underline mb-12"
-        onClick={() => navigate("/clases")}
+        onClick={() => navigate("/clases-solo")}
+
+
       >
         Ver clases sin registrarse
       </button>

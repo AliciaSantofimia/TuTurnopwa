@@ -1,48 +1,68 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 const AdminListadoClases = () => {
   const navigate = useNavigate();
+  const [clases, setClases] = useState([]);
 
-  // Estado temporal: se sustituirá con datos reales desde Firebase
-  const [clases, setClases] = useState([
-    {
-      id: "clase1",
-      nombre: "Edición Premium",
-      turnos: "Mañana y tarde",
-    },
-    {
-      id: "clase2",
-      nombre: "Crea tu pieza favorita",
-      turnos: "Sábados por la mañana",
-    }
-  ]);
-
-  // Más adelante: cargar desde Firebase
   useEffect(() => {
-    // Aquí se llamaría a Firebase para obtener las clases
-    // Por ahora usamos los datos simulados
+    const cargarClases = async () => {
+      try {
+        const snapshot = await get(ref(dbRealtime, "clases"));
+        if (snapshot.exists()) {
+          const datos = [];
+          snapshot.forEach((child) => {
+            datos.push({
+              id: child.key,
+              ...child.val(),
+            });
+          });
+          setClases(datos);
+        } else {
+          console.log("No hay clases disponibles.");
+        }
+      } catch (error) {
+        console.error("Error al cargar clases desde Firebase:", error);
+      }
+    };
+
+    cargarClases();
   }, []);
 
-  const handleNavegar = (ruta, id) => {
-    navigate(`/admin/clases/${ruta}/${id}`);
+  const handleVerInscripciones = (nombreClase) => {
+    console.log("➡️ Ir a inscripciones de:", nombreClase); // 🧪 Depuración
+    navigate(`/admin/clases/inscripciones/${nombreClase}`);
   };
 
   return (
     <div style={styles.body}>
-      <h2 style={styles.titulo}>Listado de Clases</h2>
-      {clases.map((clase) => (
-        <div key={clase.id} style={styles.clase}>
-          <strong>{clase.nombre}</strong>
-          <p>Turnos: {clase.turnos}</p>
-          <div style={styles.acciones}>
-            <button onClick={() => handleNavegar("editar", clase.id)} style={styles.link}>✏️ Editar</button>
-            <button onClick={() => handleNavegar("eliminar", clase.id)} style={styles.link}>🗑️ Eliminar</button>
-            <button onClick={() => handleNavegar("imagen", clase.id)} style={styles.link}>🖼️ Cambiar imagen</button>
-            <button onClick={() => handleNavegar("inscripciones", clase.id)} style={styles.link}>👥 Ver inscripciones</button>
+      <h2 style={styles.titulo}>📋 Listado de Clases</h2>
+
+      {clases.length === 0 ? (
+        <p style={{ textAlign: "center" }}>No hay clases disponibles.</p>
+      ) : (
+        clases.map((clase) => (
+          <div key={clase.id} style={styles.clase}>
+            <strong>{clase.nombre || clase.id}</strong>
+            <p>
+              Turnos:{" "}
+              {Array.isArray(clase.turnos)
+                ? clase.turnos.join(", ")
+                : clase.turnos || "No definidos"}
+            </p>
+            <div style={styles.acciones}>
+              <button
+                onClick={() => handleVerInscripciones(clase.nombre)}
+                style={styles.link}
+              >
+                👥 Ver inscripciones
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 };
@@ -53,12 +73,12 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     padding: 30,
     color: "#333",
-    minHeight: "100vh"
+    minHeight: "100vh",
   },
   titulo: {
     textAlign: "center",
     color: "#444",
-    marginBottom: 30
+    marginBottom: 30,
   },
   clase: {
     backgroundColor: "#fff",
@@ -72,14 +92,15 @@ const styles = {
     marginTop: 10,
   },
   link: {
-    marginRight: 10,
     fontSize: 14,
-    color: "#666",
+    color: "#4a90e2",
     background: "none",
     border: "none",
     cursor: "pointer",
-    textDecoration: "underline"
-  }
+    textDecoration: "underline",
+  },
 };
 
 export default AdminListadoClases;
+
+

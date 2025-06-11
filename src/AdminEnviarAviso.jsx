@@ -1,13 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ref, push } from "firebase/database";
+import { ref, push, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
-
 
 const AdminEnviarAviso = () => {
   const { id } = useParams(); // ID del usuario desde la URL
   const navigate = useNavigate();
   const [mensaje, setMensaje] = useState("");
+  const [nombreUsuario, setNombreUsuario] = useState("");
+
+  // Obtener el nombre del usuario
+  useEffect(() => {
+    const obtenerNombre = async () => {
+      const snapshot = await get(child(ref(dbRealtime), `usuarios/${id}/nombre`));
+      if (snapshot.exists()) {
+        setNombreUsuario(snapshot.val());
+      }
+    };
+    obtenerNombre();
+  }, [id]);
 
   const handleEnviar = async () => {
     if (!mensaje.trim()) {
@@ -15,11 +26,22 @@ const AdminEnviarAviso = () => {
       return;
     }
 
+    const fechaISO = new Date().toISOString();
+
     try {
+      // Guardar en avisos del usuario (usamos 'mensaje')
       const avisosRef = ref(dbRealtime, `usuarios/${id}/avisos`);
       await push(avisosRef, {
-        texto: mensaje,
-        fecha: new Date().toISOString(),
+        mensaje: mensaje,
+        fecha: fechaISO,
+      });
+
+      // Guardar también en notificaciones generales
+      const notificacionesRef = ref(dbRealtime, "notificaciones");
+      await push(notificacionesRef, {
+        usuario: nombreUsuario || "Desconocido",
+        mensaje: mensaje,
+        fecha: fechaISO,
       });
 
       alert("Aviso enviado correctamente");
@@ -85,5 +107,8 @@ const styles = {
 };
 
 export default AdminEnviarAviso;
+
+
+
 
 

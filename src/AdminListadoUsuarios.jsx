@@ -1,32 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../firebaseConfig";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 const AdminListadoUsuarios = () => {
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
 
-  // aquí más adelante cargaré los usuarios reales desde Firebase
   useEffect(() => {
-    /*
     const obtenerUsuarios = async () => {
-      const querySnapshot = await getDocs(collection(db, "usuarios"));
-      const datos = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setUsuarios(datos);
+      const usuariosRef = ref(dbRealtime, "usuarios/");
+      const snapshot = await get(usuariosRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const lista = Object.keys(data)
+          .filter((uid) => data[uid].nombre && data[uid].email)
+          .map((uid) => ({
+            id: uid,
+            nombre: data[uid].nombre,
+            email: data[uid].email,
+            reservas: typeof data[uid].reservas === "number" ? data[uid].reservas : 0,
+
+          }));
+        setUsuarios(lista);
+      }
     };
 
     obtenerUsuarios();
-    */
-
-    // ejemplo temporal mientras no conecto Firebase
-    setUsuarios([
-      { id: "u1", nombre: "Ana Pérez", email: "ana@email.com", reservas: 3 },
-      { id: "u2", nombre: "Juan López", email: "juan@email.com", reservas: 5 },
-    ]);
   }, []);
 
   const verPerfil = (id) => {
@@ -58,6 +59,13 @@ const AdminListadoUsuarios = () => {
               </td>
             </tr>
           ))}
+          {usuarios.length === 0 && (
+            <tr>
+              <td colSpan="4" style={{ textAlign: "center", padding: 20 }}>
+                No hay usuarios registrados todavía.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

@@ -7,6 +7,10 @@ import Registro from "./Registro.jsx";
 import Menu from "./Menu.jsx";
 import PerfilUsuario from "./PerfilUsuario.jsx";
 import EditarPerfil from "./EditarPerfil.jsx";
+import ClasesSoloVista from "./ClasesSoloVista.jsx";
+
+
+
 
 // Clases y reservas
 import Clases from "./Clases.jsx";
@@ -47,11 +51,11 @@ import PagoFallido from "./PagoFallido.jsx";
 
 // Admin panel y gestión general
 import AdminPanel from "./AdminPanel.jsx";
-import AdminGestionClases from "./AdminGestionClases.jsx";
-import AdminGestionUsuarios from "./AdminGestionUsuarios.jsx";
-import AdminGestionReservas from "./AdminGestionReservas.jsx";
 import AdminNotificaciones from "./AdminNotificaciones.jsx";
 import AdminEnviarAviso from "./AdminEnviarAviso.jsx";
+import AdminSolicitudes from "./AdminSolicitudes.jsx";
+import AdminSolicitarEliminacion from "./AdminSolicitarEliminacion.jsx";
+
 
 // Admin historial
 import AdminHistoriales from "./AdminHistoriales.jsx";
@@ -59,8 +63,8 @@ import AdminHistorialReservas from "./AdminHistorialReservas.jsx";
 import AdminHistorialBonos from "./AdminHistorialBonos.jsx";
 
 // Admin clases
-import AdminCrearClase from "./AdminCrearClase.jsx";
-import AdminEditarClase from "./AdminEditarClase.jsx";
+import AdminSolicitarCrearClase from "./AdminSolicitarCrearClase";
+import AdminSolicitarEditarClase from "./AdminSolicitarEditarClase.jsx";
 import AdminCambiarImagenClase from "./AdminCambiarImagenClase.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
 import AdminListadoClases from "./AdminListadoClases.jsx";
@@ -76,6 +80,8 @@ import AdminUsoBonos from "./AdminUsoBonos.jsx";
 // Admin usuarios
 import AdminListadoUsuarios from "./AdminListadoUsuarios.jsx";
 import AdminPerfilUsuario from "./AdminPerfilUsuario.jsx";
+import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
+
 
 
 // Legales
@@ -97,6 +103,8 @@ function App() {
         <Route path="/menu" element={<Menu />} />
         <Route path="/perfil" element={<PerfilUsuario />} />
         <Route path="/editar-perfil" element={<EditarPerfil />} />
+        <Route path="/clases-solo" element={<ClasesSoloVista />} />
+
 
         {/* Clases */}
         <Route path="/clases" element={<Clases />} />
@@ -137,30 +145,34 @@ function App() {
 
         {/* Admin panel */}
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/solicitudes" element={<AdminSolicitudes />} />
+        <Route path="/admin/clases/solicitar-eliminacion" element={<AdminSolicitarEliminacion />} />
+
+
 
         {/* Admin gestión clases */}
-        <Route path="/admin/clases" element={<AdminGestionClases />} />
-        <Route path="/admin/crear-clase" element={<AdminCrearClase />} />
-        <Route path="/admin/editar-clase" element={<AdminEditarClase />} />
-        <Route path="/admin/cambiar-imagen" element={<AdminCambiarImagenClase />} />
-        <Route path="/admin/ver-inscripciones" element={<AdminVerInscripciones />} />
+        <Route path="/admin/clases/crear" element={<AdminSolicitarCrearClase />} />
         <Route path="/admin/clases/listado" element={<AdminListadoClases />} />
+        <Route path="/admin/clases/editar" element={<AdminSolicitarEditarClase />} />
+        <Route path="/admin/clases/inscripciones/:id" element={<AdminVerInscripciones />} />
 
         {/* Admin gestión usuarios */}
-        <Route path="/admin/usuarios" element={<AdminGestionUsuarios />} />
         <Route path="/admin/usuarios/listado" element={<AdminListadoUsuarios />} />
         <Route path="/admin/usuarios/aviso/:id" element={<AdminEnviarAviso />} />
         <Route path="/admin/usuarios/perfil/:id" element={<AdminPerfilUsuario />} />
+        <Route path="/admin/usuarios/listado" element={<AdminListadoUsuarios />} />
+        <Route path="/admin/usuarios/buscar" element={<AdminBuscarUsuario />} />
+
+
 
         
 
         {/* Admin gestión reservas */}
-        <Route path="/admin/reservas" element={<AdminGestionReservas />} />
         <Route path="/admin/reservas/listado" element={<AdminListadoReservas />} />
         <Route path="/admin/reservas/filtrar" element={<AdminFiltrarReservas />} />
         <Route path="/admin/reservas/completar" element={<AdminCompletarReserva />} />
         <Route path="/admin/reservas/cancelar" element={<AdminCancelarReserva />} />
-        <Route path="/admin/reservas/añadir-nota" element={<AdminAñadirNota />} />
+        <Route path="/admin/reservas/nota/:id" element={<AdminAñadirNota />} />
         <Route path="/admin/reservas/uso-bonos" element={<AdminUsoBonos />} />
 
         {/* Admin historiales */}

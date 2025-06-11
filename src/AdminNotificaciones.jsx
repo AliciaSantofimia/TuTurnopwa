@@ -2,13 +2,10 @@ import React, { useEffect, useState } from "react";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-
 const AdminNotificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
 
   useEffect(() => {
-    // Cargar desde Firebase Realtime Database
-    /*
     const cargarNotificaciones = async () => {
       try {
         const snapshot = await get(child(ref(dbRealtime), "notificaciones"));
@@ -16,11 +13,23 @@ const AdminNotificaciones = () => {
 
         snapshot.forEach((snap) => {
           const noti = snap.val();
+
+          //  Formatear la fecha si existe
+          const fechaLegible = noti.fecha
+            ? new Date(noti.fecha).toLocaleString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Sin fecha";
+
           datos.push({
             id: snap.key,
             usuario: noti.usuario || "Desconocido",
             mensaje: noti.mensaje || "",
-            fecha: noti.fecha || "",
+            fecha: fechaLegible,
           });
         });
 
@@ -31,23 +40,6 @@ const AdminNotificaciones = () => {
     };
 
     cargarNotificaciones();
-    */
-
-    // Datos simulados
-    setNotificaciones([
-      {
-        id: "n1",
-        usuario: "Ana Pérez",
-        mensaje: "Tu clase ha sido reprogramada para el 15/06.",
-        fecha: "2025-06-10",
-      },
-      {
-        id: "n2",
-        usuario: "Juan López",
-        mensaje: "Has agotado tu bono. Compra uno nuevo para seguir reservando.",
-        fecha: "2025-06-11",
-      },
-    ]);
   }, []);
 
   return (
@@ -111,3 +103,5 @@ const styles = {
 };
 
 export default AdminNotificaciones;
+
+

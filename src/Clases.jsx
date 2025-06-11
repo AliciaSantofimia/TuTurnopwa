@@ -63,7 +63,7 @@ export default function Clases() {
     },
     {
       id: 7,
-      titulo: "Pintar Cerámica",
+      titulo: "Pinta tu pieza de Cerámica",
       slug: "pintar-ceramica",
       color: "border-[#c9e6a3]",
       imagen: "/img/vasijapintarceramica.png",

@@ -1,19 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
-
 
 const AdminAñadirNota = () => {
   const { id } = useParams(); // ID de la reserva
   const navigate = useNavigate();
   const [nota, setNota] = useState("");
+  const [notasGuardadas, setNotasGuardadas] = useState([]);
+  const [reserva, setReserva] = useState({ clase: "", usuario: "" });
 
-  // Ejemplo temporal (puedes cargar datos reales si lo deseas)
-  const reserva = {
-    clase: "Pinta tu pieza",
-    usuario: "Marta Ruiz",
-  };
+  useEffect(() => {
+    const cargarDatosReserva = async () => {
+      try {
+        const refReserva = ref(dbRealtime, `reservasAdmin/${id}`);
+        const snapshot = await get(refReserva);
+        if (snapshot.exists()) {
+          const datos = snapshot.val();
+          const clase = datos.clase || "Sin clase";
+          let usuario = datos.usuario || "Sin nombre"; // ahora ya viene directamente
+
+          setReserva({ clase, usuario });
+          setNotasGuardadas(datos.notasInternas || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de la reserva:", error);
+      }
+    };
+
+    cargarDatosReserva();
+  }, [id]);
 
   const handleGuardarNota = async () => {
     if (!nota.trim()) {
@@ -27,7 +43,7 @@ const AdminAñadirNota = () => {
         fecha: new Date().toISOString(),
       };
 
-      const refReserva = ref(dbRealtime, `reservasNotas/${id}`);
+      const refReserva = ref(dbRealtime, `reservasAdmin/${id}`);
       const snapshot = await get(refReserva);
       const datosActuales = snapshot.exists() ? snapshot.val() : { notasInternas: [] };
 
@@ -38,7 +54,8 @@ const AdminAñadirNota = () => {
       });
 
       alert("Nota guardada correctamente");
-      navigate("/admin/reservas/listado");
+      setNotasGuardadas(nuevasNotas); // Actualizar vista
+      setNota(""); // Limpiar textarea
     } catch (error) {
       console.error("❌ Error al guardar la nota:", error);
       alert("Ocurrió un error al guardar la nota.");
@@ -62,6 +79,19 @@ const AdminAñadirNota = () => {
         <button onClick={handleGuardarNota} style={styles.btn}>
           Guardar nota
         </button>
+
+        {notasGuardadas.length > 0 && (
+          <div style={styles.historial}>
+            <h4>🗒️ Notas guardadas:</h4>
+            <ul>
+              {notasGuardadas.map((n, i) => (
+                <li key={i}>
+                  <strong>{new Date(n.fecha).toLocaleDateString("es-ES")}</strong>: {n.texto}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -100,6 +130,14 @@ const styles = {
     fontSize: "1rem",
     cursor: "pointer",
   },
+  historial: {
+    marginTop: 30,
+    backgroundColor: "#f8f8f8",
+    padding: 20,
+    borderRadius: 10,
+    border: "1px solid #ccc",
+  },
 };
 
 export default AdminAñadirNota;
+
