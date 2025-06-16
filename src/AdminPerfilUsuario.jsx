@@ -3,16 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-
 const AdminPerfilUsuario = () => {
-  const { id } = useParams(); // recibo el ID del usuario desde la URL
+  const { uid } = useParams(); // ✅ Corregido: se usa uid en lugar de id
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
-        const snapshot = await get(child(ref(dbRealtime), `usuarios/${id}`));
+        const snapshot = await get(child(ref(dbRealtime), `usuarios/${uid}`));
         if (snapshot.exists()) {
           setUsuario(snapshot.val());
         } else {
@@ -24,7 +23,7 @@ const AdminPerfilUsuario = () => {
     };
 
     cargarUsuario();
-  }, [id]);
+  }, [uid]);
 
   if (!usuario) {
     return <p style={{ textAlign: "center" }}>Cargando perfil...</p>;
@@ -38,13 +37,13 @@ const AdminPerfilUsuario = () => {
         <p><strong>Reservas realizadas:</strong> {usuario.reservas || 0}</p>
         <div style={styles.acciones}>
           <button
-            onClick={() => navigate(`/admin/usuarios/bloquear/${id}`)}
+            onClick={() => navigate(`/admin/usuarios/bloquear/${uid}`)}
             style={styles.boton}
           >
             🚫 Bloquear
           </button>
           <button
-            onClick={() => navigate(`/admin/usuarios/aviso/${id}`)}
+            onClick={() => navigate(`/admin/usuarios/aviso/${uid}`)}
             style={styles.boton}
           >
             📩 Enviar aviso

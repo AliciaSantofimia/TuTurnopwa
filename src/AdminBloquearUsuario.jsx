@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, update } from "firebase/database";
-import { dbRealtime } from "../firebase"; // ✅ Asegúrate de que esta ruta sea correcta
+import { dbRealtime } from "./firebase"; // ✅ Asegúrate de que esta ruta sea correcta
 
 const AdminBloquearUsuario = () => {
   const { id } = useParams(); // obtengo el ID del usuario desde la URL

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
-  
 
   return (
     <div style={styles.body}>
@@ -19,42 +18,44 @@ const AdminPanel = () => {
 
         <div style={styles.seccion}>
           <h2 style={styles.subtitulo}>
-            <img src="/img/vasijabono2.png" alt="vasija" style={styles.subtituloIconoGrande} /> Gestión de Clases
+            <img src="/img/vasijabono2.png" alt="vasija" style={styles.subtituloIconoGrande} />
+            Gestión de Clases
           </h2>
-          <button style={styles.btn} onClick={() => navigate("/admin/clases/listado")}>🏺 Ver listado de clases</button>
-          <button style={styles.btn} onClick={() => navigate("/admin/clases/crear")}>➕ Crear nueva clase</button>
-<button style={styles.btn} onClick={() => navigate("/admin/clases/editar")}>✏️ Editar clase</button> 
-<button style={styles.btn} onClick={() => navigate("/admin/clases/solicitar-eliminacion")}>🛑 Solicitar eliminación de clase</button>
-
-          <button style={styles.btn} onClick={() => navigate("/admin/solicitudes")}>📮 Ver solicitudes</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-listado-clases")}>🏺 Ver listado de clases</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-solicitar-crear-clase")}>➕ Crear nueva clase</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-solicitar-editar-clase")}>✏️ Editar clase</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-solicitar-eliminacion")}>🛑 Solicitar eliminación de clase</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-solicitudes")}>📮 Ver solicitudes</button>
         </div>
 
         <div style={styles.seccion}>
           <h2 style={styles.subtitulo}>
-            <img src="/img/vasijabono4.png" alt="vasija usuarios" style={styles.subtituloIconoGrande} /> Gestión de Usuarios
+            <img src="/img/vasijabono4.png" alt="vasija usuarios" style={styles.subtituloIconoGrande} />
+            Gestión de Usuarios
           </h2>
-          <button style={styles.btn} onClick={() => navigate("/admin/usuarios/listado")}>📋 Ver todos los usuarios</button>
-          <button style={styles.btn} onClick={() => navigate("/admin/usuarios/buscar")}>🔍 Buscar por nombre o email</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-listado-usuarios")}>📋 Ver todos los usuarios</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-buscar-usuario")}>🔍 Buscar por nombre o email</button>
         </div>
 
         <div style={styles.seccion}>
           <h2 style={styles.subtitulo}>
-            <img src="/img/vasijafundamentalmini.png" alt="vasija reservas" style={styles.subtituloIconoGrande} /> Gestión de Reservas
+            <img src="/img/vasijafundamentalmini.png" alt="vasija reservas" style={styles.subtituloIconoGrande} />
+            Gestión de Reservas
           </h2>
-          <button style={styles.btn} onClick={() => navigate("/admin/reservas/listado")}>📋 Ver listado de reservas</button>
-          <button style={styles.btn} onClick={() => navigate("/admin/reservas/filtrar")}>🔎 Filtrar por fecha</button>
-          <button style={styles.btn} onClick={() => navigate("/admin/reservas/uso-bonos")}>🎟️ Ver uso de bonos</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-listado-reservas")}>📋 Ver listado de reservas</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-filtrar-reservas")}>🔎 Filtrar por fecha</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-uso-bonos")}>🎟️ Ver uso de bonos</button>
         </div>
 
         <div style={styles.seccion}>
           <h2 style={styles.subtitulo}>📜 Historiales</h2>
-          <button style={styles.btn} onClick={() => navigate("/admin/historial/reservas")}>📘 Historial de Reservas</button>
-          <button style={styles.btn} onClick={() => navigate("/admin/historial/bonos")}>🎟️ Historial de Bonos Comprados</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-historial-reservas")}>📘 Historial de Reservas</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-historial-bonos")}>🎟️ Historial de Bonos Comprados</button>
         </div>
 
         <div style={styles.seccion}>
           <h2 style={styles.subtitulo}>🔔 Notificaciones</h2>
-          <button style={styles.btn} onClick={() => navigate("/admin/notificaciones")}>📢 Notificaciones enviadas</button>
+          <button style={styles.btn} onClick={() => navigate("/admin-notificaciones")}>📢 Notificaciones enviadas</button>
         </div>
       </div>
     </div>
@@ -130,6 +131,7 @@ const styles = {
 };
 
 export default AdminPanel;
+
 
 
 

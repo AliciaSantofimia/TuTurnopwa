@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { Link } from "react-router-dom";
 import Footer from "./Footer";
 
 export default function Clases() {
@@ -160,6 +159,8 @@ export default function Clases() {
         ))}
       </div>
 
+      {/* Comentado porque ya está incluido en <Footer /> */}
+      {/*
       <div className="mt-10 text-center">
         <p className="text-sm text-gray-700">
           Al reservar una clase, aceptas nuestra
@@ -180,8 +181,9 @@ export default function Clases() {
           </Link>
         </p>
       </div>
+      */}
 
-      <Footer />
+    
     </div>
   );
 }

@@ -31,7 +31,8 @@ const AdminListadoUsuarios = () => {
   }, []);
 
   const verPerfil = (id) => {
-    navigate(`/admin/usuarios/perfil/${id}`);
+    <Route path="/admin-perfil-usuario/:uid" element={<AdminPerfilUsuario />} />
+
   };
 
   return (

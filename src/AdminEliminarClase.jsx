@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ref, remove } from "firebase/database";
-import { dbRealtime } from "../firebase";
+import { dbRealtime } from "./firebase";
 
 const AdminEliminarClase = () => {
   const navigate = useNavigate();

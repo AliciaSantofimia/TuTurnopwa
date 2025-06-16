@@ -35,7 +35,7 @@ export default function DondeReservar() {
         </h1>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         {/* Taller */}
         <div
           className="cursor-pointer rounded-xl shadow-md p-4 border-l-8 border-yellow-400 bg-white flex flex-col justify-between hover:shadow-lg transition"
@@ -83,29 +83,42 @@ export default function DondeReservar() {
             Pinta tu pieza de cerámica en Pl. Ramón y Cajal, 4 o en C/Isla Gomera, 4 (Córdoba).
           </p>
         </div>
-      </div>
 
-      {/* Botones: Mi perfil + Panel admin */}
-      <div className="mt-10 flex flex-col md:flex-row justify-center items-center gap-6">
-        <button
+        {/* Mi perfil */}
+        <div
+          className="cursor-pointer rounded-xl shadow-md p-4 border-l-8 border-orange-400 bg-white flex flex-col justify-between hover:shadow-lg transition"
           onClick={() => navigate("/perfil")}
-          className="bg-[#c1785c] hover:bg-[#a8644e] text-white font-semibold py-2 px-6 rounded-full shadow-md transition"
         >
-          Mi perfil
-        </button>
-
-        {esAdmin && (
-          <div className="flex flex-col items-center">
-            <img
-              src="/img/vasijafundamentalmini.png"
-              alt="Panel admin"
-              onClick={() => navigate("/adminpanel")}
-              className="w-32 h-auto rounded-xl cursor-pointer shadow-lg hover:scale-105 transition duration-300"
-            />
-            <p className="mt-1 text-sm text-gray-700 font-medium">Panel admin</p>
-          </div>
-        )}
+          <img
+            src="/img/fotoperfilcortada.png" 
+            alt="Mi perfil"
+            className="w-24 h-24 object-contain mx-auto mb-4"
+          />
+          <h2 className="text-xl font-semibold text-gray-800 text-center">Mi perfil</h2>
+          <p className="text-sm text-gray-600 mt-2 text-center">
+            Consulta tus reservas, edita tus datos y gestiona tu cuenta.
+          </p>
+        </div>
       </div>
+
+      {/* Panel admin */}
+      {esAdmin && (
+        <div className="mt-10 flex flex-col items-center">
+         <div
+  onClick={() => navigate("/admin-panel")}
+  className="bg-[#fdf3e7] p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
+>
+  <img
+    src="/img/vasijafundamentalmini.png"
+    alt="Panel admin"
+    className="w-24 h-auto mx-auto"
+  />
+</div>
+<p className="mt-2 text-sm text-gray-700 font-medium text-center">Panel admin</p>
+
+
+        </div>
+      )}
 
       {/* Condiciones */}
       <div className="mt-10 text-center">
@@ -121,5 +134,4 @@ export default function DondeReservar() {
     </div>
   );
 }
-
 

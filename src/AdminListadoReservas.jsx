@@ -28,7 +28,8 @@ const AdminListadoReservas = () => {
                     clase,
                     fecha,
                     turno,
-                    estado: reserva.estado || "Activa",
+                    estado: reserva.estado || "Pendiente de pago",
+
                     usuario: reserva.nombre || "Sin nombre",
                     uid: reserva.uid || null,
                   });
@@ -37,6 +38,7 @@ const AdminListadoReservas = () => {
             });
           });
         });
+        datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
         setReservas(datos);
       } catch (error) {

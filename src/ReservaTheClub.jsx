@@ -52,44 +52,51 @@ export default function ReservaTheClub() {
   const handleReserva = async (e) => {
     e.preventDefault();
     if (!user || !fecha || !turno || plazas < 1) return;
-
+  
     const fechaFormateada = fecha.toISOString().split("T")[0];
     const totalOcupadas = plazasOcupadas[turno] || 0;
-
+  
     if (totalOcupadas + plazas > maxPlazas) {
       alert("No hay suficientes plazas disponibles para ese turno.");
       return;
     }
-
+  
+    // Obtener nombre desde la base de datos o fallback
+    const userRef = ref(dbRealtime, `usuarios/${user.uid}`);
+    const snapshot = await get(userRef);
+    const nombreUsuario =
+      snapshot.exists() && snapshot.val().nombre
+        ? snapshot.val().nombre
+        : user.displayName || "Sin nombre";
+  
     const reserva = {
-      clase: "Pinta tu pieza en The Club",
+      uid: user.uid,
+      email: user.email || "",
+      nombre: nombreUsuario,
+      clase: "Pinta tu pieza - The Club",
       fecha: fechaFormateada,
       turno,
+      ubicacion: "The Club",
       metodo: "general",
-      precio,
       plazas,
-      timestamp: Date.now(),
-      tipo: "theclub",
-      tipoReserva: "normal",
-      nombre: user.displayName || "",
-      email: user.email || "",
-      uid: user.uid
+      reservaVia: "Normal",
+      precio,
+      timestamp: Date.now()
     };
-
+  
     try {
       const rutaReserva = ref(dbRealtime, `reservas/TheClub/${fechaFormateada}/${turno}`);
       const rutaHistorial = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-
+  
       await push(rutaReserva, reserva);
       await push(rutaHistorial, reserva);
-
-      const userRef = ref(dbRealtime, `usuarios/${user.uid}`);
-      const snapshot = await get(userRef);
+  
+      // Contador de reservas por usuario
       if (snapshot.exists()) {
         const actuales = snapshot.val().reservas || 0;
         await update(userRef, { reservas: actuales + 1 });
       }
-
+  
       navigate("/resumenpagotheclub", {
         state: {
           ...reserva,
@@ -101,6 +108,7 @@ export default function ReservaTheClub() {
       console.error(error);
     }
   };
+  
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">

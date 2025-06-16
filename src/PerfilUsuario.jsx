@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { auth, dbRealtime } from "./firebase";
 import { ref, get } from "firebase/database";
 import { signOut, onAuthStateChanged } from "firebase/auth";
-import Menu from "./Menu.jsx";
 import HistorialTarjetasRegalo from "./HistorialTarjetasRegalo.jsx";
 import HistorialReservasUsuario from "./HistorialReservasUsuario.jsx";
+import Footer from "./Footer";
 
 // Componente para mostrar avisos
 const AvisosUsuario = () => {
@@ -20,7 +20,6 @@ const AvisosUsuario = () => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const lista = Object.values(data);
-        // Ordena por fecha descendente si lo deseas
         setAvisos(lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)));
       }
     });
@@ -33,10 +32,7 @@ const AvisosUsuario = () => {
       <h2 className="text-lg font-semibold mb-2 text-red-700">📢 Avisos recibidos</h2>
       <ul className="text-sm">
         {avisos.map((aviso, index) => (
-          <li
-            key={index}
-            className="mb-2 bg-red-50 p-2 rounded-lg border border-red-200"
-          >
+          <li key={index} className="mb-2 bg-red-50 p-2 rounded-lg border border-red-200">
             <strong>{new Date(aviso.fecha).toLocaleDateString("es-ES")}:</strong> {aviso.mensaje}
           </li>
         ))}
@@ -109,10 +105,8 @@ export default function PerfilUsuario() {
           </button>
         </div>
 
-        {/* Avisos */}
         <AvisosUsuario />
 
-        {/* Historial */}
         <div className="mb-8">
           <HistorialTarjetasRegalo />
         </div>
@@ -121,28 +115,28 @@ export default function PerfilUsuario() {
           <HistorialReservasUsuario />
         </div>
 
-        <div className="text-center mt-4">
-          <button
-            onClick={() => navigate("/politica-privacidad")}
-            className="text-sm text-red-500 underline hover:text-red-700 transition"
-          >
-            Ver Política de Privacidad
-          </button>
-        </div>
-
-        <div className="text-center mt-2">
-          <button
-            onClick={() => navigate("/condiciones-pago")}
-            className="text-sm text-red-500 underline hover:text-red-700 transition"
-          >
-            Ver Condiciones del Servicio de Pago
-          </button>
-        </div>
-
-        <div style={{ marginTop: "40px" }}>
-          <Menu />
+        {/* Enlaces legales */}
+        <div className="text-center mt-6 space-y-2 text-sm">
+          <p>
+            <button
+              onClick={() => navigate("/politica-privacidad")}
+              className="text-red-500 underline hover:text-red-700"
+            >
+              Política de Privacidad
+            </button>
+          </p>
+          <p>
+            <button
+              onClick={() => navigate("/condiciones-pago")}
+              className="text-red-500 underline hover:text-red-700"
+            >
+              Condiciones del Servicio de Pago
+            </button>
+          </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

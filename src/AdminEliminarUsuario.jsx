@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, remove } from "firebase/database";
-import { dbRealtime } from "../firebase";
+import { dbRealtime } from "./firebase";
 
 const AdminEliminarUsuario = () => {
   const { id } = useParams(); // recibo el ID del usuario desde la URL

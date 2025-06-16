@@ -6,6 +6,7 @@ import { dbRealtime } from "./firebase";
 const AdminListadoClases = () => {
   const navigate = useNavigate();
   const [clases, setClases] = useState([]);
+  const [inscripciones, setInscripciones] = useState({});
 
   useEffect(() => {
     const cargarClases = async () => {
@@ -28,11 +29,42 @@ const AdminListadoClases = () => {
       }
     };
 
+    const contarPlazasReservadas = async () => {
+      try {
+        const snapshot = await get(ref(dbRealtime, "reservas"));
+        const contador = {};
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+
+          Object.values(data).forEach((usuario) => {
+            Object.entries(usuario).forEach(([nombreClase, fechas]) => {
+              if (!contador[nombreClase]) contador[nombreClase] = 0;
+
+              Object.values(fechas).forEach((turnos) => {
+                Object.values(turnos).forEach((metodos) => {
+                  Object.values(metodos).forEach((reservasPorMetodo) => {
+                    Object.values(reservasPorMetodo).forEach((reserva) => {
+                      contador[nombreClase] += reserva.plazas || 1;
+                    });
+                  });
+                });
+              });
+            });
+          });
+        }
+
+        setInscripciones(contador);
+      } catch (error) {
+        console.error("Error al contar inscripciones:", error);
+      }
+    };
+
     cargarClases();
+    contarPlazasReservadas();
   }, []);
 
   const handleVerInscripciones = (nombreClase) => {
-    console.log("➡️ Ir a inscripciones de:", nombreClase); // 🧪 Depuración
     navigate(`/admin/clases/inscripciones/${nombreClase}`);
   };
 
@@ -52,12 +84,15 @@ const AdminListadoClases = () => {
                 ? clase.turnos.join(", ")
                 : clase.turnos || "No definidos"}
             </p>
+            <p style={{ color: "#444" }}>
+              👥 Inscritos: {inscripciones[clase.nombre] || 0}
+            </p>
             <div style={styles.acciones}>
               <button
                 onClick={() => handleVerInscripciones(clase.nombre)}
                 style={styles.link}
               >
-                👥 Ver inscripciones
+                Ver inscripciones
               </button>
             </div>
           </div>
@@ -102,5 +137,6 @@ const styles = {
 };
 
 export default AdminListadoClases;
+
 
 
