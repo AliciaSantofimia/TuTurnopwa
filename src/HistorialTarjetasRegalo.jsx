@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 const HistorialTarjetasRegalo = () => {
   const [tarjetas, setTarjetas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarTarjetas = async () => {
@@ -20,7 +22,6 @@ const HistorialTarjetasRegalo = () => {
         if (snapshot.exists()) {
           const datos = snapshot.val();
 
-          // ✅ Solo tarjetas reales, no reservas normales
           const tarjetasCompradas = Object.values(datos).filter(
             (tarjeta) => tarjeta.compradorUID === user.uid && tarjeta.desdeTarjeta === true
           );
@@ -43,6 +44,20 @@ const HistorialTarjetasRegalo = () => {
 
   return (
     <div style={styles.container}>
+      {/* 🔙 Botón volver */}
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/perfil");
+          }
+        }}
+        style={{ color: "#1d4ed8", textDecoration: "underline", marginBottom: 12 }}
+      >
+        ← Volver
+      </button>
+
       <h2 style={styles.titulo}>Mis tarjetas regalo compradas</h2>
       {tarjetas.length === 0 ? (
         <p style={styles.vacio}>Aún no has comprado ninguna tarjeta.</p>

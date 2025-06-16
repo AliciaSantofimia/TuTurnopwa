@@ -33,13 +33,11 @@ export default function ReservaTearium() {
 
   const obtenerDia = (date) =>
     date.toLocaleDateString("es-ES", { weekday: "long" }).toLowerCase();
-  
-const isDiaPermitido = (date) => {
-  const dia = date.getDay(); // 0=domingo ... 6=sábado
-  return diasPermitidos.includes(dia);
-};
 
-  
+  const isDiaPermitido = (date) => {
+    const dia = date.getDay(); // 0=domingo ... 6=sábado
+    return diasPermitidos.includes(dia);
+  };
 
   const obtenerTurnos = () => {
     if (!fecha) return [];
@@ -49,32 +47,31 @@ const isDiaPermitido = (date) => {
 
   const handleReserva = async () => {
     if (!user || !fecha || !turno || plazas < 1) return;
-  
+
     const fechaFormateada = fecha.toISOString().split("T")[0];
     const ruta = `reservas/Tearium/${fechaFormateada}/${turno}`;
 
     const snapshot = await get(child(ref(dbRealtime), ruta));
-  
+
     let plazasOcupadas = 0;
     if (snapshot.exists()) {
       snapshot.forEach((res) => {
         plazasOcupadas += res.val().plazas || 0;
       });
     }
-  
+
     if (plazasOcupadas + plazas > maxPlazas) {
       alert("No hay suficientes plazas disponibles para este turno.");
       return;
     }
-  
-    // ✅ Obtener nombre desde la base de datos o fallback a displayName
+
     const userRef = ref(dbRealtime, "usuarios/" + user.uid);
     const userSnapshot = await get(userRef);
     const nombreUsuario =
       userSnapshot.exists() && userSnapshot.val().nombre
         ? userSnapshot.val().nombre
         : user.displayName || "Sin nombre";
-  
+
     const reserva = {
       uid: user.uid,
       email: user.email,
@@ -89,14 +86,14 @@ const isDiaPermitido = (date) => {
       precio,
       timestamp: Date.now()
     };
-  
+
     try {
       const nuevaReservaRef = push(ref(dbRealtime, ruta));
       await set(nuevaReservaRef, reserva);
-  
+
       const userReservaRef = push(ref(dbRealtime, `usuarios/${user.uid}/reservas`));
       await set(userReservaRef, reserva);
-  
+
       navigate("/resumenpagotearium", {
         state: {
           ...reserva,
@@ -108,10 +105,22 @@ const isDiaPermitido = (date) => {
       alert("Hubo un error al hacer la reserva. Intenta más tarde.");
     }
   };
-  
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/menu");
+          }
+        }}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <h1 className="text-2xl font-bold text-center mb-2">
         Pinta tu pieza de cerámica - Tearium
       </h1>
@@ -146,7 +155,6 @@ const isDiaPermitido = (date) => {
             value={turno}
             onChange={(e) => setTurno(e.target.value)}
           >
-            
             <option value="">-- Selecciona --</option>
             {obtenerTurnos().map((t, i) => (
               <option key={i} value={t}>{t}</option>
@@ -178,4 +186,5 @@ const isDiaPermitido = (date) => {
     </div>
   );
 }
+
 

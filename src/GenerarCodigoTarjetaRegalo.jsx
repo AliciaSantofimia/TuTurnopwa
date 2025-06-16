@@ -17,7 +17,6 @@ export default function GenerarCodigoTarjetaRegalo() {
   useEffect(() => {
     const generar = async () => {
       if (tipo && user && desdeTarjeta) {
-
         const codigoGenerado = await crearTarjetaRegalo(tipo, user.uid);
         if (codigoGenerado) {
           setCodigo(codigoGenerado);
@@ -43,16 +42,32 @@ export default function GenerarCodigoTarjetaRegalo() {
       } else {
         setError("No se pudo generar el código. Faltan datos o acceso incorrecto.");
         setTimeout(() => {
-          navigate("/menu"); // 👈 redirección segura si no procede de compra regalo
+          navigate("/menu");
         }, 3000);
       }
     };
 
     generar();
-  }, [tipo, user, desdeTarjetaRegalo, navigate]);
+  }, [tipo, user, desdeTarjeta, navigate]);
 
   return (
     <div style={{ padding: 24 }}>
+      {/* 🔙 Botón Volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          color: "#1a73e8",
+          textDecoration: "underline",
+          marginBottom: "16px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "1rem"
+        }}
+      >
+        ← Volver
+      </button>
+
       <h2>¡Tarjeta regalo generada!</h2>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -88,6 +103,5 @@ export default function GenerarCodigoTarjetaRegalo() {
     </div>
   );
 }
-
 
 

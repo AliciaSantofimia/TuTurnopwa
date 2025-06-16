@@ -1,9 +1,10 @@
 import React from "react";
-import BotonReserva from "./BotonReserva"; // Ajusta la ruta si está en otra carpeta
+import BotonReserva from "./BotonReserva";
+import PantallaConVolver from "./PantallaConVolver";
 
 export default function BasicoEsencial() {
   return (
-    <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
+    <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden relative">
         <img
           src="/img/basicoesencial1.jpg"
@@ -36,10 +37,9 @@ export default function BasicoEsencial() {
             Incluye todos los materiales, formación paso a paso, y el proceso de esmaltado y cocción realizado por nuestro equipo.
           </p>
 
-          {/* Botón reutilizable */}
           <BotonReserva destino="/reserva-basico-esencial" />
         </div>
       </div>
-    </div>
+    </PantallaConVolver>
   );
 }

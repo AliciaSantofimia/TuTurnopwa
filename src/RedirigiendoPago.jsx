@@ -17,7 +17,7 @@ const RedirigiendoPago = () => {
     const claveSecreta = "Mk9m98IfEblmPfrpsawt7BmxObt98Jev"; // clave de pruebas
 
     const merchantData = {
-      DS_MERCHANT_AMOUNT: `${datos.precio * 100}`, // en céntimos
+      DS_MERCHANT_AMOUNT: `${datos.precio * 100}`,
       DS_MERCHANT_ORDER: "ORD" + new Date().getTime(),
       DS_MERCHANT_MERCHANTCODE: "999008881",
       DS_MERCHANT_CURRENCY: "978",
@@ -36,7 +36,7 @@ const RedirigiendoPago = () => {
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://sis-t.redsys.es:25443/sis/realizarPago"; // entorno pruebas Redsys
+    form.action = "https://sis-t.redsys.es:25443/sis/realizarPago";
 
     form.innerHTML = `
       <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
@@ -51,6 +51,22 @@ const RedirigiendoPago = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        {/* 🔙 Botón volver */}
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#1a73e8",
+            textDecoration: "underline",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            marginBottom: "12px"
+          }}
+        >
+          ← Volver
+        </button>
+
         <h1 style={styles.title}>Redirigiendo al pago seguro...</h1>
         <p style={styles.text}>
           Estamos conectando con la pasarela de pago segura. Por favor, espera unos segundos...
@@ -100,7 +116,7 @@ const styles = {
   }
 };
 
-// Animación CSS global
+// Animación CSS
 const styleSheet = document.styleSheets[0];
 styleSheet.insertRule(`
   @keyframes spin {
@@ -110,4 +126,5 @@ styleSheet.insertRule(`
 `, styleSheet.cssRules.length);
 
 export default RedirigiendoPago;
+
 

@@ -7,6 +7,15 @@ export default function TheClub() {
   return (
     <div className="min-h-screen bg-[#fffef4] p-6">
       <div className="max-w-2xl mx-auto bg-white shadow-md rounded-2xl p-6">
+        
+        {/* Botón Volver */}
+        <button
+          onClick={() => navigate(-1)}
+          className="text-blue-700 underline mb-4"
+        >
+          ← Volver
+        </button>
+
         <img
           src="/img/pintartheclub.jpg"
           alt="The Club"
@@ -41,7 +50,6 @@ export default function TheClub() {
         <div className="text-center">
           <button
             onClick={() => navigate("/reservatheclub")}
-
             className="bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold py-2 px-6 rounded-full transition"
           >
             Reservar ahora
@@ -51,3 +59,4 @@ export default function TheClub() {
     </div>
   );
 }
+

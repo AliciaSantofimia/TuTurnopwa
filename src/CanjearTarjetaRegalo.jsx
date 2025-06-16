@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { ref, get, update } from "firebase/database";
-import { dbRealtime } from "./firebase"; // Asegúrate de que esté bien la ruta
+import { dbRealtime } from "./firebase";
 
 const CanjearTarjetaRegalo = () => {
   const [codigo, setCodigo] = useState("");
@@ -48,7 +48,6 @@ const CanjearTarjetaRegalo = () => {
         return;
       }
 
-      // Marcar como usada
       await update(ref(dbRealtime, `tarjetas_regalo/${codigo}`), {
         usado: true,
         canjeadoPorUID: user.uid,
@@ -77,6 +76,22 @@ const CanjearTarjetaRegalo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        {/* 🔙 Botón Volver */}
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            color: "#1a73e8",
+            textDecoration: "underline",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "0.95rem",
+            marginBottom: "16px"
+          }}
+        >
+          ← Volver
+        </button>
+
         <h2 style={styles.titulo}>Canjear tarjeta regalo</h2>
         <p style={styles.descripcion}>
           Introduce el código de tu tarjeta para acceder a tu taller.

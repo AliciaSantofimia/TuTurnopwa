@@ -9,6 +9,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 registerLocale("es", es);
 
+// ... (importaciones idénticas a las que ya tenías)
+
 export default function ReservaTheClub() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -19,8 +21,7 @@ export default function ReservaTheClub() {
   const maxPlazas = 30;
   const precio = 25;
 
-  // Martes (2), Miércoles (3), Jueves (4), Viernes (5)
-  const diasPermitidos = [2, 3, 4, 5];
+  const diasPermitidos = [2, 3, 4, 5]; // martes a viernes
 
   useEffect(() => {
     const auth = getAuth();
@@ -45,30 +46,29 @@ export default function ReservaTheClub() {
   }, [fecha, turno]);
 
   const isDiaPermitido = (date) => {
-    const dia = date.getDay(); // 0=domingo, 1=lunes...
+    const dia = date.getDay();
     return diasPermitidos.includes(dia);
   };
 
   const handleReserva = async (e) => {
     e.preventDefault();
     if (!user || !fecha || !turno || plazas < 1) return;
-  
+
     const fechaFormateada = fecha.toISOString().split("T")[0];
     const totalOcupadas = plazasOcupadas[turno] || 0;
-  
+
     if (totalOcupadas + plazas > maxPlazas) {
       alert("No hay suficientes plazas disponibles para ese turno.");
       return;
     }
-  
-    // Obtener nombre desde la base de datos o fallback
+
     const userRef = ref(dbRealtime, `usuarios/${user.uid}`);
     const snapshot = await get(userRef);
     const nombreUsuario =
       snapshot.exists() && snapshot.val().nombre
         ? snapshot.val().nombre
         : user.displayName || "Sin nombre";
-  
+
     const reserva = {
       uid: user.uid,
       email: user.email || "",
@@ -83,20 +83,19 @@ export default function ReservaTheClub() {
       precio,
       timestamp: Date.now()
     };
-  
+
     try {
       const rutaReserva = ref(dbRealtime, `reservas/TheClub/${fechaFormateada}/${turno}`);
       const rutaHistorial = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-  
+
       await push(rutaReserva, reserva);
       await push(rutaHistorial, reserva);
-  
-      // Contador de reservas por usuario
+
       if (snapshot.exists()) {
         const actuales = snapshot.val().reservas || 0;
         await update(userRef, { reservas: actuales + 1 });
       }
-  
+
       navigate("/resumenpagotheclub", {
         state: {
           ...reserva,
@@ -108,10 +107,22 @@ export default function ReservaTheClub() {
       console.error(error);
     }
   };
-  
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/menu");
+          }
+        }}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <h1 className="text-2xl font-bold text-center mb-2">
         Pinta tu pieza - The Club
       </h1>

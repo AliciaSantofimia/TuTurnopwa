@@ -36,32 +36,31 @@ export default function ReservaKarma() {
 
   const handleReserva = async () => {
     if (!user || !fecha || !turno || plazas < 1) return;
-  
+
     const fechaFormateada = fecha.toISOString().split("T")[0];
     const ruta = `reservas/Karma/${fechaFormateada}/${turno}`;
 
     const snapshot = await get(child(ref(dbRealtime), ruta));
     let plazasOcupadas = 0;
-  
+
     if (snapshot.exists()) {
       snapshot.forEach((res) => {
         plazasOcupadas += res.val().plazas || 0;
       });
     }
-  
+
     if (plazasOcupadas + plazas > maxPlazas) {
       alert("No hay suficientes plazas disponibles para este turno.");
       return;
     }
-  
-    // ✅ Obtener nombre desde la base de datos
+
     const userRef = ref(dbRealtime, "usuarios/" + user.uid);
     const userSnapshot = await get(userRef);
     const nombreUsuario =
       userSnapshot.exists() && userSnapshot.val().nombre
         ? userSnapshot.val().nombre
         : user.displayName || "Sin nombre";
-  
+
     const reserva = {
       uid: user.uid,
       email: user.email,
@@ -76,16 +75,14 @@ export default function ReservaKarma() {
       precio,
       timestamp: Date.now()
     };
-  
+
     try {
-      // Guarda en reservasKarma
       const nuevaReservaRef = push(ref(dbRealtime, ruta));
       await set(nuevaReservaRef, reserva);
-  
-      // Guarda en usuarios/{uid}/reservas
+
       const userReservaRef = push(ref(dbRealtime, `usuarios/${user.uid}/reservas`));
       await set(userReservaRef, reserva);
-  
+
       navigate("/resumenpagokarma", {
         state: {
           ...reserva,
@@ -97,10 +94,22 @@ export default function ReservaKarma() {
       alert("Hubo un error al hacer la reserva. Intenta más tarde.");
     }
   };
-  
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/menu");
+          }
+        }}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <h1 className="text-2xl font-bold text-center mb-2">Pinta tu pieza - Karma by Tearium</h1>
       <p className="text-center text-lg mb-6 text-gray-700">
         Horarios: 10:00 - 12:00, 12:00 - 14:00 y 18:00 - 20:00 (lunes a viernes)

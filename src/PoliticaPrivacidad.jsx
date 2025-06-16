@@ -11,7 +11,9 @@ export default function PoliticaPrivacidad() {
       </button>
       <h1>Política de Privacidad – TuTurnoApp</h1>
 
-      <p>En <strong>TuTurnoApp</strong> nos tomamos muy en serio tu privacidad. A continuación, te explicamos qué datos recogemos, para qué los usamos y cómo puedes ejercer tus derechos.</p>
+      <p>
+        En <strong>TuTurnoApp</strong> nos tomamos muy en serio tu privacidad. A continuación, te explicamos qué datos recogemos, para qué los usamos y cómo puedes ejercer tus derechos.
+      </p>
 
       <h3>📌 ¿Qué datos recogemos?</h3>
       <p>Cuando usas TuTurno, podemos recoger y guardar:</p>
@@ -23,7 +25,9 @@ export default function PoliticaPrivacidad() {
       </ul>
 
       <h3>🔐 ¿Dónde se almacenan tus datos?</h3>
-      <p>Tus datos se guardan de forma segura en <strong>Firebase</strong> (servicio de Google), que cumple con los requisitos del Reglamento General de Protección de Datos (RGPD).</p>
+      <p>
+        Tus datos se guardan de forma segura en <strong>Firebase</strong> (servicio de Google), que cumple con los requisitos del Reglamento General de Protección de Datos (RGPD).
+      </p>
 
       <h3>🎯 ¿Para qué usamos tus datos?</h3>
       <p>Usamos tus datos para:</p>

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { ref, get, set, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function HistorialReservasUsuario() {
   const [reservasFuturas, setReservasFuturas] = useState([]);
   const [reservasPasadas, setReservasPasadas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarYFiltrarReservas = async () => {
@@ -15,9 +17,8 @@ export default function HistorialReservasUsuario() {
 
       try {
         const uid = user.uid;
-        const hoy = new Date().setHours(0, 0, 0, 0); // Solo fecha
+        const hoy = new Date().setHours(0, 0, 0, 0);
 
-        // Leer reservas actuales
         const refReservas = ref(dbRealtime, `usuarios/${uid}/reservas`);
         const snapReservas = await get(refReservas);
         const futuras = [];
@@ -30,7 +31,6 @@ export default function HistorialReservasUsuario() {
             const fechaReserva = new Date(reserva.fecha).setHours(0, 0, 0, 0);
 
             if (fechaReserva < hoy) {
-              // Mover a historial
               const refHistorial = ref(dbRealtime, `usuarios/${uid}/historialReservas/${key}`);
               await set(refHistorial, reserva);
               await remove(ref(dbRealtime, `usuarios/${uid}/reservas/${key}`));
@@ -41,12 +41,10 @@ export default function HistorialReservasUsuario() {
           }
         }
 
-        // Leer historial de reservas pasadas
         const refHistorial = ref(dbRealtime, `usuarios/${uid}/historialReservas`);
         const snapHistorial = await get(refHistorial);
         const historial = snapHistorial.exists() ? Object.values(snapHistorial.val()) : [];
 
-        // Combinar con las que acabamos de mover
         setReservasPasadas([...pasadas, ...historial].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
         setReservasFuturas(futuras.sort((a, b) => (a.fecha > b.fecha ? 1 : -1)));
       } catch (error) {
@@ -62,7 +60,21 @@ export default function HistorialReservasUsuario() {
   if (loading) return <p className="text-center">Cargando reservas...</p>;
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 px-4">
+      {/* 🟡 Botón Volver */}
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/perfil");
+          }
+        }}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <h3 className="text-lg font-semibold text-[#3b3025] mb-4 text-center">📌 Reservas activas</h3>
       {reservasFuturas.length === 0 ? (
         <p className="text-center text-gray-500">No tienes reservas futuras.</p>
@@ -101,3 +113,4 @@ function ReservaItem({ reserva }) {
     </li>
   );
 }
+

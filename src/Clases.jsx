@@ -100,6 +100,14 @@ export default function Clases() {
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
+      {/* 🔙 Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        className="text-blue-700 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img
           src="/img/logoPCsin.png"
@@ -183,7 +191,7 @@ export default function Clases() {
       </div>
       */}
 
-    
+      <Footer />
     </div>
   );
 }

@@ -5,11 +5,23 @@ export default function CondicionesPago() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif", lineHeight: "1.6" }}>
-      <button onClick={() => navigate(-1)} style={{ marginBottom: "20px" }}>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif", lineHeight: "1.6", backgroundColor: "#fffef4", minHeight: "100vh", color: "#333" }}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#f2f2f2",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px"
+        }}
+      >
         ← Volver
       </button>
-      <h1>Condiciones del Servicio de Pago – TuTurnoApp</h1>
+
+      <h1 style={{ color: "#6b3700" }}>Condiciones del Servicio de Pago – TuTurnoApp</h1>
 
       <p>
         En <strong>TuTurnoApp</strong> los pagos se procesan a través de la plataforma segura

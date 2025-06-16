@@ -1,9 +1,10 @@
 import React from "react";
 import BotonReserva from "./BotonReserva";
+import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreativoPlus() {
   return (
-    <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8">
+    <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden">
         <img
           src="/img/creativoplus.jpg"
@@ -37,6 +38,6 @@ export default function CreativoPlus() {
           <BotonReserva destino="/reserva-creativo-plus" />
         </div>
       </div>
-    </div>
+    </PantallaConVolver>
   );
 }

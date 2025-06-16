@@ -12,7 +12,7 @@ export default function ResumenPago() {
 
   const handleConfirmarPago = async () => {
     if (desdeTarjeta) {
-      // 🎁 Tarjeta regalo → ir a generar código
+      //  Tarjeta regalo → ir a generar código
       navigate("/generarcodigotarjetaregalo", {
         state: { tipo, clase, precio }
       });
@@ -27,7 +27,6 @@ export default function ResumenPago() {
           return;
         }
 
-        // Ruta: reservas/[clase]/[fecha]/[turno]/[metodo]
         const reservaRef = ref(
           dbRealtime,
           `reservas/${clase}/${fecha}/${turno}/${metodo}`
@@ -42,7 +41,6 @@ export default function ResumenPago() {
           fechaReserva: new Date().toISOString()
         });
 
-        // Redirigir al perfil tras guardar
         navigate("/perfil");
       } catch (error) {
         console.error("Error al guardar reserva:", error);
@@ -54,6 +52,21 @@ export default function ResumenPago() {
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-6">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6 text-[#333] text-center">
+
+        {/* 🔙 Botón Volver */}
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/perfil");
+            }
+          }}
+          className="text-blue-700 underline mb-4 text-left"
+        >
+          ← Volver
+        </button>
+
         <h1 className="text-[1.6rem] text-[#3b3025] font-semibold mb-4">Resumen del pago</h1>
 
         <p className="mb-2"><strong>Clase:</strong> {clase || "Clase regalo"}</p>
@@ -64,11 +77,17 @@ export default function ResumenPago() {
 
         <p className="text-sm text-[#666] mb-4">
           Al confirmar el pago, aceptas nuestra{" "}
-          <span className="text-red-500 underline cursor-pointer" onClick={() => navigate("/condiciones-pago")}>
+          <span
+            className="text-red-500 underline cursor-pointer"
+            onClick={() => navigate("/condiciones-pago")}
+          >
             Política de Pagos
           </span>{" "}
           y{" "}
-          <span className="text-red-500 underline cursor-pointer" onClick={() => navigate("/politica-privacidad")}>
+          <span
+            className="text-red-500 underline cursor-pointer"
+            onClick={() => navigate("/politica-privacidad")}
+          >
             Política de Privacidad
           </span>.
         </p>
@@ -83,7 +102,6 @@ export default function ResumenPago() {
     </div>
   );
 }
-
 
 
 

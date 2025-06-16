@@ -6,7 +6,7 @@ import {
   updateEmail,
   onAuthStateChanged
 } from "firebase/auth";
-import { getDatabase, ref, update } from "firebase/database"; // ✅ Importar Realtime DB
+import { getDatabase, ref, update } from "firebase/database";
 
 export default function EditarPerfil() {
   const [nombre, setNombre] = useState("");
@@ -47,7 +47,6 @@ export default function EditarPerfil() {
       await updateProfile(usuario, { displayName: nombre });
       await updateEmail(usuario, email);
 
-      // ✅ Actualizar también en Realtime Database
       const db = getDatabase();
       const userRef = ref(db, "usuarios/" + usuario.uid);
       await update(userRef, {
@@ -73,6 +72,20 @@ export default function EditarPerfil() {
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded shadow">
+      {/* 🟡 Botón Volver */}
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/perfil");
+          }
+        }}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver
+      </button>
+
       <h1 className="text-2xl font-bold mb-4">Editar Perfil</h1>
 
       {error && <p className="text-red-500 mb-2">{error}</p>}

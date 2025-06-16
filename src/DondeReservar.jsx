@@ -24,6 +24,15 @@ export default function DondeReservar() {
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
+
+      {/* Botón Volver */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 text-sm text-blue-600 underline hover:text-blue-800"
+      >
+        ← Volver
+      </button>
+
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img
           src="/img/logoPCsin.png"
@@ -90,7 +99,7 @@ export default function DondeReservar() {
           onClick={() => navigate("/perfil")}
         >
           <img
-            src="/img/fotoperfilcortada.png" 
+            src="/img/fotoperfilcortada.png"
             alt="Mi perfil"
             className="w-24 h-24 object-contain mx-auto mb-4"
           />
@@ -104,19 +113,17 @@ export default function DondeReservar() {
       {/* Panel admin */}
       {esAdmin && (
         <div className="mt-10 flex flex-col items-center">
-         <div
-  onClick={() => navigate("/admin-panel")}
-  className="bg-[#fdf3e7] p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
->
-  <img
-    src="/img/vasijafundamentalmini.png"
-    alt="Panel admin"
-    className="w-24 h-auto mx-auto"
-  />
-</div>
-<p className="mt-2 text-sm text-gray-700 font-medium text-center">Panel admin</p>
-
-
+          <div
+            onClick={() => navigate("/admin-panel")}
+            className="bg-[#fdf3e7] p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
+          >
+            <img
+              src="/img/vasijafundamentalmini.png"
+              alt="Panel admin"
+              className="w-24 h-auto mx-auto"
+            />
+          </div>
+          <p className="mt-2 text-sm text-gray-700 font-medium text-center">Panel admin</p>
         </div>
       )}
 
@@ -134,4 +141,3 @@ export default function DondeReservar() {
     </div>
   );
 }
-
