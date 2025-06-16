@@ -10,5 +10,6 @@ export default defineConfig({
   server: {
     port: 5173
   },
-  base: '/'
+  base: './' // ✅ Esto soluciona el error 404 en Vercel
 });
+
