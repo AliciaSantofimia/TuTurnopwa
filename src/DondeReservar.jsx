@@ -46,7 +46,7 @@ export default function DondeReservar() {
             alt="Cerámica Estudio"
             className="w-24 h-24 object-contain mx-auto mb-4"
           />
-          <h2 className="text-xl font-semibold text-gray-800 text-center">Taller La Purísima Conchi</h2>
+          <h2 className="text-xl font-semibold text-gray-800 text-center">Cerámica Estudio La Purísima Conchi</h2>
           <p className="text-sm text-gray-600 mt-2 text-center">
             Reserva tu plaza para cualquiera de nuestras clases en el taller.
           </p>
