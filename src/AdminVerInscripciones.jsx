@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
 const AdminVerInscripciones = () => {
   const { id } = useParams(); // id de la clase, como "BásicoEsencial"
+  const navigate = useNavigate();
   const [inscripciones, setInscripciones] = useState([]);
   const [nombreClase, setNombreClase] = useState(id || "...");
 
@@ -50,6 +51,27 @@ const AdminVerInscripciones = () => {
 
   return (
     <div style={styles.body}>
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/admin");
+          }
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#1d4ed8",
+          fontSize: "0.9rem",
+          textDecoration: "underline",
+          cursor: "pointer",
+          marginBottom: 20,
+        }}
+      >
+        ← Volver
+      </button>
+
       <h2 style={styles.titulo}>👥 Inscripciones - {nombreClase}</h2>
       <table style={styles.table}>
         <thead>

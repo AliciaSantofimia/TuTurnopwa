@@ -19,12 +19,12 @@ export default function Clase2ClasesRegalo() {
         ← Volver
       </button>
 
-      <h1 className="text-3xl font-serif font-bold mb-4 text-yellow-900">2 clases de 3h al mes</h1>
+      <h1 className="text-3xl font-serif font-bold mb-4 text-yellow-900">2 clases de 4h al mes</h1>
 
-      <img src="/img/tarjeta2clases.jpg" alt="2 clases regalo" className="w-64 h-auto mb-4" />
+      <img src="/img/2clasesregalo.jpg" alt="2 clases regalo" className="w-64 h-auto mb-4" />
 
       <p className="mb-4">
-        Dos sesiones mensuales de 3 horas para aprender y experimentar con el torno o técnicas manuales. 
+        Dos sesiones mensuales de 4 horas para aprender y experimentar con el torno o técnicas manuales. 
         Incluye todos los materiales, esmaltes y la cocción de tus piezas.
       </p>
 

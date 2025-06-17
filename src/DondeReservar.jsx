@@ -98,10 +98,11 @@ export default function DondeReservar() {
           className="cursor-pointer rounded-xl shadow-md p-4 border-l-8 border-orange-400 bg-white flex flex-col justify-between hover:shadow-lg transition"
           onClick={() => navigate("/perfil")}
         >
+          
           <img
             src="/img/fotoperfilcortada.png"
             alt="Mi perfil"
-            className="w-24 h-24 object-contain mx-auto mb-4"
+             className="w-24 h-24 object-contain rounded-xl mx-auto"
           />
           <h2 className="text-xl font-semibold text-gray-800 text-center">Mi perfil</h2>
           <p className="text-sm text-gray-600 mt-2 text-center">
@@ -127,15 +128,7 @@ export default function DondeReservar() {
         </div>
       )}
 
-      {/* Condiciones */}
-      <div className="mt-10 text-center">
-        <p className="text-sm text-gray-700">
-          Consulta nuestras
-          <span className="block text-base text-orange-700 font-semibold underline mt-2">
-            Condiciones de uso y cancelación disponibles en la página principal
-          </span>
-        </p>
-      </div>
+     
 
       <Footer />
     </div>

@@ -21,7 +21,7 @@ export default function Clase4ClasesRegalo() {
 
       <h1 className="text-3xl font-serif font-bold mb-4 text-yellow-900">4 clases de 3h al mes</h1>
 
-      <img src="/img/tarjeta4clases.jpg" alt="4 clases regalo" className="w-64 h-auto mb-4" />
+      <img src="/img/4clasesregalo.jpg" alt="4 clases regalo" className="w-64 h-auto mb-4" />
 
       <p className="mb-4">
         Cuatro sesiones mensuales para practicar y desarrollar tus proyectos. Ideal para mantener un ritmo continuo y experimentar con calma.

@@ -64,26 +64,41 @@ export default function PerfilUsuario() {
   };
 
   return (
-    <PantallaConVolver>
+    <PantallaConVolver volverA="/dondereservar">
+
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6 text-[#333] mx-auto">
         <h1 className="text-center text-[1.6rem] text-[#3b3025] font-semibold mb-6">
-          Perfil de Usuario
+          Tu perfil 
         </h1>
 
         <p className="text-sm mb-1"><strong>Nombre:</strong> {nombre}</p>
         <p className="text-sm mb-4"><strong>Email:</strong> {email}</p>
 
-        <div className="flex gap-3 mb-6">
-          <button
-            className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 rounded-xl text-sm"
-            onClick={() => navigate("/editar-perfil")}
-          >Editar perfil</button>
+        
+         <div className="flex gap-3 mb-4">
+  <button
+    className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 rounded-xl text-sm"
+    onClick={() => navigate("/editar-perfil")}
+  >
+    Editar perfil
+  </button>
 
-          <button
-            className="flex-1 bg-red-400 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-sm"
-            onClick={handleLogout}
-          >Cerrar sesión</button>
-        </div>
+  <button
+    className="flex-1 bg-red-400 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-sm"
+    onClick={handleLogout}
+  >
+    Cerrar sesión
+  </button>
+</div>
+
+<button
+  className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
+  onClick={() => navigate("/dondereservar")}
+>
+  Haz tu reserva
+</button>
+
+
 
         {avisos.length > 0 && (
           <div className="mb-6">
@@ -152,8 +167,7 @@ export default function PerfilUsuario() {
         </div>
       </div>
 
-      {/* No duplicamos enlaces legales en el Footer */}
-      {/* <Footer /> */}
+    
     </PantallaConVolver>
   );
 }

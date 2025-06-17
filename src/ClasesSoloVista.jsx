@@ -86,19 +86,26 @@ export default function ClasesSoloVista() {
     },
     {
       id: 9,
-      titulo: "Tarjeta Regalo",
-      slug: "tarjeta-regalo-solo",
-      color: "border-[#e06c75]",
-      imagen: "/img/vasijatarjetaregalo.png",
-      horarios: [
-        "Regala un taller sin fecha fija",
-        "Ideal para sorprender a alguien",
+  titulo: "Tarjeta Regalo",
+  slug: "tarjeta-regalo", // ← corregido
+  color: "border-[#e06c75]",
+  imagen: "/img/vasijatarjetaregalo.png",
+  horarios: [
+    "Regala un taller sin fecha fija",
+    "Ideal para sorprender a alguien",
       ],
     },
   ];
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
+      <button
+        onClick={() => navigate("/")}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver a la portada
+      </button>
+
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img
           src="/img/logoPCsin.png"
@@ -133,7 +140,6 @@ export default function ClasesSoloVista() {
                 <button
                   className="mt-3 px-4 py-1 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
                   onClick={() => navigate(`/${clase.slug}-solo`)}
-
                 >
                   Ver más
                 </button>

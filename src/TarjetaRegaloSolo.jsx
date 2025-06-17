@@ -45,6 +45,13 @@ export default function TarjetaRegaloSolo() {
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">
+      <button
+        onClick={() => navigate("/")}
+        className="text-sm text-blue-600 underline mb-4"
+      >
+        ← Volver a la portada
+      </button>
+
       <h1 className="text-3xl font-serif font-bold mb-6 text-yellow-900">
         Tarjetas regalo disponibles
       </h1>

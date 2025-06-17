@@ -24,7 +24,7 @@ export default function CreaTuPiezaFavoritaRegalo() {
       </h1>
 
       <img
-        src="/img/tarjetacreapiezafavorita.jpg"
+        src="/img/creatupiezafavoritaregalo.jpg"
         alt="Crear pieza"
         className="w-64 h-auto mb-4"
       />
