@@ -31,6 +31,13 @@ export default function PintaTuPiezaRegalo() {
         Para regalar esta clase,{" "}
         <Link to="/registro" className="underline">regístrate aquí</Link>.
       </p>
+      <button
+  onClick={() => navigate("/reserva-pinta-tu-pieza-regalo")}
+  className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded"
+>
+  Reservar ahora con tu tarjeta regalo
+</button>
+
     </div>
   );
 }

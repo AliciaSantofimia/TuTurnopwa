@@ -3,13 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ref as dbRef, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-
 const AdminCompletarReserva = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [reserva, setReserva] = useState(null);
 
-  // Cargar datos de la reserva
   useEffect(() => {
     const obtenerReserva = async () => {
       const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
@@ -24,7 +22,6 @@ const AdminCompletarReserva = () => {
     obtenerReserva();
   }, [id, navigate]);
 
-  // Confirmar y marcar como completada
   const handleConfirmar = async () => {
     try {
       const ref = dbRef(dbRealtime, `reservasAdmin/${id}`);
@@ -39,6 +36,21 @@ const AdminCompletarReserva = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#e0e0e0",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <div style={styles.bloque}>
         <h2>✅ ¿Marcar esta reserva como completada?</h2>
         {reserva ? (

@@ -46,7 +46,7 @@ export default function AdminSolicitarEditarClase() {
     try {
       await push(ref(dbRealtime, "solicitudesCambiosClases"), nuevaSolicitud);
       alert("✅ Solicitud de cambio enviada correctamente.");
-      navigate("/admin");
+      navigate("/admin-panel");
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
       alert("❌ Error al enviar la solicitud.");
@@ -55,6 +55,10 @@ export default function AdminSolicitarEditarClase() {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>✏️ Solicitar modificación de clase</h2>
 
       <select
@@ -91,6 +95,15 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 10,
+  },
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -124,5 +137,3 @@ const styles = {
     cursor: "pointer",
   },
 };
-
-

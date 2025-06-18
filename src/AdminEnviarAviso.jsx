@@ -29,14 +29,12 @@ const AdminEnviarAviso = () => {
     const fechaISO = new Date().toISOString();
 
     try {
-      // Guardar en avisos del usuario (usamos 'mensaje')
       const avisosRef = ref(dbRealtime, `usuarios/${id}/avisos`);
       await push(avisosRef, {
         mensaje: mensaje,
         fecha: fechaISO,
       });
 
-      // Guardar también en notificaciones generales
       const notificacionesRef = ref(dbRealtime, "notificaciones");
       await push(notificacionesRef, {
         usuario: nombreUsuario || "Desconocido",
@@ -45,7 +43,7 @@ const AdminEnviarAviso = () => {
       });
 
       alert("Aviso enviado correctamente");
-      navigate(`/admin/usuarios/perfil/${id}`);
+      navigate("/admin-panel"); // ✅ Cambio aquí
     } catch (error) {
       console.error("Error al enviar el aviso:", error);
       alert("Error al enviar el aviso");
@@ -54,6 +52,21 @@ const AdminEnviarAviso = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#f2f2f2",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <div style={styles.aviso}>
         <h2>📢 Enviar aviso al usuario</h2>
         <textarea
@@ -107,8 +120,3 @@ const styles = {
 };
 
 export default AdminEnviarAviso;
-
-
-
-
-

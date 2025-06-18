@@ -51,25 +51,8 @@ const AdminVerInscripciones = () => {
 
   return (
     <div style={styles.body}>
-      <button
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
-            navigate("/admin");
-          }
-        }}
-        style={{
-          background: "none",
-          border: "none",
-          color: "#1d4ed8",
-          fontSize: "0.9rem",
-          textDecoration: "underline",
-          cursor: "pointer",
-          marginBottom: 20,
-        }}
-      >
-        ← Volver
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
       </button>
 
       <h2 style={styles.titulo}>👥 Inscripciones - {nombreClase}</h2>
@@ -113,6 +96,15 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#1d4ed8",
+    fontSize: "0.95rem",
+    textDecoration: "underline",
+    cursor: "pointer",
+    marginBottom: 20,
+  },
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -139,7 +131,8 @@ const styles = {
     padding: "12px 16px",
     textAlign: "left",
     borderBottom: "1px solid #eee",
-  }
+  },
 };
 
 export default AdminVerInscripciones;
+

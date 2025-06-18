@@ -70,6 +70,10 @@ const AdminListadoClases = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>📋 Listado de Clases</h2>
 
       {clases.length === 0 ? (
@@ -109,6 +113,15 @@ const styles = {
     padding: 30,
     color: "#333",
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   titulo: {
     textAlign: "center",

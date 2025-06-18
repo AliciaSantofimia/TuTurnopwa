@@ -4,7 +4,7 @@ import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
 const AdminPerfilUsuario = () => {
-  const { uid } = useParams(); // ✅ Corregido: se usa uid en lugar de id
+  const { uid } = useParams();
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
 
@@ -31,6 +31,10 @@ const AdminPerfilUsuario = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <div style={styles.perfil}>
         <h2>🦉 {usuario.nombre}</h2>
         <p><strong>Email:</strong> {usuario.email}</p>
@@ -67,6 +71,15 @@ const styles = {
     padding: 30,
     color: "#333",
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   perfil: {
     background: "white",

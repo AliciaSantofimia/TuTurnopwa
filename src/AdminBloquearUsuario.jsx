@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, update } from "firebase/database";
-import { dbRealtime } from "./firebase"; // ✅ Asegúrate de que esta ruta sea correcta
+import { dbRealtime } from "./firebase"; // Esta es la ruta correcta
 
 const AdminBloquearUsuario = () => {
   const { id } = useParams(); // obtengo el ID del usuario desde la URL
@@ -26,6 +26,21 @@ const AdminBloquearUsuario = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#f2f2f2",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <div style={styles.card}>
         <h2>❌ ¿Bloquear a este usuario?</h2>
         <p>
@@ -78,4 +93,3 @@ const styles = {
 };
 
 export default AdminBloquearUsuario;
-

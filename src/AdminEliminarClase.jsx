@@ -25,6 +25,21 @@ const AdminEliminarClase = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#f2f2f2",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <div style={styles.confirm}>
         <h2>¿Eliminar esta clase?</h2>
         <p>Esta acción no se puede deshacer.</p>

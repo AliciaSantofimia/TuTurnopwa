@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PoliticaCancelacion() {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-orange-50 text-gray-800 min-h-screen px-4 py-8 font-sans">
       <div className="max-w-3xl mx-auto">
@@ -9,6 +12,14 @@ export default function PoliticaCancelacion() {
           alt="Logo del taller"
           className="mx-auto mb-6 w-36"
         />
+
+        {/* Botón volver */}
+        <button
+          onClick={() => navigate(-1)}
+          className="text-sm text-gray-700 hover:text-black underline mb-6"
+        >
+          ← Volver atrás
+        </button>
 
         <h1 className="text-2xl font-bold text-center text-orange-800 mb-8">
           Política de Reservas y Cancelaciones

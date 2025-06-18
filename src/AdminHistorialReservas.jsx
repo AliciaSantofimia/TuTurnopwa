@@ -52,6 +52,20 @@ const AdminHistorialReservas = () => {
 
   return (
     <div style={styles.body}>
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#f2f2f2",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <h2 style={styles.titulo}>📜 Historial de Reservas</h2>
 
       <div style={styles.filtro}>
@@ -169,6 +183,5 @@ const styles = {
 };
 
 export default AdminHistorialReservas;
-
 
 

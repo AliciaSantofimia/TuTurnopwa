@@ -97,6 +97,12 @@ export default function PerfilUsuario() {
 >
   Haz tu reserva
 </button>
+<button
+  className="w-full bg-pink-300 hover:bg-pink-200 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
+  onClick={() => navigate("/canjear-tarjeta")}
+>
+  Canjear tarjeta regalo
+</button>
 
 
 

@@ -18,7 +18,7 @@ const actualizarContadorReservas = async (uid) => {
   }
 };
 
-export default function ReservaBono4Clases() {
+export default function ReservaEdicionPremium() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
   const [metodo, setMetodo] = useState("");
@@ -28,7 +28,7 @@ export default function ReservaBono4Clases() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjeta = location.state?.desdeTarjeta || false;
+  const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -66,24 +66,24 @@ export default function ReservaBono4Clases() {
     }
 
     const reserva = {
-      clase: "Bono 4 Clases",
+      clase: "Edición Premium",
       fecha,
       turno,
       metodo,
-      precio: "79€",
+      precio: "65€",
       plazas: Number(plazas),
       timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal"
+      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
     };
 
     try {
       const generalRef = ref(
         dbRealtime,
-        `reservas/Bono4Clases/${fecha}/${turno}/${metodo}`
+        `reservas/EdicionPremium/${fecha}/${turno}/${metodo}`
       );
       await push(generalRef, {
         uid: user.uid,
-        ...reserva
+        ...reserva,
       });
 
       const userReservasRef = ref(
@@ -94,9 +94,9 @@ export default function ReservaBono4Clases() {
 
       await actualizarContadorReservas(user.uid);
 
-      if (desdeTarjeta) {
+      if (desdeTarjetaRegalo) {
         navigate("/generar-codigo", {
-          state: reserva,
+          state: { tipo: "edicionpremium" },
         });
       } else {
         navigate("/resumen-pago", {
@@ -112,23 +112,17 @@ export default function ReservaBono4Clases() {
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
         <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/menu");
-            }
-          }}
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/menu"))}
           className="text-sm text-blue-600 underline mb-4"
         >
           ← Volver
         </button>
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
-          Reserva – Bono 4 Clases
+          Reserva – Edición Premium
         </h1>
 
-        {desdeTarjeta && (
+        {desdeTarjetaRegalo && (
           <p className="text-sm text-green-700 text-center font-medium mb-4">
             Estás usando una tarjeta regalo 🎁
           </p>
@@ -164,8 +158,8 @@ export default function ReservaBono4Clases() {
                 required
               >
                 <option value="">-- Elige turno --</option>
-                <option value="12:00-15:00">12:00 – 15:00 (mañana)</option>
-                <option value="18:00-21:00">18:00 – 21:00 (tarde)</option>
+                <option value="10:00-15:00">10:00 – 15:00</option>
+                <option value="16:00-21:00">16:00 – 21:00</option>
               </select>
             </div>
 
@@ -229,6 +223,7 @@ export default function ReservaBono4Clases() {
     </div>
   );
 }
+
 
 
 

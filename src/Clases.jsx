@@ -100,7 +100,6 @@ export default function Clases() {
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
-      {/* 🔙 Botón volver */}
       <button
         onClick={() => navigate(-1)}
         className="text-blue-700 underline mb-4"
@@ -149,7 +148,9 @@ export default function Clases() {
                     } else if (!currentUser) {
                       navigate("/registro");
                     } else {
-                      navigate(`/${clase.slug}`);
+                      navigate(`/${clase.slug}`, {
+                        state: { desdeTarjeta: false },
+                      });
                     }
                   }}
                 >
@@ -167,32 +168,7 @@ export default function Clases() {
         ))}
       </div>
 
-      {/* Comentado porque ya está incluido en <Footer /> */}
-      {/*
-      <div className="mt-10 text-center">
-        <p className="text-sm text-gray-700">
-          Al reservar una clase, aceptas nuestra
-          <Link
-            to="/politicacancelacion"
-            className="block text-base text-orange-700 font-semibold underline mt-2 hover:text-orange-900"
-          >
-            Política de Cancelación y Condiciones de Reserva
-          </Link>
-        </p>
-        <p className="text-sm text-gray-700 mt-4">
-          Consulta también nuestras
-          <Link
-            to="/condicionesuso"
-            className="block text-base text-orange-700 font-semibold underline mt-2 hover:text-orange-900"
-          >
-            Condiciones de Uso
-          </Link>
-        </p>
-      </div>
-      */}
-
       <Footer />
     </div>
   );
 }
-

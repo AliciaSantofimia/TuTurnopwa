@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
 const AdminNotificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarNotificaciones = async () => {
@@ -14,7 +16,6 @@ const AdminNotificaciones = () => {
         snapshot.forEach((snap) => {
           const noti = snap.val();
 
-          //  Formatear la fecha si existe
           const fechaLegible = noti.fecha
             ? new Date(noti.fecha).toLocaleString("es-ES", {
                 day: "numeric",
@@ -44,6 +45,21 @@ const AdminNotificaciones = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#e0e0e0",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <h2 style={styles.titulo}>🔔 Notificaciones enviadas</h2>
       <table style={styles.table}>
         <thead>
@@ -103,5 +119,6 @@ const styles = {
 };
 
 export default AdminNotificaciones;
+
 
 

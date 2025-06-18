@@ -6,7 +6,17 @@ const AdminPanel = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón salir fijo */}
+      <button onClick={() => navigate("/dondereservar")} style={styles.salirFijo}>
+        🏠 Salir
+      </button>
+
       <div style={styles.panelContainer}>
+        {/* Botón volver */}
+        <button onClick={() => navigate(-1)} style={styles.volver}>
+          ← Volver atrás
+        </button>
+
         <div style={styles.tituloContainer}>
           <img
             src="/img/logoPCsin.png"
@@ -71,6 +81,21 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
+  },
+  salirFijo: {
+    position: "fixed",
+    top: 20,
+    right: 20,
+    backgroundColor: "#e74c3c",
+    color: "white",
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    zIndex: 999,
   },
   panelContainer: {
     backgroundColor: "#ffffff",
@@ -79,6 +104,15 @@ const styles = {
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
     maxWidth: 700,
     width: "100%",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   tituloContainer: {
     display: "flex",
@@ -105,11 +139,13 @@ const styles = {
     display: "flex",
     alignItems: "center",
   },
-  subtituloIconoGrande: {
-    width: 48,
-    height: 48,
-    marginRight: 14,
+    subtituloIconoGrande: {
+    width: 64,               // más grande
+    height: 64,
+    marginRight: 18,
     verticalAlign: "middle",
+    objectFit: "contain",    // asegura que se vea nítida y sin distorsión
+    imageRendering: "auto",  // opcional: mejora en pantallas retina
   },
   seccion: {
     marginBottom: 10,
@@ -131,6 +167,7 @@ const styles = {
 };
 
 export default AdminPanel;
+
 
 
 

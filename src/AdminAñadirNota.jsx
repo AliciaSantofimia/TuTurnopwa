@@ -18,7 +18,7 @@ const AdminAñadirNota = () => {
         if (snapshot.exists()) {
           const datos = snapshot.val();
           const clase = datos.clase || "Sin clase";
-          let usuario = datos.usuario || "Sin nombre"; // ahora ya viene directamente
+          let usuario = datos.usuario || "Sin nombre";
 
           setReserva({ clase, usuario });
           setNotasGuardadas(datos.notasInternas || []);
@@ -54,8 +54,8 @@ const AdminAñadirNota = () => {
       });
 
       alert("Nota guardada correctamente");
-      setNotasGuardadas(nuevasNotas); // Actualizar vista
-      setNota(""); // Limpiar textarea
+      setNotasGuardadas(nuevasNotas);
+      setNota("");
     } catch (error) {
       console.error("❌ Error al guardar la nota:", error);
       alert("Ocurrió un error al guardar la nota.");
@@ -64,6 +64,21 @@ const AdminAñadirNota = () => {
 
   return (
     <div style={styles.body}>
+      {/* Botón volver */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          backgroundColor: "#e0e0e0",
+          border: "1px solid #ccc",
+          padding: "6px 12px",
+          borderRadius: "5px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        ← Volver
+      </button>
+
       <div style={styles.bloque}>
         <h2>📝 Añadir nota interna</h2>
         <p>
@@ -140,4 +155,3 @@ const styles = {
 };
 
 export default AdminAñadirNota;
-

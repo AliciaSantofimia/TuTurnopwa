@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ref, get, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 const AdminSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarSolicitudes = async () => {
@@ -49,6 +51,10 @@ const AdminSolicitudes = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>📮 Solicitudes de Cambios</h2>
       {solicitudes.length === 0 ? (
         <p style={{ textAlign: "center" }}>No hay solicitudes pendientes.</p>
@@ -71,9 +77,13 @@ const AdminSolicitudes = () => {
                 <td style={styles.td}>{renderTipo(s.tipo)}</td>
                 <td style={styles.td}>{s.mensaje || "—"}</td>
                 <td style={styles.td}>{s.autor || "—"}</td>
-                <td style={styles.td}>{new Date(s.fecha).toLocaleString("es-ES")}</td>
                 <td style={styles.td}>
-                  <button onClick={() => handleEliminarSolicitud(s.id)} style={styles.btn}>❌ Eliminar</button>
+                  {new Date(s.fecha).toLocaleString("es-ES")}
+                </td>
+                <td style={styles.td}>
+                  <button onClick={() => handleEliminarSolicitud(s.id)} style={styles.btn}>
+                    ❌ Eliminar
+                  </button>
                 </td>
               </tr>
             ))}
@@ -90,6 +100,15 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     padding: 30,
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 10,
   },
   titulo: {
     textAlign: "center",
@@ -124,7 +143,7 @@ const styles = {
     padding: "6px 12px",
     borderRadius: 8,
     cursor: "pointer",
-  }
+  },
 };
 
 export default AdminSolicitudes;

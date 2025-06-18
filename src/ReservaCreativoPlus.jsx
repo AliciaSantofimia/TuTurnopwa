@@ -28,7 +28,7 @@ export default function ReservaCreativoPlus() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjeta = location.state?.desdeTarjeta || false;
+  const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -73,7 +73,7 @@ export default function ReservaCreativoPlus() {
       precio: "60€",
       plazas: Number(plazas),
       timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal"
+      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
     };
 
     try {
@@ -94,9 +94,9 @@ export default function ReservaCreativoPlus() {
 
       await actualizarContadorReservas(user.uid);
 
-      if (desdeTarjeta) {
+      if (desdeTarjetaRegalo) {
         navigate("/generar-codigo", {
-          state: reserva
+          state: { tipo: "creativoplus" }
         });
       } else {
         navigate("/resumen-pago", {
@@ -128,7 +128,7 @@ export default function ReservaCreativoPlus() {
           Reserva – Creativo Plus
         </h1>
 
-        {desdeTarjeta && (
+        {desdeTarjetaRegalo && (
           <p className="text-sm text-green-700 text-center font-medium mb-4">
             Estás usando una tarjeta regalo 🎁
           </p>
@@ -243,5 +243,6 @@ export default function ReservaCreativoPlus() {
     </div>
   );
 }
+
 
 

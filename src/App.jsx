@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ScrollToTop from "./ScrollToTop";
 
 // Layout general
 import AppLayout from "./AppLayout";
@@ -32,6 +33,8 @@ import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
 import ExpresContinuo from "./ExpresContinuo.jsx";
 import ReservaExpresContinuo from "./ReservaExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
+import GaleriaTarjetasRegalo from "./GaleriaTarjetasRegalo.jsx";
+import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo.jsx";
 
 // Clases solo vista
 import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
@@ -49,10 +52,12 @@ import TornoIntensivoRegalo from "./TornoIntensivoRegalo.jsx";
 import Clase2ClasesRegalo from "./Clase2ClasesRegalo.jsx";
 import CreaTuPiezaFavoritaRegalo from "./CreaTuPiezaFavoritaRegalo.jsx";
 import Clase4ClasesRegalo from "./Clase4ClasesRegalo.jsx";
-
-
-
-
+import DetalleTarjeta2Clases from "./DetalleTarjeta2Clases.jsx";
+import DetalleTarjeta4Clases from "./DetalleTarjeta4Clases.jsx";
+import DetalleTarjetaCreaTuPiezaFavorita from "./DetalleTarjetaCreaTuPiezaFavorita.jsx";
+import DetalleTarjetaPintaTuPieza from "./DetalleTarjetaPintaTuPieza.jsx";
+import DetalleTarjetaTornoIntensivo from "./DetalleTarjetaTornoIntensivo.jsx";
+import ReservaPintaTuPiezaRegalo from "./ReservaPintaTuPiezaRegalo.jsx";
 
 // Ubicaciones externas
 import TheClub from "./TheClub.jsx";
@@ -88,6 +93,7 @@ import AdminPerfilUsuario from "./AdminPerfilUsuario.jsx";
 import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 import AdminEliminarClase from "./AdminEliminarClase.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
+import AdminBloquearUsuario from "./AdminBloquearUsuario.jsx";
 
 // Legales
 import PoliticaCancelacion from "./PoliticaCancelacion.jsx";
@@ -98,6 +104,7 @@ import CondicionesPago from "./CondicionesPago.jsx";
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/portada" />} />
@@ -120,6 +127,12 @@ function App() {
           <Route path="/bono-2-clases" element={<MensualBono2Clases />} />
           <Route path="/bono-4-clases" element={<MensualBono4Clases />} />
           <Route path="/exprescontinuo" element={<ExpresContinuo />} />
+          <Route path="/tarjeta-regalo" element={<GaleriaTarjetasRegalo />} />
+          <Route path="/tarjeta-regalo/2clases" element={<DetalleTarjeta2Clases />} />
+          <Route path="/tarjeta-regalo/4clases" element={<DetalleTarjeta4Clases />} />
+          <Route path="/tarjeta-regalo/creapiezafavorita" element={<DetalleTarjetaCreaTuPiezaFavorita />} />
+          <Route path="/tarjeta-regalo/pintatupieza" element={<DetalleTarjetaPintaTuPieza />} />
+          <Route path="/tarjeta-regalo/tornointensivo" element={<DetalleTarjetaTornoIntensivo />} />
 
           {/* Clases solo vista */}
           <Route path="/edicion-premium-solo" element={<EdicionPremiumSolo />} />
@@ -128,10 +141,9 @@ function App() {
           <Route path="/bono-2-clases-solo" element={<Bono2ClasesSolo />} />
           <Route path="/bono-4-clases-solo" element={<Bono4ClasesSolo />} />
           <Route path="/fundamental-mini-solo" element={<FundamentalMiniSolo />} />
-        
           <Route path="/exprescontinuo-solo" element={<ExpresContinuoSolo />} />
 
-          {/* Tarjetas regalo */}
+          {/* Tarjetas regalo solo vista */}
           <Route path="/tarjeta-regalo-solo" element={<TarjetaRegaloSolo />} />
           <Route path="/pintar-ceramica-solo" element={<PintaTuPiezaDeCeramicaSolo />} />
           <Route path="/tarjeta-regalo-solo/2clases" element={<Clase2ClasesRegalo />} />
@@ -141,13 +153,15 @@ function App() {
           <Route path="/tornointensivo-solo" element={<TornoIntensivoRegalo />} />
           <Route path="/tarjeta-regalo-solo/tornointensivo" element={<TornoIntensivoRegalo />} />
           <Route path="/2clases-solo" element={<Bono2ClasesSolo />} />
-<Route path="/4clases-solo" element={<Bono4ClasesSolo />} />
-<Route path="/creapiezafavorita-solo" element={<CreaTuPiezaFavoritaRegalo />} />
-<Route path="/tarjeta-regalo-solo/4clases" element={<Clase4ClasesRegalo />} />
+          <Route path="/4clases-solo" element={<Bono4ClasesSolo />} />
+          <Route path="/creapiezafavorita-solo" element={<CreaTuPiezaFavoritaRegalo />} />
+          <Route path="/tarjeta-regalo-solo/4clases" element={<Clase4ClasesRegalo />} />
 
-          
+          {/* Canjear y reserva regalo */}
+          <Route path="/canjear-tarjeta" element={<CanjearTarjetaRegalo />} />
+          <Route path="/reserva-pinta-tu-pieza-regalo" element={<ReservaPintaTuPiezaRegalo />} />
 
-          {/* Reservas */}
+          {/* Reservas normales */}
           <Route path="/reserva-edicion-premium" element={<ReservaEdicionPremium />} />
           <Route path="/reserva-creativo-plus" element={<ReservaCreativoPlus />} />
           <Route path="/reserva-basico-esencial" element={<ReservaBasicoEsencial />} />
@@ -188,7 +202,9 @@ function App() {
           <Route path="/admin-filtrar-reservas" element={<AdminFiltrarReservas />} />
           <Route path="/admin-completar-reserva" element={<AdminCompletarReserva />} />
           <Route path="/admin-cancelar-reserva" element={<AdminCancelarReserva />} />
-          <Route path="/admin-aniadir-nota" element={<AdminAñadirNota />} />
+          <Route path="/admin-aniadir-nota/:id" element={<AdminAñadirNota />} />
+          <Route path="/admin/usuarios/bloquear/:id" element={<AdminBloquearUsuario />} />
+          <Route path="/admin/usuarios/aviso/:id" element={<AdminEnviarAviso />} />
           <Route path="/admin-uso-bonos" element={<AdminUsoBonos />} />
           <Route path="/admin-listado-usuarios" element={<AdminListadoUsuarios />} />
           <Route path="/admin-perfil-usuario/:uid" element={<AdminPerfilUsuario />} />
@@ -208,7 +224,6 @@ function App() {
 }
 
 export default App;
-
 
 
 

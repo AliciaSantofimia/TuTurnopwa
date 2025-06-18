@@ -29,6 +29,7 @@ export default function ReservaPintarCeramica() {
   const navigate = useNavigate();
   const location = useLocation();
   const desdeTarjeta = location.state?.desdeTarjeta || false;
+  const codigoTarjeta = location.state?.codigo || null;
 
   const maxPlazas = 33;
   const plazasDisponibles = Math.max(maxPlazas - plazasOcupadas, 0);
@@ -81,6 +82,7 @@ export default function ReservaPintarCeramica() {
       tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",
       nombre: user.displayName || "",
       email: user.email || "",
+      codigoTarjeta: codigoTarjeta || null,
     };
 
     try {
@@ -191,7 +193,7 @@ export default function ReservaPintarCeramica() {
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
               disabled={!plazas || plazas > plazasDisponibles}
             >
-              Confirmar y pagar
+              {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
             </button>
           </form>
         )}

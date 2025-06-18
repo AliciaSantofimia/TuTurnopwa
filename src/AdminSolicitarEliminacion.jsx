@@ -32,9 +32,9 @@ export default function AdminSolicitarEliminacion() {
       alert("Selecciona una clase y escribe un motivo.");
       return;
     }
-  
+
     const clase = clases.find((c) => c.id === claseSeleccionada);
-  
+
     try {
       await push(ref(dbRealtime, "solicitudesCambiosClases"), {
         clase: clase.nombre,
@@ -44,7 +44,7 @@ export default function AdminSolicitarEliminacion() {
         autor: email
       });
       alert("✅ Solicitud enviada correctamente.");
-      navigate("/admin");
+      navigate("/admin-panel");
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
       alert("❌ Error al enviar la solicitud.");
@@ -53,6 +53,10 @@ export default function AdminSolicitarEliminacion() {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>🛑 Solicitar eliminación de clase</h2>
 
       <select
@@ -89,6 +93,15 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 10,
+  },
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -122,4 +135,3 @@ const styles = {
     cursor: "pointer",
   },
 };
-

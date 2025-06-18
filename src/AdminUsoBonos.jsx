@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
-
+import { useNavigate } from "react-router-dom";
 
 const AdminUsoBonos = () => {
   const [bonos, setBonos] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarBonos = async () => {
@@ -29,6 +30,10 @@ const AdminUsoBonos = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>🎟️ Uso de Bonos</h2>
       <table style={styles.table}>
         <thead>
@@ -60,6 +65,15 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     padding: 40,
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 10,
   },
   titulo: {
     textAlign: "center",

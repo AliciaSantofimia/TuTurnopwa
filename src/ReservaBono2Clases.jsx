@@ -26,7 +26,8 @@ export default function ReservaBono2Clases() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjetaRegalo = location.state?.desdeTarjeta || false;
+  const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
+
 
   const maxTorno = 12;
   const maxModelado = 33;

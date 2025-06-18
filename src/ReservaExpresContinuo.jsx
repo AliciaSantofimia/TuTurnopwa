@@ -30,7 +30,8 @@ const ReservaExpresContinuo = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjeta = location.state?.desdeTarjeta || false;
+  const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
+
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -106,11 +107,12 @@ const ReservaExpresContinuo = () => {
 
       await actualizarContadorReservas(user.uid);
 
-      if (desdeTarjeta) {
-        navigate("/generar-codigo", { state: reserva });
-      } else {
-        navigate("/resumen-pago", { state: reserva });
-      }
+      if (desdeTarjetaRegalo) {
+  navigate("/generar-codigo", { state: { tipo: "exprescontinuo" } });
+} else {
+  navigate("/resumen-pago", { state: reserva });
+}
+
     } catch (error) {
       console.error("Error al guardar la reserva:", error);
       alert("Ocurrió un error al guardar tu reserva.");

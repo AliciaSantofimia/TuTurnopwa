@@ -21,7 +21,6 @@ const AdminListadoUsuarios = () => {
             nombre: data[uid].nombre,
             email: data[uid].email,
             reservas: typeof data[uid].reservas === "number" ? data[uid].reservas : 0,
-
           }));
         setUsuarios(lista);
       }
@@ -31,12 +30,15 @@ const AdminListadoUsuarios = () => {
   }, []);
 
   const verPerfil = (id) => {
-    <Route path="/admin-perfil-usuario/:uid" element={<AdminPerfilUsuario />} />
-
+    navigate(`/admin-perfil-usuario/${id}`);
   };
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>🐸 Listado de Usuarios</h2>
       <table style={styles.table}>
         <thead>
@@ -79,6 +81,15 @@ const styles = {
     backgroundColor: "#f4f1ec",
     padding: 30,
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   titulo: {
     textAlign: "center",

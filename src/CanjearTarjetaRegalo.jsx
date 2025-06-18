@@ -11,12 +11,13 @@ const CanjearTarjetaRegalo = () => {
   const navigate = useNavigate();
 
   const rutasPorTipo = {
-    "2 clases de 3h al mes (tarjeta regalo)": "/reserva-bono-2-clases",
-    "4 clases de 3h al mes (tarjeta regalo)": "/reserva-bono-4-clases",
-    "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creativo-plus",
-    "Pinta tu pieza (tarjeta regalo)": "/reserva-pintar-ceramica",
-    "Torno intensivo individual (tarjeta regalo)": "/reserva-edicion-premium"
-  };
+  "2 clases de 3h al mes (tarjeta regalo)": "/reserva-2clasesregalo",
+  "4 clases de 3h al mes (tarjeta regalo)": "/reserva-4clasesregalo",
+  "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creatupiezafavorita",
+  "Pinta tu pieza (tarjeta regalo)": "/reserva-pintatupieza",
+  "Torno intensivo individual (tarjeta regalo)": "/reserva-tornointensivo"
+};
+
 
   const handleValidar = async () => {
     setMensaje("");

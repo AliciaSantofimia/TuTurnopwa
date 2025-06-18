@@ -33,7 +33,7 @@ const AdminCrearClase = () => {
     try {
       await push(ref(dbRealtime, "solicitudesCambiosClases"), solicitud);
       alert("✅ Solicitud de creación enviada correctamente.");
-      navigate("/admin");
+      navigate("/admin-panel"); //Redirección al panel tras enviar
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
       alert("❌ No se pudo enviar la solicitud.");
@@ -42,6 +42,10 @@ const AdminCrearClase = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <div style={styles.formulario}>
         <h2 style={styles.titulo}>📋 Solicitar nueva clase</h2>
         <input
@@ -92,6 +96,15 @@ const styles = {
     padding: 30,
     minHeight: "100vh",
     fontFamily: "'Segoe UI', sans-serif",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   formulario: {
     maxWidth: 500,

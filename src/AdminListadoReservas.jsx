@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ref, get, child, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 const AdminListadoReservas = () => {
   const [reservas, setReservas] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const obtenerReservas = async () => {
@@ -29,7 +31,6 @@ const AdminListadoReservas = () => {
                     fecha,
                     turno,
                     estado: reserva.estado || "Pendiente de pago",
-
                     usuario: reserva.nombre || "Sin nombre",
                     uid: reserva.uid || null,
                   });
@@ -91,6 +92,10 @@ const AdminListadoReservas = () => {
 
   return (
     <div style={styles.body}>
+      <button onClick={() => navigate(-1)} style={styles.volver}>
+        ← Volver atrás
+      </button>
+
       <h2 style={styles.titulo}>📋 Listado de Reservas</h2>
       <table style={styles.table}>
         <thead>
@@ -161,6 +166,15 @@ const styles = {
     backgroundColor: "#f4f1ec",
     padding: 30,
     minHeight: "100vh",
+  },
+  volver: {
+    background: "none",
+    border: "none",
+    color: "#4a90e2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    marginBottom: 20,
   },
   titulo: {
     textAlign: "center",
