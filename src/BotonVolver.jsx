@@ -17,10 +17,13 @@ export default function BotonVolver({ volverA }) {
   return (
     <button
       onClick={handleVolver}
-      className="text-sm text-gray-700 hover:text-black underline mb-4"
+      className="text-lg text-blue-700 hover:text-blue-900 mb-4"
+      aria-label="Volver"
     >
-      ← Volver atrás
+      ←
     </button>
   );
 }
+
+
 

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminVerInscripciones = () => {
   const { id } = useParams(); // id de la clase, como "BásicoEsencial"
@@ -51,9 +53,7 @@ const AdminVerInscripciones = () => {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>👥 Inscripciones - {nombreClase}</h2>
       <table style={styles.table}>
@@ -96,15 +96,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#1d4ed8",
-    fontSize: "0.95rem",
-    textDecoration: "underline",
-    cursor: "pointer",
-    marginBottom: 20,
-  },
+  
   titulo: {
     textAlign: "center",
     marginBottom: 20,

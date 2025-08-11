@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
+import BotonVolver from "./BotonVolver";
+
 
 export default function ClasesSoloVista() {
   const navigate = useNavigate();
@@ -99,12 +101,7 @@ export default function ClasesSoloVista() {
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
-      <button
-        onClick={() => navigate("/")}
-        className="text-sm text-blue-600 underline mb-4"
-      >
-        ← Volver a la portada
-      </button>
+      <BotonVolver />
 
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img

@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 export default function TeariumKarma() {
   const navigate = useNavigate();
@@ -8,13 +10,7 @@ export default function TeariumKarma() {
     <div className="min-h-screen bg-[#fffef4] p-6">
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-md p-6">
 
-        {/* 🔙 Botón Volver */}
-        <button
-          onClick={() => navigate(-1)}
-          className="text-blue-700 underline mb-4"
-        >
-          ← Volver
-        </button>
+        <BotonVolver />
 
         <img
           src="/img/pintarkarma.jpg"

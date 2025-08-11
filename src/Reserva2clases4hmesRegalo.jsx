@@ -4,36 +4,32 @@ import { getAuth } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
-import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 
 
-const actualizarContadorReservas = async (uid) => {
-  const userRef = ref(dbRealtime, "usuarios/" + uid);
-  const snapshot = await get(userRef);
-  if (snapshot.exists()) {
-    const datos = snapshot.val();
-    const nuevasReservas = (datos.reservas || 0) + 1;
-    await update(userRef, {
-      reservas: nuevasReservas
-    });
-  }
-};
-
-export default function ReservaBono4Clases() {
+export default function Reserva2clases4hmesRegalo() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
   const [metodo, setMetodo] = useState("");
   const [plazas, setPlazas] = useState(1);
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
+  const [usuarioLogueado, setUsuarioLogueado] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
 
   const maxTorno = 12;
   const maxModelado = 33;
+
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUsuarioLogueado(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (fecha) {
@@ -52,87 +48,59 @@ export default function ReservaBono4Clases() {
       : 0;
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    console.error("Usuario no autenticado.");
-    return;
-  }
-
-  if (plazas > plazasDisponibles) {
-    alert("No hay suficientes plazas disponibles para este método.");
-    return;
-  }
-
-  const reserva = {
-    clase: "Bono 4 Clases",
-    fecha,
-    turno,
-    metodo,
-    precio: "79€",
-    plazas: Number(plazas),
-    timestamp: new Date().toISOString(),
-    tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
-  };
-
-  try {
-    const generalRef = ref(
-      dbRealtime,
-      `reservas/Bono4Clases/${fecha}/${turno}/${metodo}`
-    );
-    await push(generalRef, {
-      uid: user.uid,
-      ...reserva
-    });
-
-    const userHistorialRef = ref(
-      dbRealtime,
-      `usuarios/${user.uid}/historialReservas`
-    );
-    await push(userHistorialRef, reserva);
-
-    // ✅ NUEVO: guardar también como reserva activa
-    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-    await push(userReservaRef, reserva);
-
-    await actualizarContadorReservas(user.uid);
-
-    if (desdeTarjetaRegalo) {
-      navigate("/generar-codigo", {
-        state: { tipo: "4clases" }
-      });
-    } else {
-      navigate("/resumen-pago", {
-        state: reserva
-      });
+    e.preventDefault();
+    if (!fecha || !turno || !metodo || !plazas) {
+      alert("Por favor, completa todos los campos.");
+      return;
     }
-  } catch (err) {
-    console.error("Error al guardar la reserva:", err);
-  }
-};
 
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const reserva = {
+      clase: "2 clases de 4h al mes",
+      fecha,
+      turno,
+      metodo,
+      plazas: Number(plazas),
+      tipoReserva: "tarjeta regalo",
+      codigo: location.state?.codigo || "",
+      precio: "0€",
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const refReserva = ref(
+        dbRealtime,
+        `reservas/2clases4hmes/${fecha}/${turno}/${metodo}`
+      );
+      await push(refReserva, { uid: user.uid, ...reserva });
+
+      const historialRef = ref(dbRealtime, `usuarios/${user.uid}/listaReservas`);
+      await push(historialRef, reserva);
+
+      navigate("/perfil");
+    } catch (error) {
+      console.error("Error al guardar la reserva:", error);
+      alert("Ocurrió un error al guardar tu reserva.");
+    }
+  };
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <BotonVolver volverA="/bono-4-clases" />
-
+       <BotonVolver volverA="/perfil" />
 
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
-          Reserva – Bono 4 Clases
+          Reserva con tu tarjeta regalo
         </h1>
 
-        {desdeTarjetaRegalo && (
-          <p className="text-sm text-green-700 text-center font-medium mb-4">
-            Estás usando una tarjeta regalo 🎁
-          </p>
-        )}
-
-        <BloqueoReserva>
+        {!usuarioLogueado ? (
+          <div className="text-center bg-orange-100 text-orange-800 p-4 rounded-xl font-semibold text-base">
+            🔐 Inicia sesión para poder reservar esta clase.
+          </div>
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="fecha" className="block font-bold text-sm mb-1">
@@ -162,8 +130,8 @@ export default function ReservaBono4Clases() {
                 required
               >
                 <option value="">-- Elige turno --</option>
-                <option value="12:00-15:00">12:00 – 15:00 (mañana)</option>
-                <option value="18:00-21:00">18:00 – 21:00 (tarde)</option>
+                <option value="10:00-13:00">10:00 – 13:00</option>
+                <option value="17:00-20:00">17:00 – 20:00</option>
               </select>
             </div>
 
@@ -185,9 +153,9 @@ export default function ReservaBono4Clases() {
             </div>
 
             {metodo && (
-              <p className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600">
                 Quedan {plazasDisponibles} plazas disponibles para este método.
-              </p>
+              </div>
             )}
 
             <div>
@@ -198,7 +166,7 @@ export default function ReservaBono4Clases() {
                 type="number"
                 id="plazas"
                 value={plazas}
-                onChange={(e) => setPlazas(e.target.value)}
+                onChange={(e) => setPlazas(Number(e.target.value))}
                 min="1"
                 max={plazasDisponibles || 1}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
@@ -211,18 +179,19 @@ export default function ReservaBono4Clases() {
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
               disabled={!metodo || plazas > plazasDisponibles}
             >
-              Confirmar y pagar
+              Confirmar reserva con tarjeta regalo
             </button>
           </form>
-        </BloqueoReserva>
+        )}
 
         <div className="mt-8 text-center">
-          <img src="/img/logoPCsin.png" alt="La Purísima Conchi" className="w-20 mx-auto" />
+          <img
+            src="/img/logoPCsin.png"
+            alt="La Purísima Conchi"
+            className="w-20 mx-auto"
+          />
         </div>
       </div>
     </div>
   );
 }
-
-
-

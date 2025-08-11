@@ -6,6 +6,7 @@ import { dbRealtime } from "./firebase";
 import DatePicker, { registerLocale } from "react-datepicker";
 import es from "date-fns/locale/es";
 import "react-datepicker/dist/react-datepicker.css";
+import BotonVolver from "./BotonVolver";
 
 registerLocale("es", es);
 
@@ -108,18 +109,7 @@ export default function ReservaTearium() {
 
   return (
     <div className="p-6 bg-[#fffef4] min-h-screen font-sans text-gray-800">
-      <button
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
-            navigate("/menu");
-          }
-        }}
-        className="text-sm text-blue-600 underline mb-4"
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <h1 className="text-2xl font-bold text-center mb-2">
         Pinta tu pieza de cerámica - Tearium

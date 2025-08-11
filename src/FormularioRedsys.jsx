@@ -12,9 +12,9 @@ const FormularioRedsys = () => {
       DS_MERCHANT_CURRENCY: "978", // EUR
       DS_MERCHANT_TRANSACTIONTYPE: "0",
       DS_MERCHANT_TERMINAL: "1",
-      DS_MERCHANT_MERCHANTURL: "https://tudominio.com/notificacion", // URL notificación backend
-      DS_MERCHANT_URLOK: "https://tudominio.com/pago-exitoso",
-      DS_MERCHANT_URLKO: "https://tudominio.com/pago-fallido",
+      DS_MERCHANT_MERCHANTURL: "https://app.lapurisimaconchi.es/notificacion",
+      DS_MERCHANT_URLOK: "https://app.lapurisimaconchi.es/pago-exitoso",
+      DS_MERCHANT_URLKO: "https://app.lapurisimaconchi.es/pago-fallido",
       DS_MERCHANT_PRODUCTDESCRIPTION: "Clase Creativo Plus"
     };
 

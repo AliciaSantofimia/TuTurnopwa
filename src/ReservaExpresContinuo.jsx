@@ -4,6 +4,7 @@ import { getAuth } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
+import BotonVolver from "./BotonVolver";
 
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
@@ -31,7 +32,6 @@ const ReservaExpresContinuo = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
-
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -81,7 +81,7 @@ const ReservaExpresContinuo = () => {
       precio,
       plazas: Number(plazas),
       timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",
+      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
     };
 
     try {
@@ -105,14 +105,17 @@ const ReservaExpresContinuo = () => {
       );
       await push(historialRef, reserva);
 
+      // ✅ NUEVO: guardar también como reserva activa
+      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+      await push(userReservaRef, reserva);
+
       await actualizarContadorReservas(user.uid);
 
       if (desdeTarjetaRegalo) {
-  navigate("/generar-codigo", { state: { tipo: "exprescontinuo" } });
-} else {
-  navigate("/resumen-pago", { state: reserva });
-}
-
+        navigate("/generar-codigo", { state: { tipo: "exprescontinuo" } });
+      } else {
+        navigate("/resumen-pago", { state: reserva });
+      }
     } catch (error) {
       console.error("Error al guardar la reserva:", error);
       alert("Ocurrió un error al guardar tu reserva.");
@@ -124,7 +127,7 @@ const ReservaExpresContinuo = () => {
       <div style={styles.container}>
         <h2 style={styles.titulo}>Reserva: Exprés Continuo</h2>
 
-        {desdeTarjeta && (
+        {desdeTarjetaRegalo && (
           <p style={styles.mensaje}>Estás usando una tarjeta regalo 🎁</p>
         )}
 
@@ -214,26 +217,7 @@ const ReservaExpresContinuo = () => {
           </>
         )}
 
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/menu");
-            }
-          }}
-          style={{
-            marginTop: 12,
-            fontSize: "0.9rem",
-            color: "#2563eb",
-            textDecoration: "underline",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          ← Volver
-        </button>
+        <BotonVolver />
       </div>
     </div>
   );

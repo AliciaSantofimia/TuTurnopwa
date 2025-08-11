@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -12,10 +14,7 @@ const AdminPanel = () => {
       </button>
 
       <div style={styles.panelContainer}>
-        {/* Botón volver */}
-        <button onClick={() => navigate(-1)} style={styles.volver}>
-          ← Volver atrás
-        </button>
+        <BotonVolver />
 
         <div style={styles.tituloContainer}>
           <img
@@ -105,15 +104,7 @@ const styles = {
     maxWidth: 700,
     width: "100%",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 20,
-  },
+  
   tituloContainer: {
     display: "flex",
     alignItems: "center",

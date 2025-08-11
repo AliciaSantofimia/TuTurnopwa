@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ref as dbRef, get, update } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminCambiarImagenClase = () => {
   const { id } = useParams();
@@ -55,20 +57,8 @@ const AdminCambiarImagenClase = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#f2f2f2",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
+
 
       <div style={styles.contenedor}>
         <h2 style={styles.titulo}>🖼️ Cambiar imagen de la clase</h2>

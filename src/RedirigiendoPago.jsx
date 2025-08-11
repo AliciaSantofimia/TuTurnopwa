@@ -23,9 +23,9 @@ const RedirigiendoPago = () => {
       DS_MERCHANT_CURRENCY: "978",
       DS_MERCHANT_TRANSACTIONTYPE: "0",
       DS_MERCHANT_TERMINAL: "1",
-      DS_MERCHANT_MERCHANTURL: "https://tuturnoapp.es/notificacion",
-      DS_MERCHANT_URLOK: "https://tuturnoapp.es/generarcodigotarjetaregalo",
-      DS_MERCHANT_URLKO: "https://tuturnoapp.es/pago-fallido",
+      DS_MERCHANT_MERCHANTURL: "https://app.lapurisimaconchi.es/notificacion",
+      DS_MERCHANT_URLOK: "https://app.lapurisimaconchi.es/generarcodigotarjetaregalo",
+      DS_MERCHANT_URLKO: "https://app.lapurisimaconchi.es/pago-fallido",
       DS_MERCHANT_PRODUCTDESCRIPTION: datos.clase,
     };
 

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { crearTarjetaRegalo } from "./crearTarjetaRegalo";
+import BotonVolver from "./BotonVolver";
+
 
 export default function GenerarCodigoTarjetaRegalo() {
   const location = useLocation();
@@ -65,21 +67,7 @@ export default function GenerarCodigoTarjetaRegalo() {
 
   return (
     <div style={{ padding: 24 }}>
-      {/* 🔙 Botón Volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          color: "#1a73e8",
-          textDecoration: "underline",
-          marginBottom: "16px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          fontSize: "1rem"
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <h2>¡Tarjeta regalo generada!</h2>
 

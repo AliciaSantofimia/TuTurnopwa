@@ -5,6 +5,7 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
+import BotonVolver from "./BotonVolver";
 
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
@@ -50,79 +51,72 @@ export default function ReservaCreativoPlus() {
       : 0;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const auth = getAuth();
-    const user = auth.currentUser;
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-    if (!user) {
-      console.error("Usuario no autenticado.");
-      return;
-    }
+  if (!user) {
+    console.error("Usuario no autenticado.");
+    return;
+  }
 
-    if (plazas > plazasDisponibles) {
-      alert("No hay suficientes plazas disponibles para este método.");
-      return;
-    }
+  if (plazas > plazasDisponibles) {
+    alert("No hay suficientes plazas disponibles para este método.");
+    return;
+  }
 
-    const reserva = {
-      clase: "Creativo Plus",
-      fecha,
-      turno,
-      metodo,
-      precio: "60€",
-      plazas: Number(plazas),
-      timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
-    };
-
-    try {
-      const generalRef = ref(
-        dbRealtime,
-        `reservas/CreativoPlus/${fecha}/${turno}/${metodo}`
-      );
-      await push(generalRef, {
-        uid: user.uid,
-        ...reserva
-      });
-
-      const userHistorialRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/historialReservas`
-      );
-      await push(userHistorialRef, reserva);
-
-      await actualizarContadorReservas(user.uid);
-
-      if (desdeTarjetaRegalo) {
-        navigate("/generar-codigo", {
-          state: { tipo: "creativoplus" }
-        });
-      } else {
-        navigate("/resumen-pago", {
-          state: reserva
-        });
-      }
-    } catch (err) {
-      console.error("Error al guardar la reserva:", err);
-    }
+  const reserva = {
+    clase: "Creativo Plus",
+    fecha,
+    turno,
+    metodo,
+    precio: "60€",
+    plazas: Number(plazas),
+    timestamp: new Date().toISOString(),
+    tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
   };
+
+  try {
+    const generalRef = ref(
+      dbRealtime,
+      `reservas/CreativoPlus/${fecha}/${turno}/${metodo}`
+    );
+    await push(generalRef, {
+      uid: user.uid,
+      ...reserva
+    });
+
+    const userHistorialRef = ref(
+      dbRealtime,
+      `usuarios/${user.uid}/historialReservas`
+    );
+    await push(userHistorialRef, reserva);
+
+    // ✅ NUEVO: guardar también como reserva activa
+    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+    await push(userReservaRef, reserva);
+
+    await actualizarContadorReservas(user.uid);
+
+    if (desdeTarjetaRegalo) {
+      navigate("/generar-codigo", {
+        state: { tipo: "creativoplus" }
+      });
+    } else {
+      navigate("/resumen-pago", {
+        state: reserva
+      });
+    }
+  } catch (err) {
+    console.error("Error al guardar la reserva:", err);
+  }
+};
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/menu");
-            }
-          }}
-          className="text-sm text-blue-600 underline mb-4"
-        >
-          ← Volver
-        </button>
+        <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva – Creativo Plus

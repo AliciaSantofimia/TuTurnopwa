@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ref, get, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -51,9 +53,7 @@ const AdminSolicitudes = () => {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>📮 Solicitudes de Cambios</h2>
       {solicitudes.length === 0 ? (
@@ -101,15 +101,7 @@ const styles = {
     padding: 30,
     minHeight: "100vh",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 10,
-  },
+  
   titulo: {
     textAlign: "center",
     marginBottom: 30,

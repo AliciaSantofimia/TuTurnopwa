@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 export default function CondicionesUso() {
   const navigate = useNavigate();
@@ -13,13 +15,7 @@ export default function CondicionesUso() {
           className="mx-auto mb-6 w-36"
         />
 
-        {/* Botón volver */}
-        <button
-          onClick={() => navigate(-1)}
-          className="text-sm text-gray-700 hover:text-black underline mb-6"
-        >
-          ← Volver atrás
-        </button>
+        <BotonVolver />
 
         <h1 className="text-2xl font-bold text-center text-orange-800 mb-8">
           Condiciones de Uso

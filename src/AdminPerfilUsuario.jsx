@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminPerfilUsuario = () => {
   const { uid } = useParams();
@@ -31,9 +33,7 @@ const AdminPerfilUsuario = () => {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <div style={styles.perfil}>
         <h2>🦉 {usuario.nombre}</h2>
@@ -72,15 +72,7 @@ const styles = {
     color: "#333",
     minHeight: "100vh",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 20,
-  },
+  
   perfil: {
     background: "white",
     padding: 30,

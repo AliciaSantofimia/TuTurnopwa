@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
 
 const AdminNotificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -45,20 +46,7 @@ const AdminNotificaciones = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#e0e0e0",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>🔔 Notificaciones enviadas</h2>
       <table style={styles.table}>

@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ref, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminEliminarClase = () => {
   const navigate = useNavigate();
@@ -25,20 +27,8 @@ const AdminEliminarClase = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#f2f2f2",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
+
 
       <div style={styles.confirm}>
         <h2>¿Eliminar esta clase?</h2>

@@ -3,6 +3,7 @@ import { ref, get, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import BotonVolver from "./BotonVolver";
 
 export default function AdminSolicitarEliminacion() {
   const [clases, setClases] = useState([]);
@@ -53,9 +54,7 @@ export default function AdminSolicitarEliminacion() {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>🛑 Solicitar eliminación de clase</h2>
 
@@ -93,15 +92,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 10,
-  },
+  
   titulo: {
     textAlign: "center",
     marginBottom: 20,

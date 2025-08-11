@@ -3,6 +3,8 @@ import { getAuth } from "firebase/auth";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 const HistorialTarjetasRegalo = () => {
   const [tarjetas, setTarjetas] = useState([]);
@@ -44,19 +46,7 @@ const HistorialTarjetasRegalo = () => {
 
   return (
     <div style={styles.container}>
-      {/* 🔙 Botón volver */}
-      <button
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
-            navigate("/perfil");
-          }
-        }}
-        style={{ color: "#1d4ed8", textDecoration: "underline", marginBottom: 12 }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>Mis tarjetas regalo compradas</h2>
       {tarjetas.length === 0 ? (

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminFiltrarReservas = () => {
   const [fecha, setFecha] = useState("");
@@ -47,20 +49,8 @@ const AdminFiltrarReservas = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#f2f2f2",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+     <BotonVolver />
+
 
       <h2 style={styles.titulo}>🔎 Filtrar reservas por fecha</h2>
       <input

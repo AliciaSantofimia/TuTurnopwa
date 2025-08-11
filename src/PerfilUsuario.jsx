@@ -74,37 +74,34 @@ export default function PerfilUsuario() {
         <p className="text-sm mb-1"><strong>Nombre:</strong> {nombre}</p>
         <p className="text-sm mb-4"><strong>Email:</strong> {email}</p>
 
-        
-         <div className="flex gap-3 mb-4">
-  <button
-    className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 rounded-xl text-sm"
-    onClick={() => navigate("/editar-perfil")}
-  >
-    Editar perfil
-  </button>
+        <div className="flex gap-3 mb-4">
+          <button
+            className="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 rounded-xl text-sm"
+            onClick={() => navigate("/editar-perfil")}
+          >
+            Editar perfil
+          </button>
 
-  <button
-    className="flex-1 bg-red-400 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-sm"
-    onClick={handleLogout}
-  >
-    Cerrar sesión
-  </button>
-</div>
+          <button
+            className="flex-1 bg-red-400 hover:bg-red-500 text-white font-bold py-2 rounded-xl text-sm"
+            onClick={handleLogout}
+          >
+            Cerrar sesión
+          </button>
+        </div>
 
-<button
-  className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
-  onClick={() => navigate("/dondereservar")}
->
-  Haz tu reserva
-</button>
-<button
-  className="w-full bg-pink-300 hover:bg-pink-200 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
-  onClick={() => navigate("/canjear-tarjeta")}
->
-  Canjear tarjeta regalo
-</button>
-
-
+        <button
+          className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
+          onClick={() => navigate("/dondereservar")}
+        >
+          Haz tu reserva
+        </button>
+        <button
+          className="w-full bg-pink-300 hover:bg-pink-200 text-[#3b3025] font-bold py-2 rounded-xl text-sm mb-6 shadow"
+          onClick={() => navigate("/canjear-tarjeta")}
+        >
+          Canjear tarjeta regalo
+        </button>
 
         {avisos.length > 0 && (
           <div className="mb-6">
@@ -128,6 +125,26 @@ export default function PerfilUsuario() {
             <p><strong>Ubicación:</strong> {reservaActiva.ubicacion}</p>
           </div>
         )}
+
+        {/* 🏺 NUEVA SECCIÓN: Recoge tu pieza */}
+        <div className="bg-yellow-100 border-l-4 border-yellow-400 rounded-2xl p-4 mb-6 shadow">
+          <div className="flex items-center mb-3">
+            <img src="/img/ceramica.png" alt="Icono cerámica" className="w-8 h-8 mr-2" />
+            <h2 className="text-xl font-semibold text-yellow-800">Quiero recoger mi pieza</h2>
+          </div>
+          <p className="text-sm text-gray-800 mb-4">
+            ¿Has venido al taller y estás esperando tu pieza? Recuerda que el proceso de cocción puede tardar hasta <strong>30 días</strong>.  
+            Cuando tu pieza esté lista, la subiremos a una carpeta con fotos. Si la reconoces, ¡ya puedes venir a recogerla!
+          </p>
+          <a
+            href="https://drive.google.com/drive/folders/1J0f79NLH--SZ9DGIaFO2n5hSNdjU7rUn"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-6 py-2 text-white font-semibold bg-yellow-500 hover:bg-yellow-600 rounded-full transition-shadow shadow-md hover:shadow-lg"
+          >
+            Ver piezas listas para recoger
+          </a>
+        </div>
 
         <button
           onClick={() => setMostrarTarjetas(!mostrarTarjetas)}
@@ -173,7 +190,7 @@ export default function PerfilUsuario() {
         </div>
       </div>
 
-    
     </PantallaConVolver>
   );
 }
+

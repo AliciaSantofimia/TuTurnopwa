@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminListadoUsuarios = () => {
   const navigate = useNavigate();
@@ -35,9 +37,7 @@ const AdminListadoUsuarios = () => {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <h2 style={styles.titulo}>🐸 Listado de Usuarios</h2>
       <table style={styles.table}>
@@ -82,15 +82,7 @@ const styles = {
     padding: 30,
     minHeight: "100vh",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 20,
-  },
+  
   titulo: {
     textAlign: "center",
     marginBottom: 20,

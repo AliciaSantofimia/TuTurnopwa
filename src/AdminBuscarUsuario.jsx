@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminBuscarUsuario = () => {
   const [busqueda, setBusqueda] = useState("");
@@ -44,20 +46,8 @@ const AdminBuscarUsuario = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#e0e0e0",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
+
 
       <div style={styles.contenedor}>
         <h2 style={styles.titulo}>🔎 Buscar Usuario</h2>

@@ -5,6 +5,8 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
+import BotonVolver from "./BotonVolver";
+
 
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
@@ -57,64 +59,59 @@ export default function ReservaBono2Clases() {
       : 0;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!user) return;
+  e.preventDefault();
+  if (!user) return;
 
-    const reserva = {
-      clase: "Bono 2 Clases",
-      fecha,
-      turno: "Flexible",
-      metodo,
-      precio: "70€",
-      plazas: Number(plazas),
-      desdeTarjetaRegalo,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      const generalRef = ref(
-        dbRealtime,
-        `reservas/Bono2Clases/${fecha}/Flexible/${metodo}`
-      );
-      await push(generalRef, { uid: user.uid, ...reserva });
-
-      const historialRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/historialReservas`
-      );
-      await push(historialRef, reserva);
-
-      await actualizarContadorReservas(user.uid);
-
-      if (desdeTarjetaRegalo) {
-        navigate("/generar-codigo", {
-          state: { tipo: "2clases" }
-        });
-      } else {
-        navigate("/resumen-pago", {
-          state: reserva
-        });
-      }
-    } catch (err) {
-      console.error("Error al guardar la reserva:", err);
-    }
+  const reserva = {
+    clase: "Bono 2 Clases",
+    fecha,
+    turno: "Flexible",
+    metodo,
+    precio: "70€",
+    plazas: Number(plazas),
+    desdeTarjetaRegalo,
+    timestamp: new Date().toISOString()
   };
+
+  try {
+    const generalRef = ref(
+      dbRealtime,
+      `reservas/Bono2Clases/${fecha}/Flexible/${metodo}`
+    );
+    await push(generalRef, { uid: user.uid, ...reserva });
+
+    const historialRef = ref(
+      dbRealtime,
+      `usuarios/${user.uid}/historialReservas`
+    );
+    await push(historialRef, reserva);
+
+    // ✅ NUEVO: guardar también como reserva activa
+    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+    await push(userReservaRef, reserva);
+
+    await actualizarContadorReservas(user.uid);
+
+    if (desdeTarjetaRegalo) {
+      navigate("/generar-codigo", {
+        state: { tipo: "2clases" }
+      });
+    } else {
+      navigate("/resumen-pago", {
+        state: reserva
+      });
+    }
+  } catch (err) {
+    console.error("Error al guardar la reserva:", err);
+  }
+};
+
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              navigate(-1);
-            } else {
-              navigate("/menu");
-            }
-          }}
-          className="text-sm text-blue-600 underline mb-4"
-        >
-          ← Volver
-        </button>
+        <BotonVolver volverA="/menu" />
+
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva – Bono 2 Clases

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set } from "firebase/database";
 import { auth, dbRealtime } from "./firebase"; //  sin Firestore
+import BotonVolver from "./BotonVolver";
+
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -46,12 +48,8 @@ export default function Registro() {
 
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex flex-col items-center justify-center px-4 text-[#333]">
-      <button
-        onClick={() => navigate("/")}
-        className="text-sm text-blue-600 underline mb-4 self-start"
-      >
-        ← Volver a la portada
-      </button>
+      <BotonVolver volverA="/" />
+
 
       <img
         src="/img/logoPCsin.png"

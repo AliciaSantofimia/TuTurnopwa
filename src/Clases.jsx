@@ -168,7 +168,7 @@ export default function Clases() {
         ))}
       </div>
 
-      <Footer />
+    
     </div>
   );
 }

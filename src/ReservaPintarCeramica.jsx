@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasTotalesPorDia } from "./utils/contarPlazasDia";
+import BotonVolver from "./BotonVolver";
 
 const actualizarContadorReservas = async (uid) => {
   try {
@@ -108,12 +109,7 @@ export default function ReservaPintarCeramica() {
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <button
-          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/menu"))}
-          className="text-sm text-blue-600 underline mb-4"
-        >
-          ← Volver
-        </button>
+        <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva – Pintar Cerámica

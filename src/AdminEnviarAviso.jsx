@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, push, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminEnviarAviso = () => {
   const { id } = useParams(); // ID del usuario desde la URL
@@ -52,20 +54,8 @@ const AdminEnviarAviso = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#f2f2f2",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
+
 
       <div style={styles.aviso}>
         <h2>📢 Enviar aviso al usuario</h2>

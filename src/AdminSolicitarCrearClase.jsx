@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ref, push } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminCrearClase = () => {
   const navigate = useNavigate();
@@ -42,9 +44,7 @@ const AdminCrearClase = () => {
 
   return (
     <div style={styles.body}>
-      <button onClick={() => navigate(-1)} style={styles.volver}>
-        ← Volver atrás
-      </button>
+      <BotonVolver />
 
       <div style={styles.formulario}>
         <h2 style={styles.titulo}>📋 Solicitar nueva clase</h2>
@@ -97,15 +97,7 @@ const styles = {
     minHeight: "100vh",
     fontFamily: "'Segoe UI', sans-serif",
   },
-  volver: {
-    background: "none",
-    border: "none",
-    color: "#4a90e2",
-    textDecoration: "underline",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    marginBottom: 20,
-  },
+  
   formulario: {
     maxWidth: 500,
     margin: "auto",

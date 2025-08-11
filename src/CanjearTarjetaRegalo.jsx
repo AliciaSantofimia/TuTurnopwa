@@ -11,13 +11,12 @@ const CanjearTarjetaRegalo = () => {
   const navigate = useNavigate();
 
   const rutasPorTipo = {
-  "2 clases de 3h al mes (tarjeta regalo)": "/reserva-2clasesregalo",
-  "4 clases de 3h al mes (tarjeta regalo)": "/reserva-4clasesregalo",
-  "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creatupiezafavorita",
-  "Pinta tu pieza (tarjeta regalo)": "/reserva-pintatupieza",
-  "Torno intensivo individual (tarjeta regalo)": "/reserva-tornointensivo"
-};
-
+    "2 clases de 3h al mes (tarjeta regalo)": "/reserva-2clases4hmes-regalo",
+    "4 clases de 3h al mes (tarjeta regalo)": "/reserva-4clases3hmes-regalo",
+    "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creatupiezafavorita-regalo",
+    "Pinta tu pieza de cerámica (tarjeta regalo)": "/reserva-pintatupieza-regalo",
+    "Torno intensivo individual (tarjeta regalo)": "/reserva-tornointensivo-regalo"
+  };
 
   const handleValidar = async () => {
     setMensaje("");
@@ -77,7 +76,6 @@ const CanjearTarjetaRegalo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
-        {/* 🔙 Botón Volver */}
         <button
           onClick={() => navigate(-1)}
           style={{

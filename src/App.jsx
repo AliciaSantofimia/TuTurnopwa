@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./ScrollToTop";
+import PoliticaPiezas from "./PoliticaPiezas";
+import AvisoLegal from "./AvisoLegal.jsx";
 
 // Layout general
 import AppLayout from "./AppLayout";
@@ -59,6 +61,15 @@ import DetalleTarjetaPintaTuPieza from "./DetalleTarjetaPintaTuPieza.jsx";
 import DetalleTarjetaTornoIntensivo from "./DetalleTarjetaTornoIntensivo.jsx";
 import ReservaPintaTuPiezaRegalo from "./ReservaPintaTuPiezaRegalo.jsx";
 
+//Reservas con las tarjetas regalo
+import ReservaTornoIntensivoRegalo from "./ReservaTornoIntensivoRegalo.jsx";
+import Reserva2clases4hmesRegalo from "./Reserva2clases4hmesRegalo.jsx";
+
+
+
+
+
+
 // Ubicaciones externas
 import TheClub from "./TheClub.jsx";
 import TeariumKarma from "./TeariumKarma.jsx";
@@ -68,6 +79,9 @@ import ReservaKarma from "./ReservaKarma.jsx";
 import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
 import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
 import ResumenPagoKarma from "./ResumenPagoKarma.jsx";
+
+import PagoFallido from "./PagoFallido.jsx";
+
 
 // Admin
 import AdminPanel from "./AdminPanel.jsx";
@@ -115,6 +129,8 @@ function App() {
           <Route path="/perfil" element={<PerfilUsuario />} />
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/dondereservar" element={<DondeReservar />} />
+          <Route path="/politica-piezas" element={<PoliticaPiezas />} /> 
+          <Route path="/aviso-legal" element={<AvisoLegal />} />
 
           {/* Clases */}
           <Route path="/clases" element={<Clases />} />
@@ -161,6 +177,11 @@ function App() {
           <Route path="/canjear-tarjeta" element={<CanjearTarjetaRegalo />} />
           <Route path="/reserva-pinta-tu-pieza-regalo" element={<ReservaPintaTuPiezaRegalo />} />
 
+          {/* Reservas tarjetas regalo*/}
+          <Route path="/reserva-tornointensivo-regalo" element={<ReservaTornoIntensivoRegalo />}/>
+          <Route path="/reserva-2clases4hmes-regalo" element={<Reserva2clases4hmesRegalo />} />
+
+
           {/* Reservas normales */}
           <Route path="/reserva-edicion-premium" element={<ReservaEdicionPremium />} />
           <Route path="/reserva-creativo-plus" element={<ReservaCreativoPlus />} />
@@ -176,6 +197,8 @@ function App() {
           <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />
           <Route path="/resumenpagotearium" element={<ResumenPagoTearium />} />
           <Route path="/resumenpagokarma" element={<ResumenPagoKarma />} />
+          <Route path="/pago-fallido" element={<PagoFallido />} />
+
 
           {/* Ubicaciones externas */}
           <Route path="/theclub" element={<TheClub />} />

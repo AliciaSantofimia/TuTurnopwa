@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ref as dbRef, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
+
 
 const AdminCompletarReserva = () => {
   const { id } = useParams();
@@ -36,20 +38,8 @@ const AdminCompletarReserva = () => {
 
   return (
     <div style={styles.body}>
-      {/* Botón volver */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          backgroundColor: "#e0e0e0",
-          border: "1px solid #ccc",
-          padding: "6px 12px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        ← Volver
-      </button>
+     <BotonVolver />
+
 
       <div style={styles.bloque}>
         <h2>✅ ¿Marcar esta reserva como completada?</h2>

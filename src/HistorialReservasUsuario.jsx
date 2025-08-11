@@ -3,6 +3,8 @@ import { getAuth } from "firebase/auth";
 import { ref, get, set, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import PantallaConVolver from "./PantallaConVolver"; 
+
 
 export default function HistorialReservasUsuario() {
   const [reservasFuturas, setReservasFuturas] = useState([]);
@@ -61,19 +63,14 @@ export default function HistorialReservasUsuario() {
 
   return (
     <div className="mt-8 px-4">
-      {/* 🟡 Botón Volver */}
-      <button
-        onClick={() => {
-          if (window.history.length > 1) {
-            navigate(-1);
-          } else {
-            navigate("/perfil");
-          }
-        }}
-        className="text-sm text-blue-600 underline mb-4"
-      >
-        ← Volver
-      </button>
+      return (
+  <PantallaConVolver>
+    <div className="mt-8 px-4">
+      ...
+    </div>
+  </PantallaConVolver>
+);
+
 
       <h3 className="text-lg font-semibold text-[#3b3025] mb-4 text-center">📌 Reservas activas</h3>
       {reservasFuturas.length === 0 ? (
