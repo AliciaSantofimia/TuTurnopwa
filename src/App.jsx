@@ -72,13 +72,11 @@ import Reserva2clases4hmesRegalo from "./Reserva2clases4hmesRegalo.jsx";
 
 // Ubicaciones externas
 import TheClub from "./TheClub.jsx";
-import TeariumKarma from "./TeariumKarma.jsx";
+import TeariumInfo from "./TeariumInfo.jsx";
 import ReservaTheClub from "./ReservaTheClub.jsx";
 import ReservaTearium from "./ReservaTearium.jsx";
-import ReservaKarma from "./ReservaKarma.jsx";
 import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
 import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
-import ResumenPagoKarma from "./ResumenPagoKarma.jsx";
 
 import PagoFallido from "./PagoFallido.jsx";
 
@@ -108,6 +106,10 @@ import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 import AdminEliminarClase from "./AdminEliminarClase.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
 import AdminBloquearUsuario from "./AdminBloquearUsuario.jsx";
+
+//Clases Online
+import ClasesOnlineInfo from "./ClasesOnlineInfo.jsx";
+import ReservaClasesOnline from "./ReservaClasesOnline.jsx";
 
 // Legales
 import PoliticaCancelacion from "./PoliticaCancelacion.jsx";
@@ -196,16 +198,18 @@ function App() {
           <Route path="/resumenpago" element={<ResumenPago />} />
           <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />
           <Route path="/resumenpagotearium" element={<ResumenPagoTearium />} />
-          <Route path="/resumenpagokarma" element={<ResumenPagoKarma />} />
           <Route path="/pago-fallido" element={<PagoFallido />} />
 
 
           {/* Ubicaciones externas */}
           <Route path="/theclub" element={<TheClub />} />
-          <Route path="/teariumkarma" element={<TeariumKarma />} />
+          <Route path="/teariumInfo" element={<TeariumInfo />} />
           <Route path="/reservatheclub" element={<ReservaTheClub />} />
           <Route path="/reservatearium" element={<ReservaTearium />} />
-          <Route path="/reservakarma" element={<ReservaKarma />} />
+          {/* Clases Online */}
+          <Route path="/clases-online" element={<ClasesOnlineInfo />} />
+          <Route path="/reserva-online" element={<ReservaClasesOnline />} />
+
 
           {/* Admin */}
           <Route path="/admin-panel" element={<AdminPanel />} />

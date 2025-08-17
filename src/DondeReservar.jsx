@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Footer from "./Footer";
+import BotonVolver from "./BotonVolver";
+
 
 export default function DondeReservar() {
   const navigate = useNavigate();
@@ -25,13 +27,7 @@ export default function DondeReservar() {
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
 
-      {/* Botón Volver */}
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 text-sm text-blue-600 underline hover:text-blue-800"
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img
@@ -43,6 +39,17 @@ export default function DondeReservar() {
           ¿Dónde quieres reservar?
         </h1>
       </div>
+<div className="flex justify-end mt-2 mb-4">
+  <button
+    onClick={() => navigate("/clases-online")}
+    className="bg-gradient-to-r from-pink-400 to-red-400 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:scale-105 transition text-center leading-snug w-52"
+  >
+    🌟 Novedad:  
+    <br /> ¡Reserva tu clase online!
+  </button>
+</div>
+
+
 
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         {/* Taller */}
@@ -57,7 +64,8 @@ export default function DondeReservar() {
           />
           <h2 className="text-xl font-semibold text-gray-800 text-center">Cerámica Estudio La Purísima Conchi</h2>
           <p className="text-sm text-gray-600 mt-2 text-center">
-            Reserva tu plaza para cualquiera de nuestras clases en el taller.
+            Reserva tu plaza para cualquiera de nuestras clases en el taller. 
+            Estamos en la Calle Israel nº 5, Córdoba -España-
           </p>
         </div>
 
@@ -80,16 +88,16 @@ export default function DondeReservar() {
         {/* Tearium */}
         <div
           className="cursor-pointer rounded-xl shadow-md p-4 border-l-8 border-blue-400 bg-white flex flex-col justify-between hover:shadow-lg transition"
-          onClick={() => navigate("/teariumkarma")}
+          onClick={() => navigate("/teariumInfo")}
         >
           <img
             src="/img/LogoTearium.png"
             alt="Logo Tearium"
             className="w-24 h-24 object-contain mx-auto mb-4"
           />
-          <h2 className="text-xl font-semibold text-gray-800 text-center">Tearium y Karma by Tearium</h2>
+          <h2 className="text-xl font-semibold text-gray-800 text-center">Tearium</h2>
           <p className="text-sm text-gray-600 mt-2 text-center">
-            Pinta tu pieza de cerámica en Pl. Ramón y Cajal, 4 o en C/Isla Gomera, 4 (Córdoba).
+            Pinta tu pieza de cerámica en Pl. Ramón y Cajal, 4 (Córdoba).
           </p>
         </div>
 
@@ -128,7 +136,7 @@ export default function DondeReservar() {
         </div>
       )}
 
-     
+
 
       <Footer />
     </div>
