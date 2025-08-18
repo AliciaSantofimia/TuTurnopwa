@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import Footer from "./Footer";
+import BotonVolver from "./BotonVolver";
 
 export default function Clases() {
   const navigate = useNavigate();
@@ -100,12 +101,7 @@ export default function Clases() {
 
   return (
     <div className="p-4 bg-[#fffef4] min-h-screen font-sans">
-      <button
-        onClick={() => navigate(-1)}
-        className="text-blue-700 underline mb-4"
-      >
-        ← Volver
-      </button>
+      <BotonVolver />
 
       <div className="flex flex-col md:flex-row items-center mb-6">
         <img

@@ -4,7 +4,8 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function MensualBono4Clases() {
   return (
-    <PantallaConVolver>
+    <PantallaConVolver volverA="/clases">
+
       <div className="bg-white text-[#333] font-sans max-w-sm w-full shadow-md rounded-2xl overflow-hidden">
         <img
           src="/img/cuatroclases.jpg"
@@ -46,6 +47,8 @@ export default function MensualBono4Clases() {
           </p>
 
           <BotonReserva destino="/reserva-bono-4-clases" />
+
+
         </div>
       </div>
     </PantallaConVolver>

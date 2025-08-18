@@ -31,6 +31,8 @@ export default function ReservaBono4Clases() {
   const navigate = useNavigate();
   const location = useLocation();
   const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
+const from = location.state?.from || "/bono-4-clases"; 
+
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -118,7 +120,9 @@ export default function ReservaBono4Clases() {
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <BotonVolver volverA="/bono-4-clases" />
+       <BotonVolver />
+
+
 
 
 

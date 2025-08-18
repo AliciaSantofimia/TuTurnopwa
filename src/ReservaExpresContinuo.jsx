@@ -6,6 +6,7 @@ import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
 
+
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
   const snapshot = await get(userRef);
@@ -125,6 +126,8 @@ const ReservaExpresContinuo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
         <h2 style={styles.titulo}>Reserva: Exprés Continuo</h2>
 
         {desdeTarjetaRegalo && (
@@ -217,7 +220,7 @@ const ReservaExpresContinuo = () => {
           </>
         )}
 
-        <BotonVolver />
+        
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";  
 
 const DetalleTarjetaPintaTuPieza = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const DetalleTarjetaPintaTuPieza = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
         <img
           src="/img/pintatupiezaregalo.jpg"
           alt="Pinta tu pieza"

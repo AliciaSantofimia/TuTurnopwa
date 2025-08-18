@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { ref, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
+import BotonVolver from "./BotonVolver";
 
 const CanjearTarjetaRegalo = () => {
   const [codigo, setCodigo] = useState("");
@@ -76,20 +77,7 @@ const CanjearTarjetaRegalo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            color: "#1a73e8",
-            textDecoration: "underline",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "0.95rem",
-            marginBottom: "16px"
-          }}
-        >
-          ← Volver
-        </button>
+        <BotonVolver />
 
         <h2 style={styles.titulo}>Canjear tarjeta regalo</h2>
         <p style={styles.descripcion}>

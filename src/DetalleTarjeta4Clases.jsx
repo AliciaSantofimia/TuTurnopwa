@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";  
 
 const DetalleTarjeta4Clases = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const DetalleTarjeta4Clases = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
       <img
   src="/img/4clasesregalo.jpg"
   alt="4 clases al mes"

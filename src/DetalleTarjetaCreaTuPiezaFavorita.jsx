@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";  
 
 const DetalleTarjetaCreaTuPiezaFavorita = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const DetalleTarjetaCreaTuPiezaFavorita = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
         <img
           src="/img/creatupiezafavoritaregalo.jpg"
           alt="Crea tu pieza favorita"

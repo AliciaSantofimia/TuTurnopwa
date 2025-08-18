@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver"; 
 
 const GaleriaTarjetasRegalo = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const GaleriaTarjetasRegalo = () => {
 
   return (
     <div style={styles.body}>
+      <BotonVolver />
       <h1 style={styles.title}>Tarjetas regalo disponibles</h1>
       <div style={styles.grid}>
         {tarjetas.map((tarjeta, index) => (

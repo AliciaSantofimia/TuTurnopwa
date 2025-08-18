@@ -1,10 +1,14 @@
 import React from "react";
 import BotonReserva from "./BotonReserva";
+import BotonVolver from "./BotonVolver";
+
 
 const ExpresContinuo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
         <h1 style={styles.titulo}>EXPRÉS CONTINUO</h1>
         <p style={styles.descripcion}>
           Taller único sin compromiso y para seguir cuando quieras.

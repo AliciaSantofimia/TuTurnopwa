@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import BotonVolver from "./BotonVolver";  
+
 
 const DetalleTarjetaTornoIntensivo = () => {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ const DetalleTarjetaTornoIntensivo = () => {
   return (
     <div style={styles.body}>
       <div style={styles.container}>
+        <BotonVolver />
+
         <img
           src="/img/tornointensivoregalo.jpg"
           alt="Torno intensivo"

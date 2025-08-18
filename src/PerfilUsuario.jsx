@@ -173,6 +173,35 @@ export default function PerfilUsuario() {
             ))}
           </ul>
         )}
+         {/* 📞 Nueva sección: Información de contacto del Taller */}
+        <div className="bg-gray-100 border rounded-2xl p-4 mb-6 shadow">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">📍 Información de contacto</h2>
+          
+          <p className="text-sm mb-2">
+            <strong>Teléfono:</strong>{" "}
+            <a href="tel:+34644671664" className="text-blue-600 hover:underline">
+              644 671 664
+            </a>
+          </p>
+
+          <p className="text-sm mb-2">
+            <strong>Email:</strong>{" "}
+            <a href="mailto:lapurisimaconchioficial@gmail.com" className="text-blue-600 hover:underline">
+              lapurisimaconchioficial@gmail.com
+            </a>
+          </p>
+
+          <p className="text-sm mb-3">
+            <strong>Dirección:</strong> Calle Israel Nº5, Córdoba - España
+          </p>
+
+          <button
+            onClick={() => window.open("https://maps.google.com/?q=Calle+Israel+5+Córdoba", "_blank")}
+            className="w-full px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-[#3b3025] font-bold rounded-xl text-sm shadow"
+          >
+            🗺️ Cómo llegar
+          </button>
+        </div>
 
         <div className="text-center text-sm space-y-2 pb-6">
           <p>

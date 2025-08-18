@@ -110,7 +110,14 @@ export default function ReservaBono2Clases() {
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-        <BotonVolver volverA="/menu" />
+        <button
+  onClick={() => navigate(-1)}
+  className="text-gray-700 hover:text-black text-xl mb-4"
+>
+  ←
+</button>
+
+
 
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
