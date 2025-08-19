@@ -38,6 +38,8 @@ import ResumenPago from "./ResumenPago.jsx";
 import GaleriaTarjetasRegalo from "./GaleriaTarjetasRegalo.jsx";
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo.jsx";
 
+
+
 // Clases solo vista
 import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
 import CreativoPlusSolo from "./CreativoPlusSolo.jsx";
@@ -238,6 +240,8 @@ function App() {
           <Route path="/admin-buscar-usuario" element={<AdminBuscarUsuario />} />
           <Route path="/admin-eliminar-clase" element={<AdminEliminarClase />} />
           <Route path="/admin/clases/inscripciones/:nombreClase" element={<AdminVerInscripciones />} />
+
+
 
           {/* Legales */}
           <Route path="/politicacancelacion" element={<PoliticaCancelacion />} />

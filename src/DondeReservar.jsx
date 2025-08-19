@@ -29,25 +29,28 @@ export default function DondeReservar() {
 
       <BotonVolver />
 
-      <div className="flex flex-col md:flex-row items-center mb-6">
-        <img
-          src="/img/logoPCsin.png"
-          alt="Logo La Purísima Conchi"
-          className="h-20 w-auto mb-4 md:mb-0 md:mr-4"
-        />
-        <h1 className="text-3xl font-bold text-yellow-900 font-serif text-center md:text-left">
-          ¿Dónde quieres reservar?
-        </h1>
-      </div>
-<div className="flex justify-end mt-2 mb-4">
+      <div className="flex flex-col md:flex-row items-start mb-6">
+  <img
+    src="/img/logoPCsin.png"
+    alt="Logo La Purísima Conchi"
+    className="h-20 w-auto mb-4 md:mb-0 md:mr-4"
+  />
+
+  <div className="flex-1">
+    <h1 className="text-3xl font-bold text-yellow-900 font-serif text-center md:text-left">
+      ¿Dónde quieres reservar?
+    </h1>
+  </div>
+
   <button
     onClick={() => navigate("/clases-online")}
-    className="bg-gradient-to-r from-pink-400 to-red-400 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:scale-105 transition text-center leading-snug w-52"
+    className="mt-3 md:mt-0 md:ml-auto bg-gradient-to-r from-pink-400 to-red-400 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:scale-105 transition text-center leading-snug w-52"
   >
-    🌟 Novedad:  
+    🌟 Novedad:
     <br /> ¡Reserva tu clase online!
   </button>
 </div>
+
 
 
 
