@@ -1,49 +1,42 @@
+// src/Footer.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="text-center text-sm text-gray-600 py-6 mt-10">
-      <p>
-        Al continuar navegando, aceptas nuestras{" "}
-        <Link
-          to="/condicionesuso"
-          className="text-orange-700 underline font-semibold hover:text-orange-900 mx-1"
+    <footer className="bg-[#fffef4] text-center text-gray-600 text-sm py-6 px-4 border-t">
+      <p className="mb-2">
+        Desarrollado con <span className="text-red-500">♥</span> por{" "}
+        <a
+          href="https://tuturnoapp.es"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[#b36a4a] hover:underline"
         >
-          Condiciones de Uso
-        </Link>
-        , nuestra{" "}
-        <Link
-          to="/politicacancelacion"
-          className="text-orange-700 underline font-semibold hover:text-orange-900 mx-1"
-        >
-          Política de Cancelación
-        </Link>
-        , nuestra{" "}
-        <Link
-          to="/politica-piezas"
-          className="text-orange-700 underline font-semibold hover:text-orange-900 mx-1"
-        >
-          Política sobre roturas de piezas
-        </Link>
-        , nuestra{" "}
-        <Link
-          to="/politica-privacidad"
-          className="text-orange-700 underline font-semibold hover:text-orange-900 mx-1"
-        >
+          TuTurnoapp.es
+        </a>
+      </p>
+
+      <div className="flex justify-center gap-4 flex-wrap text-xs">
+        <Link to="/politica-privacidad" className="hover:underline">
           Política de Privacidad
         </Link>
-        {" "}y el{" "}
-        <Link
-          to="/aviso-legal"
-          className="text-orange-700 underline font-semibold hover:text-orange-900 mx-1"
-        >
+        <Link to="/condiciones-uso" className="hover:underline">
+          Condiciones de Uso
+        </Link>
+        <Link to="/politica-cancelacion" className="hover:underline">
+          Política de Cancelación
+        </Link>
+        <Link to="/politica-roturas" className="hover:underline">
+          Política sobre Roturas de Piezas
+        </Link>
+        <Link to="/aviso-legal" className="hover:underline">
           Aviso Legal
         </Link>
-        .
-      </p>
+      </div>
     </footer>
   );
 }
+
 
 
