@@ -7,7 +7,6 @@ import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 
-
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
   const snapshot = await get(userRef);
@@ -60,58 +59,80 @@ export default function ReservaBasicoEsencial() {
       : 0;
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!user) return;
+    e.preventDefault();
+    if (!user) return;
 
-  try {
-    const reserva = {
-      clase: "Básico Esencial",
-      fecha,
-      turno,
-      metodo,
-      plazas: Number(plazas),
-      desdeTarjetaRegalo,
-      timestamp: new Date().toISOString()
-    };
-
-    const reservaRef = ref(
-      dbRealtime,
-      `reservas/BasicoEsencial/${fecha}/${turno}/${metodo}`
-    );
-    await push(reservaRef, { uid: user.uid, ...reserva });
-
-    const historialRef = ref(
-      dbRealtime,
-      `usuarios/${user.uid}/historialReservas`
-    );
-    await push(historialRef, reserva);
-
-    // ✅ NUEVO: guardar también como reserva activa
-    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-    await push(userReservaRef, reserva);
-
-    await actualizarContadorReservas(user.uid);
-
-    if (desdeTarjetaRegalo) {
-      navigate("/generar-codigo", {
-        state: { tipo: "2clases" }
-      });
-    } else {
-      navigate("/resumen-pago", {
-        state: { ...reserva, precio: "45€" }
-      });
+    if (!fecha || !turno || !metodo) {
+      alert("Selecciona fecha, turno y método.");
+      return;
     }
-  } catch (err) {
-    console.error("Error al guardar la reserva:", err);
-  }
-};
 
+    const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+    if (plazasDisponibles <= 0 || plazasNum > plazasDisponibles) {
+      alert("No hay plazas suficientes para este método y turno.");
+      return;
+    }
+
+    try {
+      const PRECIO_UNITARIO = 55;
+      const totalEuros = PRECIO_UNITARIO * plazasNum;
+
+      const orderId = Date.now().toString().slice(-12);
+
+      const reserva = {
+        clase: "Básico Esencial",
+        fecha,
+        turno,
+        metodo,
+        plazas: plazasNum,
+        desdeTarjetaRegalo,
+        precio: totalEuros,
+        estadoPago: "pendiente",
+        orderId,
+        timestamp: new Date().toISOString(),
+      };
+
+      const reservaRef = ref(dbRealtime, `reservas/BasicoEsencial/${fecha}/${turno}/${metodo}`);
+      await push(reservaRef, { uid: user.uid, ...reserva });
+
+      const historialRef = ref(dbRealtime, `usuarios/${user.uid}/historialReservas`);
+      await push(historialRef, reserva);
+
+      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+      await push(userReservaRef, reserva);
+
+      await actualizarContadorReservas(user.uid);
+
+      if (desdeTarjetaRegalo) {
+        navigate("/generar-codigo", { state: { tipo: "2clases" } });
+        return;
+      }
+
+      navigate("/resumen-pago", {
+        state: {
+          desdeTarjeta: false,
+          tipo: "clase",
+          clase: "Básico Esencial",
+          precio: totalEuros,
+          fecha,
+          turno,
+          metodo,
+          plazas: plazasNum,
+          orderId,
+        },
+      });
+    } catch (err) {
+      console.error("Error al guardar la reserva:", err);
+      alert("No se pudo guardar la reserva.");
+    }
+  };
+
+  const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-      <BotonVolver/>
-
+        <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-6">
           Reserva – Básico Esencial
@@ -200,7 +221,7 @@ export default function ReservaBasicoEsencial() {
             <button
               type="submit"
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-              disabled={!metodo || plazas > plazasDisponibles}
+              disabled={!metodo || plazasNum > plazasDisponibles || plazasDisponibles <= 0}
             >
               Confirmar y pagar
             </button>
@@ -218,4 +239,6 @@ export default function ReservaBasicoEsencial() {
     </div>
   );
 }
+
+
 

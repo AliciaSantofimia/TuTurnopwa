@@ -17,26 +17,30 @@ export default function Footer() {
         </a>
       </p>
 
-      <div className="flex justify-center gap-4 flex-wrap text-xs">
-        <Link to="/politica-privacidad" className="hover:underline">
-          Política de Privacidad
-        </Link>
-        <Link to="/condiciones-uso" className="hover:underline">
-          Condiciones de Uso
-        </Link>
-        <Link to="/politica-cancelacion" className="hover:underline">
-          Política de Cancelación
-        </Link>
-        <Link to="/politica-roturas" className="hover:underline">
-          Política sobre Roturas de Piezas
-        </Link>
+      <nav className="flex justify-center gap-4 flex-wrap text-xs">
         <Link to="/aviso-legal" className="hover:underline">
-          Aviso Legal
+          Aviso legal
         </Link>
-      </div>
+        <Link to="/politica-privacidad" className="hover:underline">
+          Política de privacidad
+        </Link>
+        <Link to="/condiciones-pago" className="hover:underline">
+          Condiciones de pago
+        </Link>
+        <Link to="/politicacancelacion" className="hover:underline">
+          Política de cancelación
+        </Link>
+        <Link to="/condicionesuso" className="hover:underline">
+          Condiciones de uso
+        </Link>
+        <Link to="/politica-piezas" className="hover:underline">
+          Política de piezas
+        </Link>
+      </nav>
     </footer>
   );
 }
+
 
 
 
