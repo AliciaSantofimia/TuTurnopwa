@@ -3,6 +3,10 @@ import ScrollToTop from "./ScrollToTop";
 import PoliticaPiezas from "./PoliticaPiezas";
 import AvisoLegal from "./AvisoLegal.jsx";
 
+import ConfirmacionPago from "./ConfirmacionPago.jsx";
+import PagoFallido from "./PagoFallido.jsx";
+
+
 // Layout general
 import AppLayout from "./AppLayout";
 
@@ -80,7 +84,7 @@ import ReservaTearium from "./ReservaTearium.jsx";
 import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
 import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
 
-import PagoFallido from "./PagoFallido.jsx";
+
 
 
 // Admin
@@ -197,10 +201,13 @@ function App() {
           <Route path="/reserva-exprescontinuo" element={<ReservaExpresContinuo />} />
 
           {/* Resumen de pago */}
-          <Route path="/resumenpago" element={<ResumenPago />} />
+          <Route path="/resumen-pago" element={<ResumenPago />} />
           <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />
           <Route path="/resumenpagotearium" element={<ResumenPagoTearium />} />
           <Route path="/pago-fallido" element={<PagoFallido />} />
+          <Route path="/pago/exito" element={<ConfirmacionPago />} />
+<Route path="/pago/error" element={<PagoFallido />} />
+
 
 
           {/* Ubicaciones externas */}
@@ -248,6 +255,8 @@ function App() {
           <Route path="/condicionesuso" element={<CondicionesUso />} />
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/condiciones-pago" element={<CondicionesPago />} />
+          <Route path="*" element={<Navigate to="/portada" replace />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

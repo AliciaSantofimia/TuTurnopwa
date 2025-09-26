@@ -3,7 +3,17 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/", // MUY importante: nada de "/api" ni rutas raras
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://app.lapurisimaconchi.com",
+        changeOrigin: true,
+        secure: true
+      }
+    }
+  }
 });
+
+
 
 
