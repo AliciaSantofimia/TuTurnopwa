@@ -6,60 +6,89 @@ export const config = { runtime: "nodejs" };
  * ENVs necesarias:
  * - REDSYS_FUC                (p.ej. 368564464)
  * - REDSYS_TERMINAL           (p.ej. "001")
- * - (una de) REDSYS_SECRET_B64 (clave v1 en base64, ej: sq7HjrU... ) || REDSYS_SECRET (texto)
+ * - (una de) REDSYS_SECRET_B64 (clave v1 en base64, ej: sq7HjrU...) || REDSYS_SECRET (texto)
  * - (opc) REDSYS_CURRENCY     (por defecto "978")
- * - (opc) REDSYS_URL          (override del endpoint)
+ * - (opc) REDSYS_URL          (override del endpoint; si no, usa TEST/PROD por 443)
  * - (opc) REDSYS_URL_OK / REDSYS_URL_KO / REDSYS_NOTIFY_URL
  * - VERCEL_ENV: "production" => producción, otro => sandbox
  */
 const FUC = process.env.REDSYS_FUC;
 const TERMINAL = process.env.REDSYS_TERMINAL || "001";
 const CURRENCY = process.env.REDSYS_CURRENCY || "978";
-const SECRET_TXT = process.env.REDSYS_SECRET || null;
-const SECRET_B64 = process.env.REDSYS_SECRET_B64 || null;
 
-const URL_TEST = "https://sis-t.redsys.es/sis/realizarPago"; // sin :25443
+const URL_TEST = "https://sis-t.redsys.es/sis/realizarPago"; // ⚠️ SIN :25443
 const URL_PROD = "https://sis.redsys.es/sis/realizarPago";
 const isProd = process.env.VERCEL_ENV === "production";
-const REDSYS_URL = process.env.REDSYS_URL || (isProd ? URL_PROD : URL_TEST);
 
-// ----- utils -----
-function b64url(buf) {
-  return Buffer.from(buf)
-    .toString("base64")
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+function normalizeEndpoint(u) {
+  if (!u) return null;
+  // Evita puertos raros en sandbox; usa 443
+  return u.replace("sis-t.redsys.es:25443", "sis-t.redsys.es");
 }
+const REDSYS_URL =
+  normalizeEndpoint(process.env.REDSYS_URL) || (isProd ? URL_PROD : URL_TEST);
+
+// ---------- utils ----------
 function b64stdFromJson(obj) {
   const json = JSON.stringify(obj);
-  return Buffer.from(json, "utf8").toString("base64"); // estándar (NO url-safe)
+  return Buffer.from(json, "utf8").toString("base64"); // Base64 estándar (NO url-safe)
 }
-function httpsAbs(u) { return typeof u === "string" && /^https:\/\//i.test(u); }
+function httpsAbs(u) {
+  return typeof u === "string" && /^https:\/\//i.test(u);
+}
 
-// === Firma V1 (HMAC_SHA256_V1) ===
-// - Clave proporcionada por el banco en BASE64 (la típica sq7Hjr... lo es). Si te la dan en texto, usa REDSYS_SECRET.
+// === Clave y firma v1 (HMAC_SHA256_V1) ===
 function getSecretBytes() {
-  if (SECRET_B64) return Buffer.from(SECRET_B64, "base64");  // lo más habitual
-  if (SECRET_TXT) return Buffer.from(SECRET_TXT, "utf8");
+  const b64 = (process.env.REDSYS_SECRET_B64 || "").trim();
+  const txt = (process.env.REDSYS_SECRET || "").trim();
+
+  if (b64) {
+    const buf = Buffer.from(b64, "base64");
+    console.log("REDSYS_SECRET_B64 decoded length:", buf.length); // DEBUG
+    if (buf.length === 24 || buf.length === 16) return buf;
+    throw new Error(
+      `REDSYS_SECRET_B64 inválida (len=${buf.length}, se esperaban 24/16 bytes)`
+    );
+  }
+
+  if (txt) {
+    // Por si te dieron la misma base64 pero la llamaron "texto"
+    const maybe = Buffer.from(txt, "base64");
+    console.log("REDSYS_SECRET (as base64) length:", maybe.length); // DEBUG
+    if (maybe.length === 24 || maybe.length === 16) return maybe;
+    throw new Error(
+      "REDSYS_SECRET parece texto plano. Usa REDSYS_SECRET_B64 con la clave base64 v1."
+    );
+  }
+
   throw new Error("Falta REDSYS_SECRET_B64 o REDSYS_SECRET");
 }
-// Deriva clave por operación: 3DES-CBC (des-ede-cbc) con IV=0 sobre el ORDER
+
+// Deriva clave por operación: 3DES-CBC (des-ede-cbc) con IV=0 sobre ORDER
 function deriveKeyV1(order) {
-  let key = getSecretBytes();                 // suele ser 24 bytes si viene de base64
-  if (key.length === 16) key = Buffer.concat([key, key.slice(0, 8)]); // a 24
+  let key = getSecretBytes(); // 24 bytes para 3DES; 16 se expande a 24
+  if (key.length === 16) key = Buffer.concat([key, key.slice(0, 8)]); // 2-key 3DES -> 24
   if (key.length < 24) key = Buffer.concat([key, Buffer.alloc(24 - key.length, 0)]);
   const iv = Buffer.alloc(8, 0);
   const cipher = crypto.createCipheriv("des-ede-cbc", key, iv);
   cipher.setAutoPadding(true);
-  const enc = Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
+  const enc = Buffer.concat([
+    cipher.update(String(order), "utf8"),
+    cipher.final(),
+  ]);
   return enc; // bytes
 }
+
 function signV1(Ds_MerchantParameters_b64, order) {
   const k = deriveKeyV1(order);
-  const mac = crypto.createHmac("sha256", k).update(Ds_MerchantParameters_b64, "utf8").digest();
-  return b64url(mac); // Redsys acepta URL-safe para la firma
+  const mac = crypto
+    .createHmac("sha256", k)
+    .update(Ds_MerchantParameters_b64, "utf8")
+    .digest();
+  return Buffer.from(mac).toString("base64"); // Firma en Base64 estándar
 }
 
-// ----- handler -----
+// ---------- handler ----------
 export default function handler(req, res) {
   const isGet = req.method === "GET";
   const isPost = req.method === "POST";
@@ -67,12 +96,11 @@ export default function handler(req, res) {
 
   try {
     if (!FUC) return res.status(500).send("Falta REDSYS_FUC");
-    if (!SECRET_B64 && !SECRET_TXT) return res.status(500).send("Falta clave REDSYS_SECRET_B64 o REDSYS_SECRET");
+    if (!process.env.REDSYS_SECRET_B64 && !process.env.REDSYS_SECRET)
+      return res.status(500).send("Falta clave REDSYS_SECRET_B64 o REDSYS_SECRET");
 
     const src = isGet ? (req.query || {}) : (req.body || {});
-    const {
-      orderId, amountCents, amount, okUrl, koUrl, notifyUrl, payMethod
-    } = src;
+    const { orderId, amountCents, amount, okUrl, koUrl, notifyUrl, payMethod } = src;
 
     // ORDER 4–12 (empieza por dígito)
     let oid = String(orderId ?? Date.now()).replace(/\D/g, "");
@@ -80,7 +108,7 @@ export default function handler(req, res) {
     oid = oid.padStart(12, "0").slice(-12);
     if (!/^\d/.test(oid)) oid = "9" + oid.slice(1);
 
-    // Céntimos (string)
+    // Importe en céntimos (string)
     let cents = amountCents != null ? String(parseInt(amountCents, 10)) : null;
     if (!cents && amount != null) {
       const euros = String(amount).replace(",", ".");
@@ -95,7 +123,9 @@ export default function handler(req, res) {
     const URL_KO = httpsAbs(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
     const URL_NOTIFY = httpsAbs(notifyUrl) ? notifyUrl : process.env.REDSYS_NOTIFY_URL;
     if (!httpsAbs(URL_OK) || !httpsAbs(URL_KO)) {
-      return res.status(400).send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
+      return res
+        .status(400)
+        .send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
     }
 
     const params = {
@@ -111,13 +141,25 @@ export default function handler(req, res) {
       ...(payMethod === "bizum" ? { DS_MERCHANT_PAYMETHODS: "z" } : {}),
     };
 
-    // DEBUG opcional (ver en Logs de Vercel):
-    // console.log("TPV params:", params);
+    // Logs de soporte (no incluyen secretos)
+    console.log("TPV params:", params);
 
     const Ds_MerchantParameters = b64stdFromJson(params); // Base64 estándar
     const Ds_Signature = signV1(Ds_MerchantParameters, oid);
     const Ds_SignatureVersion = "HMAC_SHA256_V1";
 
+    // ---- Modo diagnóstico ----
+    if ((src.mode || "").toString().toLowerCase() === "json") {
+      return res.status(200).json({
+        action: REDSYS_URL,
+        Ds_SignatureVersion,
+        Ds_MerchantParameters,
+        Ds_Signature,
+        parsed: params,
+      });
+    }
+
+    // ---- HTML con <form> auto-submit ----
     const html = `<!doctype html><html lang="es"><meta charset="utf-8">
 <title>Conectando con el banco…</title>
 <body onload="document.forms[0].submit()" style="font-family:sans-serif">
@@ -137,4 +179,3 @@ export default function handler(req, res) {
     res.status(500).send("Error creando sesión TPV");
   }
 }
-
