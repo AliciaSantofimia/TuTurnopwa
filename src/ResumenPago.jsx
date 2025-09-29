@@ -17,7 +17,7 @@ export default function ResumenPago() {
     metodo,
     plazas,
     orderId: orderIdFromState,
-    payMethod: payMethodFromState, // opcional: "card" | "bizum"
+    payMethod: payMethodFromState, // "card" | "bizum"
   } = state;
 
   // Precio seguro en €
@@ -26,11 +26,9 @@ export default function ResumenPago() {
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [precio]);
 
-  // URLs absolutas (dev/prod)
+  // URLs absolutas (puedes moverlas a envs en Vercel)
   const ORIGIN =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : "https://app.lapurisimaconchi.com";
+    typeof window !== "undefined" ? window.location.origin : "https://app.lapurisimaconchi.com";
   const URL_OK = new URL("/pago/exito", ORIGIN).toString();
   const URL_KO = new URL("/pago/error", ORIGIN).toString();
   const URL_NOTIFY = new URL("/api/notificacionTPV", ORIGIN).toString();
@@ -40,75 +38,31 @@ export default function ResumenPago() {
 
   const plazasMostrar = Number(plazas) > 0 ? Number(plazas) : 1;
 
-  // ---- Helper para crear orderId válido (4-12 dígitos, empieza por dígito) ----
+  // ORDER válido (4–12, empieza en dígito)
   function makeOrderId(base) {
     let oid = String(base ?? Date.now());
-    // Solo dígitos
     oid = oid.replace(/\D/g, "");
-    // Si se queda corto, usamos timestamp
     if (oid.length < 4) oid = (Date.now() % 1e12).toString();
-    // A 12 dígitos
     oid = oid.padStart(12, "0").slice(-12);
-    // Asegurar que empieza por dígito (ya lo es)
     if (!/^\d/.test(oid)) oid = "9" + oid.slice(1);
     return oid;
   }
 
-  // ---- Ir a Redsys (pide sesión a tu API y hace FORM POST) ----
-  async function irAPasarela({ precio, orderId, payMethod = "card" }) {
-    // 1) Importe en céntimos
+  // Redirección a tu API (que devolverá el <form> auto-submit)
+  function irAPasarela({ precio, orderId, payMethod = "card" }) {
     const amountCents = Math.max(1, Math.round(Number(precio) * 100));
-
-    // 2) ORDER válido
     const oid = makeOrderId(orderId);
-
-    // 3) Llamada a tu API (POST JSON)
-    const resp = await fetch("/api/crear-sesion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: oid,
-        amountCents,
-        okUrl: URL_OK,
-        koUrl: URL_KO,
-        notifyUrl: URL_NOTIFY,
-        payMethod, // "card" | "bizum"
-      }),
+    const qs = new URLSearchParams({
+      orderId: oid,
+      amountCents: String(amountCents),
+      okUrl: URL_OK,
+      koUrl: URL_KO,
+      notifyUrl: URL_NOTIFY,
+      payMethod,
     });
-
-    if (!resp.ok) {
-      const txt = await resp.text();
-      console.error("Error crear sesión TPV:", txt);
-      throw new Error("No se pudo iniciar el pago");
-    }
-
-    const data = await resp.json(); // { endpoint, Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature }
-    const { endpoint, Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature } = data || {};
-    if (!endpoint || !Ds_SignatureVersion || !Ds_MerchantParameters || !Ds_Signature) {
-      throw new Error("Respuesta de TPV incompleta");
-    }
-
-    // 4) FORM POST a Redsys (requisito del TPV)
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = endpoint;
-
-    const campos = { Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature };
-    Object.entries(campos).forEach(([name, value]) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    });
-console.log("endpoint que devuelve la API:", endpoint);
-
-
-    document.body.appendChild(form);
-    form.submit();
+    window.location.href = `/api/crear-sesion?${qs.toString()}`;
   }
 
-  // ---- Click principal ----
   async function handleConfirmarPago() {
     if (!aceptaPoliticas) return;
 
@@ -138,16 +92,13 @@ console.log("endpoint que devuelve la API:", endpoint);
 
     try {
       setCargando(true);
-
-      await irAPasarela({
-        precio: precioFinal, // € → céntimos dentro de la función
+      irAPasarela({
+        precio: precioFinal,
         orderId: orderIdFromState,
-        payMethod: payMethodFromState || "card", // o "bizum" si lo pasas por state
+        payMethod: payMethodFromState || "card",
       });
-    } catch (err) {
-      console.error("Error al iniciar pago:", err);
-      alert("Ocurrió un error al iniciar el pago. Inténtalo de nuevo.");
     } finally {
+      // La navegación ocurre inmediatamente; este estado es por UX si algo retrasa el cambio
       setCargando(false);
     }
   }
@@ -156,15 +107,9 @@ console.log("endpoint que devuelve la API:", endpoint);
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-6">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6 text-[#333] text-center">
         <BotonVolver />
+        <h1 className="text-[1.6rem] text-[#3b3025] font-semibold mb-4">Resumen del pago</h1>
 
-        <h1 className="text-[1.6rem] text-[#3b3025] font-semibold mb-4">
-          Resumen del pago
-        </h1>
-
-        <p className="mb-2">
-          <strong>Clase:</strong>{" "}
-          {clase || (desdeTarjeta ? "Clase regalo" : "-")}
-        </p>
+        <p className="mb-2"><strong>Clase:</strong> {clase || (desdeTarjeta ? "Clase regalo" : "-")}</p>
         <p className="mb-2"><strong>Fecha:</strong> {fecha || "-"}</p>
         <p className="mb-2"><strong>Turno:</strong> {turno || "-"}</p>
         <p className="mb-2"><strong>Método:</strong> {metodo || "-"}</p>
@@ -172,11 +117,7 @@ console.log("endpoint que devuelve la API:", endpoint);
 
         <p className="mb-4">
           <strong>Precio:</strong>{" "}
-          {Number.isFinite(precioFinal) ? (
-            `${precioFinal.toFixed(2)} €`
-          ) : (
-            <span className="text-red-600">— falta precio —</span>
-          )}
+          {Number.isFinite(precioFinal) ? `${precioFinal.toFixed(2)} €` : <span className="text-red-600">— falta precio —</span>}
         </p>
 
         <div className="text-sm text-gray-700 text-left mb-4">
@@ -189,27 +130,17 @@ console.log("endpoint que devuelve la API:", endpoint);
             />
             <span>
               He leído y acepto las{" "}
-              <span
-                className="text-red-500 underline cursor-pointer"
-                onClick={() => navigate("/condiciones-pago")}
-              >
+              <span className="text-red-500 underline cursor-pointer" onClick={() => navigate("/condiciones-pago")}>
                 Condiciones de Uso
               </span>
               ,{" "}
-              <span
-                className="text-red-500 underline cursor-pointer"
-                onClick={() => navigate("/politica-cancelacion")}
-              >
+              <span className="text-red-500 underline cursor-pointer" onClick={() => navigate("/politica-cancelacion")}>
                 Política de Cancelación
               </span>{" "}
               y{" "}
-              <span
-                className="text-red-500 underline cursor-pointer"
-                onClick={() => navigate("/politica-piezas")}
-              >
+              <span className="text-red-500 underline cursor-pointer" onClick={() => navigate("/politica-piezas")}>
                 Política sobre roturas de piezas
-              </span>
-              .
+              </span>.
             </span>
           </label>
         </div>
