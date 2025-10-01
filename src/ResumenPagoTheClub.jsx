@@ -72,6 +72,10 @@ export default function ResumenPagoTheClub() {
           <p><strong>Fecha:</strong> {datos.fecha || "-"}</p>
           <p><strong>Turno:</strong> {datos.turno || "-"}</p>
           <p><strong>Plazas:</strong> {plazas}</p>
+
+          {plazas > 1 && (
+            <p><strong>Precio unitario:</strong> {PRECIO_UNITARIO.toFixed(2)} €</p>
+          )}
           <p>
             <strong>Precio total:</strong>{" "}
             {Number.isFinite(totalEuros) ? `${totalEuros.toFixed(2)} €` : <span className="text-red-600">— falta precio —</span>}

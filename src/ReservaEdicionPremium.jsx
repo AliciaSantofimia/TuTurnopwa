@@ -65,14 +65,17 @@ export default function ReservaEdicionPremium() {
     alert("No hay suficientes plazas disponibles.");
     return;
   }
+const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+const PRECIO_UNITARIO = 65;              // Edición Premium
+const totalEuros = PRECIO_UNITARIO * plazasNum;
 
   const reserva = {
     clase: "Edición Premium",
     fecha,
     turno,
     metodo,
-    precio: "65€",
-    plazas: Number(plazas),
+    precio: totalEuros, 
+    plazas: plazasNum,
     timestamp: new Date().toISOString(),
     tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
   };

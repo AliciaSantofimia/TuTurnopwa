@@ -48,6 +48,9 @@ export default function ReservaPintarCeramica() {
       contarPlazasTotalesPorDia(fecha).then(setPlazasOcupadas);
     }
   }, [fecha]);
+const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+const PRECIO_UNITARIO = 25;                 // Pinta tu pieza de cerámica
+const totalEuros = PRECIO_UNITARIO * plazasNum;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +80,7 @@ export default function ReservaPintarCeramica() {
       fecha,
       turno,
       metodo: "general",
-      precio: "Desde 25€",
+      precio: totalEuros,
       plazas: plazasNum,
       timestamp: new Date().toISOString(),
       tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",

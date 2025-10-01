@@ -49,6 +49,7 @@ export default function ReservaPintaTuPiezaRegalo() {
       turno,
       metodo,
       esRegalo: true,
+      precio: 0,
       estado: "activa",
       timestamp: Date.now()
     };

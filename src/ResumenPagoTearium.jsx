@@ -69,6 +69,12 @@ export default function ResumenPagoTearium() {
         <p><strong>Fecha:</strong> {fecha || "-"}</p>
         <p><strong>Turno:</strong> {turno || "-"}</p>
         <p><strong>Número de plazas:</strong> {plazasNum}</p>
+
+        {plazasNum > 1 && (
+          <p>
+            <strong>Precio unitario:</strong> {PRECIO_UNITARIO.toFixed(2)} €
+          </p>
+        )}
         <p className="mb-4">
           <strong>Precio total:</strong>{" "}
           {Number.isFinite(totalEuros) ? `${totalEuros.toFixed(2)} €` : <span className="text-red-600">— falta precio —</span>}

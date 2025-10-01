@@ -62,13 +62,18 @@ export default function ReservaBono2Clases() {
   e.preventDefault();
   if (!user) return;
 
+  // calcular total como número
+  const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const PRECIO_UNITARIO = 70;
+  const totalEuros = PRECIO_UNITARIO * plazasNum;
+
   const reserva = {
     clase: "Bono 2 Clases",
     fecha,
     turno: "Flexible",
     metodo,
-    precio: "70€",
-    plazas: Number(plazas),
+    precio: totalEuros,
+    plazas: plazasNum,
     desdeTarjetaRegalo,
     timestamp: new Date().toISOString()
   };

@@ -13,9 +13,7 @@ const actualizarContadorReservas = async (uid) => {
   if (snapshot.exists()) {
     const datos = snapshot.val();
     const nuevasReservas = (datos.reservas || 0) + 1;
-    await update(userRef, {
-      reservas: nuevasReservas
-    });
+    await update(userRef, { reservas: nuevasReservas });
   }
 };
 
@@ -23,7 +21,7 @@ export default function ReservaCreativoPlus() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
   const [metodo, setMetodo] = useState("");
-  const [plazas, setPlazas] = useState(1);
+  const [plazas, setPlazas] = useState(1); // siempre número
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
 
@@ -51,67 +49,75 @@ export default function ReservaCreativoPlus() {
       : 0;
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const auth = getAuth();
-  const user = auth.currentUser;
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-  if (!user) {
-    console.error("Usuario no autenticado.");
-    return;
-  }
+    if (!user) {
+      console.error("Usuario no autenticado.");
+      return;
+    }
 
-  if (plazas > plazasDisponibles) {
-    alert("No hay suficientes plazas disponibles para este método.");
-    return;
-  }
+    const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
-  const reserva = {
-    clase: "Creativo Plus",
-    fecha,
-    turno,
-    metodo,
-    precio: "60€",
-    plazas: Number(plazas),
-    timestamp: new Date().toISOString(),
-    tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
+    if (plazasNum > plazasDisponibles) {
+      alert("No hay suficientes plazas disponibles para este método.");
+      return;
+    }
+
+    // ✅ PRECIO CORRECTO: 55 € por persona (sin recargo por torno)
+    const precioUnitario = 55;
+    const precioTotal = precioUnitario * plazasNum;
+
+    const reserva = {
+      clase: "Creativo Plus",
+      fecha,
+      turno,
+      metodo,
+      plazas: plazasNum,
+      // guardamos numérico (compat + detalle)
+      precio: precioTotal,
+      precioUnitario,
+      precioTotal,
+      timestamp: new Date().toISOString(),
+      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
+    };
+
+    try {
+      const generalRef = ref(
+        dbRealtime,
+        `reservas/CreativoPlus/${fecha}/${turno}/${metodo}`
+      );
+      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const userHistorialRef = ref(
+        dbRealtime,
+        `usuarios/${user.uid}/historialReservas`
+      );
+      await push(userHistorialRef, reserva);
+
+      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+      await push(userReservaRef, reserva);
+
+      await actualizarContadorReservas(user.uid);
+
+      if (desdeTarjetaRegalo) {
+        navigate("/generar-codigo", { state: { tipo: "creativoplus" } });
+      } else {
+        // Enviamos unitario y total al resumen (lo usará tal cual)
+        navigate("/resumen-pago", {
+          state: {
+            ...reserva,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Error al guardar la reserva:", err);
+    }
   };
 
-  try {
-    const generalRef = ref(
-      dbRealtime,
-      `reservas/CreativoPlus/${fecha}/${turno}/${metodo}`
-    );
-    await push(generalRef, {
-      uid: user.uid,
-      ...reserva
-    });
-
-    const userHistorialRef = ref(
-      dbRealtime,
-      `usuarios/${user.uid}/historialReservas`
-    );
-    await push(userHistorialRef, reserva);
-
-    // ✅ NUEVO: guardar también como reserva activa
-    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-    await push(userReservaRef, reserva);
-
-    await actualizarContadorReservas(user.uid);
-
-    if (desdeTarjetaRegalo) {
-      navigate("/generar-codigo", {
-        state: { tipo: "creativoplus" }
-      });
-    } else {
-      navigate("/resumen-pago", {
-        state: reserva
-      });
-    }
-  } catch (err) {
-    console.error("Error al guardar la reserva:", err);
-  }
-};
+  const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -197,19 +203,12 @@ export default function ReservaCreativoPlus() {
               <input
                 type="number"
                 id="plazas"
-                value={plazas}
-                onChange={(e) => {
-                  const valor = e.target.value;
-                  if (valor === "") {
-                    setPlazas("");
-                    return;
-                  }
-                  const num = parseInt(valor, 10);
-                  if (!isNaN(num) && num >= 1) {
-                    setPlazas(num);
-                  }
-                }}
+                value={plazasNum}
+                onChange={(e) =>
+                  setPlazas(Math.max(1, Number(e.target.value || 1)))
+                }
                 min="1"
+                step="1"
                 max={plazasDisponibles || 1}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
                 required
@@ -219,7 +218,7 @@ export default function ReservaCreativoPlus() {
             <button
               type="submit"
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-              disabled={!metodo || plazas > plazasDisponibles}
+              disabled={!metodo || plazasNum > plazasDisponibles}
             >
               Confirmar y pagar
             </button>
@@ -237,6 +236,3 @@ export default function ReservaCreativoPlus() {
     </div>
   );
 }
-
-
-

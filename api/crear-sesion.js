@@ -4,25 +4,24 @@ export const config = { runtime: "nodejs" };
 
 /**
  * ENVs necesarias:
- * - REDSYS_FUC                (p.ej. 368564464)
- * - REDSYS_TERMINAL           (p.ej. "001")
- * - (una de) REDSYS_SECRET_B64 (clave v1 en base64, ej: sq7HjrU...) || REDSYS_SECRET (texto)
- * - (opc) REDSYS_CURRENCY     (por defecto "978")
- * - (opc) REDSYS_URL          (override del endpoint; si no, usa TEST/PROD por 443)
+ * - REDSYS_FUC
+ * - REDSYS_TERMINAL (p.ej. "001")
+ * - (una de) REDSYS_SECRET_B64  ||  REDSYS_SECRET (texto)
+ * - (opc) REDSYS_CURRENCY (por defecto "978")
+ * - (opc) REDSYS_URL (override)
  * - (opc) REDSYS_URL_OK / REDSYS_URL_KO / REDSYS_NOTIFY_URL
- * - VERCEL_ENV: "production" => producción, otro => sandbox
+ * - VERCEL_ENV: "production" => prod, otro => sandbox
  */
 const FUC = process.env.REDSYS_FUC;
 const TERMINAL = process.env.REDSYS_TERMINAL || "001";
 const CURRENCY = process.env.REDSYS_CURRENCY || "978";
 
-const URL_TEST = "https://sis-t.redsys.es/sis/realizarPago"; // ⚠️ SIN :25443
+const URL_TEST = "https://sis-t.redsys.es/sis/realizarPago"; // sin :25443
 const URL_PROD = "https://sis.redsys.es/sis/realizarPago";
 const isProd = process.env.VERCEL_ENV === "production";
 
 function normalizeEndpoint(u) {
   if (!u) return null;
-  // Evita puertos raros en sandbox; usa 443
   return u.replace("sis-t.redsys.es:25443", "sis-t.redsys.es");
 }
 const REDSYS_URL =
@@ -31,61 +30,75 @@ const REDSYS_URL =
 // ---------- utils ----------
 function b64stdFromJson(obj) {
   const json = JSON.stringify(obj);
-  return Buffer.from(json, "utf8").toString("base64"); // Base64 estándar (NO url-safe)
+  return Buffer.from(json, "utf8").toString("base64"); // Base64 estándar
 }
 function httpsAbs(u) {
   return typeof u === "string" && /^https:\/\//i.test(u);
 }
 
 // === Clave y firma v1 (HMAC_SHA256_V1) ===
-function getSecretBytes() {
+function getSecretRawBytes() {
+  // 1) Si hay base64 explícito, úsalo
   const b64 = (process.env.REDSYS_SECRET_B64 || "").trim();
-  const txt = (process.env.REDSYS_SECRET || "").trim();
-
   if (b64) {
-    const buf = Buffer.from(b64, "base64");
-    console.log("REDSYS_SECRET_B64 decoded length:", buf.length); // DEBUG
-    if (buf.length === 24 || buf.length === 16) return buf;
-    throw new Error(
-      `REDSYS_SECRET_B64 inválida (len=${buf.length}, se esperaban 24/16 bytes)`
-    );
+    const raw = Buffer.from(b64, "base64"); // puede dar 16, 24, 32...
+    if (raw.length > 0) return raw;
   }
-
+  // 2) Si hay "texto", intenta primero como base64, luego hex, luego utf8
+  const txt = (process.env.REDSYS_SECRET || "").trim();
   if (txt) {
-    // Por si te dieron la misma base64 pero la llamaron "texto"
-    const maybe = Buffer.from(txt, "base64");
-    console.log("REDSYS_SECRET (as base64) length:", maybe.length); // DEBUG
-    if (maybe.length === 24 || maybe.length === 16) return maybe;
-    throw new Error(
-      "REDSYS_SECRET parece texto plano. Usa REDSYS_SECRET_B64 con la clave base64 v1."
-    );
+    try {
+      const rawB64 = Buffer.from(txt, "base64");
+      if (rawB64.length > 0) return rawB64;
+    } catch {}
+    if (/^[0-9a-fA-F]+$/.test(txt) && txt.length % 2 === 0) {
+      const rawHex = Buffer.from(txt, "hex");
+      if (rawHex.length > 0) return rawHex;
+    }
+    const rawTxt = Buffer.from(txt, "utf8");
+    if (rawTxt.length > 0) return rawTxt;
   }
-
-  throw new Error("Falta REDSYS_SECRET_B64 o REDSYS_SECRET");
+  throw new Error("Falta o no es válida la clave del TPV (REDSYS_SECRET*_).");
 }
 
-// Deriva clave por operación: 3DES-CBC (des-ede-cbc) con IV=0 sobre ORDER
+function normalize3DESKey(raw) {
+  // 3DES admite 16 o 24 bytes. Arreglamos casos típicos.
+  let key = Buffer.from(raw);
+  if (key.length === 16) {
+    key = Buffer.concat([key, key.slice(0, 8)]); // -> 24
+  } else if (key.length > 24) {
+    key = key.slice(0, 24);
+  } else if (key.length < 16) {
+    const k16 = Buffer.concat([key, Buffer.alloc(16 - key.length, 0)]);
+    key = Buffer.concat([k16, k16.slice(0, 8)]); // -> 24
+  } else if (key.length > 16 && key.length < 24) {
+    key = Buffer.concat([key, Buffer.alloc(24 - key.length, 0)]);
+  }
+  if (!(key.length === 24 || key.length === 16)) {
+    throw new Error("Clave TPV no normalizable a 3DES (esperado 16/24 bytes).");
+  }
+  return key.length === 16 ? Buffer.concat([key, key.slice(0, 8)]) : key; // 24
+}
+
 function deriveKeyV1(order) {
-  let key = getSecretBytes(); // 24 bytes para 3DES; 16 se expande a 24
-  if (key.length === 16) key = Buffer.concat([key, key.slice(0, 8)]); // 2-key 3DES -> 24
-  if (key.length < 24) key = Buffer.concat([key, Buffer.alloc(24 - key.length, 0)]);
+  const raw = getSecretRawBytes();
+  const key24 = normalize3DESKey(raw); // 24 bytes válidos
   const iv = Buffer.alloc(8, 0);
-  const cipher = crypto.createCipheriv("des-ede-cbc", key, iv);
+  const cipher = crypto.createCipheriv("des-ede-cbc", key24, iv);
   cipher.setAutoPadding(true);
-  const enc = Buffer.concat([
-    cipher.update(String(order), "utf8"),
-    cipher.final(),
-  ]);
-  return enc; // bytes
+  const enc = Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
+  return enc; // bytes derivados
 }
 
+function toB64Url(b64) {
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
 function signV1(Ds_MerchantParameters_b64, order) {
   const k = deriveKeyV1(order);
-  const mac = crypto
-    .createHmac("sha256", k)
+  const macStdB64 = crypto.createHmac("sha256", k)
     .update(Ds_MerchantParameters_b64, "utf8")
-    .digest();
-  return Buffer.from(mac).toString("base64"); // Firma en Base64 estándar
+    .digest("base64"); // estándar
+  return toB64Url(macStdB64); // Redsys espera url-safe
 }
 
 // ---------- handler ----------
@@ -94,12 +107,31 @@ export default function handler(req, res) {
   const isPost = req.method === "POST";
   if (!isGet && !isPost) return res.status(405).end();
 
-  try {
-    if (!FUC) return res.status(500).send("Falta REDSYS_FUC");
-    if (!process.env.REDSYS_SECRET_B64 && !process.env.REDSYS_SECRET)
-      return res.status(500).send("Falta clave REDSYS_SECRET_B64 o REDSYS_SECRET");
+  // Lee query/body
+  const src = isGet ? (req.query || {}) : (req.body || {});
 
-    const src = isGet ? (req.query || {}) : (req.body || {});
+  // --- MODO DIAGNÓSTICO: salir antes de cualquier otra validación ---
+  if ((src.mode || "").toString().toLowerCase() === "diag") {
+    try {
+      const raw = getSecretRawBytes();
+      const key24 = normalize3DESKey(raw);
+      return res.status(200).json({
+        ok: true,
+        rawLen: raw.length,   // longitud leída desde tu ENV
+        keyLen: key24.length, // debe ser 24
+        note: "Si keyLen=24, la clave es válida para 3DES",
+      });
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: e.message });
+    }
+  }
+
+  // Validaciones mínimas (después del modo diag)
+  if (!FUC) return res.status(500).send("Falta REDSYS_FUC");
+  if (!process.env.REDSYS_SECRET_B64 && !process.env.REDSYS_SECRET)
+    return res.status(500).send("Falta clave REDSYS_SECRET_B64 o REDSYS_SECRET");
+
+  try {
     const { orderId, amountCents, amount, okUrl, koUrl, notifyUrl, payMethod } = src;
 
     // ORDER 4–12 (empieza por dígito)
@@ -123,9 +155,7 @@ export default function handler(req, res) {
     const URL_KO = httpsAbs(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
     const URL_NOTIFY = httpsAbs(notifyUrl) ? notifyUrl : process.env.REDSYS_NOTIFY_URL;
     if (!httpsAbs(URL_OK) || !httpsAbs(URL_KO)) {
-      return res
-        .status(400)
-        .send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
+      return res.status(400).send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
     }
 
     const params = {
@@ -141,14 +171,11 @@ export default function handler(req, res) {
       ...(payMethod === "bizum" ? { DS_MERCHANT_PAYMETHODS: "z" } : {}),
     };
 
-    // Logs de soporte (no incluyen secretos)
-    console.log("TPV params:", params);
-
     const Ds_MerchantParameters = b64stdFromJson(params); // Base64 estándar
     const Ds_Signature = signV1(Ds_MerchantParameters, oid);
     const Ds_SignatureVersion = "HMAC_SHA256_V1";
 
-    // ---- Modo diagnóstico ----
+    // ---- Modo diagnóstico de salida ----
     if ((src.mode || "").toString().toLowerCase() === "json") {
       return res.status(200).json({
         action: REDSYS_URL,
@@ -171,7 +198,6 @@ export default function handler(req, res) {
     <noscript><button type="submit">Continuar al pago</button></noscript>
   </form>
 </body></html>`;
-
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (e) {

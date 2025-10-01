@@ -6,7 +6,6 @@ import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
 
-
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
   const snapshot = await get(userRef);
@@ -61,39 +60,45 @@ const ReservaExpresContinuo = () => {
       ? Math.max(maxModelado - ocupadasModelado, 0)
       : 0;
 
+  // --- PRECIOS CORRECTOS ---
+  // Torno = 32 €, General/Modelado = 27 €
+  const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const precioUnitario = metodo === "torno" ? 32 : 27;
+  const precioTotal = precioUnitario * plazasNum;
+
   const handleReserva = async () => {
-    if (!fecha || !turno || !metodo || !plazas) {
+    if (!fecha || !turno || !metodo || !plazasNum) {
       alert("Por favor, completa todos los campos.");
       return;
     }
 
-    if (plazas > plazasDisponibles) {
+    if (plazasNum > plazasDisponibles) {
       alert("No hay suficientes plazas disponibles.");
       return;
     }
 
-    const precio = metodo === "torno" ? "27€" : "32€";
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      console.error("Usuario no autenticado.");
+      return;
+    }
 
     const reserva = {
       clase: "Exprés Continuo",
       fecha,
       turno,
-      metodo,
-      precio,
-      plazas: Number(plazas),
+      metodo,                    // "torno" | "general"
+      plazas: plazasNum,
+      precioUnitario,            // 32 o 27
+      precioTotal,               // total calculado
+      precio: precioTotal,       // compatibilidad con pantallas antiguas
       timestamp: new Date().toISOString(),
       tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
     };
 
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        console.error("Usuario no autenticado.");
-        return;
-      }
-
       const reservaRef = ref(
         dbRealtime,
         `reservas/ExpresContinuo/${fecha}/${turno}/${metodo}`
@@ -106,7 +111,7 @@ const ReservaExpresContinuo = () => {
       );
       await push(historialRef, reserva);
 
-      // ✅ NUEVO: guardar también como reserva activa
+      // ✅ guardar también como reserva activa
       const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
       await push(userReservaRef, reserva);
 
@@ -115,6 +120,7 @@ const ReservaExpresContinuo = () => {
       if (desdeTarjetaRegalo) {
         navigate("/generar-codigo", { state: { tipo: "exprescontinuo" } });
       } else {
+        // enviamos unitario y total para que ResumenPago muestre bien
         navigate("/resumen-pago", { state: reserva });
       }
     } catch (error) {
@@ -177,9 +183,10 @@ const ReservaExpresContinuo = () => {
               onChange={(e) => setMetodo(e.target.value)}
               style={styles.input}
             >
+              {/* Mostramos precios correctos en las opciones */}
               <option value="">-- Selecciona --</option>
-              <option value="torno">Torno - 27€</option>
-              <option value="general">General - 32€</option>
+              <option value="torno">Torno - 32€</option>
+              <option value="general">General - 27€</option>
             </select>
 
             {metodo && (
@@ -199,8 +206,7 @@ const ReservaExpresContinuo = () => {
               type="number"
               value={plazas}
               onChange={(e) => {
-                const valor = e.target.value;
-                const num = parseInt(valor, 10);
+                const num = parseInt(e.target.value, 10);
                 if (!isNaN(num) && num >= 1) {
                   setPlazas(num);
                 }
@@ -213,14 +219,12 @@ const ReservaExpresContinuo = () => {
             <button
               style={styles.boton}
               onClick={handleReserva}
-              disabled={!metodo || plazas > plazasDisponibles}
+              disabled={!metodo || plazasNum > plazasDisponibles}
             >
               Confirmar y pagar
             </button>
           </>
         )}
-
-        
       </div>
     </div>
   );
@@ -278,12 +282,3 @@ const styles = {
 };
 
 export default ReservaExpresContinuo;
-
-
-
-
-
-
-
-
-

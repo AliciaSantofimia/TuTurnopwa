@@ -20,6 +20,8 @@ export default function ReservaClasesOnline() {
     if (!fecha || !turno || plazas < 1) return;
     const fechaStr = fecha.toISOString().split("T")[0];
 
+    const totalEuros = precioUnitario * Number(plazas); 
+
     navigate("/resumenpago", {
       state: {
         clase: "Clases Online (en directo)",
@@ -27,6 +29,7 @@ export default function ReservaClasesOnline() {
         turno,
         plazas,
         precioUnitario,
+        precio: totalEuros,
         ubicacion: "Online – La Purísima Conchi",
       },
     });

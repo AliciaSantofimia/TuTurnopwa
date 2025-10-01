@@ -64,7 +64,7 @@ export default function ReservaTornoIntensivoRegalo() {
       fecha,
       turno,
       metodo,
-      precio: "0€ (Tarjeta regalo)",
+      precio: 0,
       plazas: 1,
       timestamp: new Date().toISOString(),
       tipoReserva: "regalo",

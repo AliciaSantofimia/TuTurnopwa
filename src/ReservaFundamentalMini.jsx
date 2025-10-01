@@ -60,6 +60,10 @@ export default function ReservaFundamentalMini() {
       ? Math.max(maxModelado - ocupadasModelado, 0)
       : 0;
 
+      const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+const PRECIO_UNITARIO = 35;              // Fundamental Mini
+const totalEuros = PRECIO_UNITARIO * plazasNum;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!fecha || !turno || !metodo || !plazas) {
@@ -78,8 +82,8 @@ export default function ReservaFundamentalMini() {
       fecha,
       turno,
       metodo,
-      precio: "35€",
-      plazas: Number(plazas),
+      precio: totalEuros, 
+      plazas: plazasNum, 
       timestamp: new Date().toISOString(),
       tipoReserva: "normal"
     };

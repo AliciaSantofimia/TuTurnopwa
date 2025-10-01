@@ -7,16 +7,13 @@ import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 
-
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);
   const snapshot = await get(userRef);
   if (snapshot.exists()) {
     const datos = snapshot.val();
     const nuevasReservas = (datos.reservas || 0) + 1;
-    await update(userRef, {
-      reservas: nuevasReservas
-    });
+    await update(userRef, { reservas: nuevasReservas });
   }
 };
 
@@ -31,8 +28,6 @@ export default function ReservaBono4Clases() {
   const navigate = useNavigate();
   const location = useLocation();
   const desdeTarjetaRegalo = location.state?.desdeTarjetaRegalo || false;
-const from = location.state?.from || "/bono-4-clases"; 
-
 
   const maxTorno = 12;
   const maxModelado = 33;
@@ -54,77 +49,91 @@ const from = location.state?.from || "/bono-4-clases";
       : 0;
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    console.error("Usuario no autenticado.");
-    return;
-  }
-
-  if (plazas > plazasDisponibles) {
-    alert("No hay suficientes plazas disponibles para este método.");
-    return;
-  }
-
-  const reserva = {
-    clase: "Bono 4 Clases",
-    fecha,
-    turno,
-    metodo,
-    precio: "79€",
-    plazas: Number(plazas),
-    timestamp: new Date().toISOString(),
-    tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal"
-  };
-
-  try {
-    const generalRef = ref(
-      dbRealtime,
-      `reservas/Bono4Clases/${fecha}/${turno}/${metodo}`
-    );
-    await push(generalRef, {
-      uid: user.uid,
-      ...reserva
-    });
-
-    const userHistorialRef = ref(
-      dbRealtime,
-      `usuarios/${user.uid}/historialReservas`
-    );
-    await push(userHistorialRef, reserva);
-
-    // ✅ NUEVO: guardar también como reserva activa
-    const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-    await push(userReservaRef, reserva);
-
-    await actualizarContadorReservas(user.uid);
-
-    if (desdeTarjetaRegalo) {
-      navigate("/generar-codigo", {
-        state: { tipo: "4clases" }
-      });
-    } else {
-      navigate("/resumen-pago", {
-        state: reserva
-      });
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("Usuario no autenticado.");
+      return;
     }
-  } catch (err) {
-    console.error("Error al guardar la reserva:", err);
-  }
-};
 
+    if (!fecha || !turno || !metodo) {
+      alert("Por favor, completa fecha, turno y método.");
+      return;
+    }
+
+    const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+    if (plazasNum > plazasDisponibles) {
+      alert("No hay suficientes plazas disponibles para este método.");
+      return;
+    }
+
+    // Precio correcto del Bono 4 Clases:
+    // 70 € por persona y +5 € SOLO si método = torno (=> 75 €).
+    const precioUnitarioBase = 70;
+    const precioUnitario = metodo === "torno" ? precioUnitarioBase + 5 : precioUnitarioBase;
+    const precioTotal = precioUnitario * plazasNum;
+
+    const orderId = Date.now().toString().slice(-12);
+
+    const reserva = {
+      clase: "Bono 4 Clases",
+      fecha,
+      turno,
+      metodo,
+      plazas: plazasNum,
+      precioUnitario,  // guardamos unitario
+      precioTotal,     // y total (numérico)
+      precio: precioTotal, // compatibilidad si en otros sitios leen 'precio'
+      timestamp: new Date().toISOString(),
+      estadoPago: "pendiente",
+      orderId,
+      tipoReserva: desdeTarjetaRegalo ? "tarjetaRegalo" : "normal",
+    };
+
+    try {
+      const generalRef = ref(dbRealtime, `reservas/Bono4Clases/${fecha}/${turno}/${metodo}`);
+      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const userHistorialRef = ref(dbRealtime, `usuarios/${user.uid}/historialReservas`);
+      await push(userHistorialRef, reserva);
+
+      // también como reserva activa
+      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+      await push(userReservaRef, reserva);
+
+      await actualizarContadorReservas(user.uid);
+
+      if (desdeTarjetaRegalo) {
+        navigate("/generar-codigo", { state: { tipo: "4clases" } });
+      } else {
+        // Enviamos unitario y total para que el Resumen muestre bien + respete tus reglas
+        navigate("/resumen-pago", {
+          state: {
+            desdeTarjeta: false,
+            tipo: "clase",
+            clase: "Bono 4 Clases",
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precioUnitario,
+            precioTotal,
+            orderId,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Error al guardar la reserva:", err);
+      alert("Ocurrió un error al guardar tu reserva.");
+    }
+  };
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-       <BotonVolver />
-
-
-
-
+        <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva – Bono 4 Clases
@@ -213,7 +222,7 @@ const from = location.state?.from || "/bono-4-clases";
             <button
               type="submit"
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-              disabled={!metodo || plazas > plazasDisponibles}
+              disabled={!metodo || (Number(plazas) || 0) > plazasDisponibles}
             >
               Confirmar y pagar
             </button>
@@ -227,6 +236,3 @@ const from = location.state?.from || "/bono-4-clases";
     </div>
   );
 }
-
-
-
