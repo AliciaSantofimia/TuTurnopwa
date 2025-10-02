@@ -82,13 +82,20 @@ function normalize3DESKey(raw) {
 
 function deriveKeyV1(order) {
   const raw = getSecretRawBytes();
-  const key24 = normalize3DESKey(raw); // 24 bytes válidos
+  const key = normalize3DESKey(raw);       // puede quedar 16 o 24, en tu caso 24
+  const algo = key.length === 24 ? "des-ede3-cbc" : "des-ede-cbc"; // 👈 clave
+
   const iv = Buffer.alloc(8, 0);
-  const cipher = crypto.createCipheriv("des-ede-cbc", key24, iv);
+  const cipher = crypto.createCipheriv(algo, key, iv);
   cipher.setAutoPadding(true);
-  const enc = Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
+
+  const enc = Buffer.concat([
+    cipher.update(String(order), "utf8"),
+    cipher.final(),
+  ]);
   return enc; // bytes derivados
 }
+
 
 function toB64Url(b64) {
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
