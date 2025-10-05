@@ -31,6 +31,9 @@ const toBase64Url = (buf) =>
   Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 
 const jsonToStdB64 = (obj) => Buffer.from(JSON.stringify(obj), "utf8").toString("base64");
+const toBase64UrlFromString = (s) =>
+  Buffer.from(s, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+
 const isHttps = (u) => typeof u === "string" && /^https:\/\//i.test(u);
 
 // ---------- V1: 3DES + HMAC-SHA256 ----------
@@ -94,7 +97,6 @@ export default function handler(req, res) {
   const src = isGet ? (req.query || {}) : (req.body || {});
 
   if (!FUC) return res.status(500).send("Falta REDSYS_FUC");
-  // Validación de clave según versión
   if (SIG_VERSION === "V2") {
     if (!process.env.REDSYS_SECRET_TXT) return res.status(500).send("Falta REDSYS_SECRET_TXT (V2)");
   } else {
@@ -139,7 +141,11 @@ export default function handler(req, res) {
       ...(payMethod === "bizum" ? { DS_MERCHANT_PAYMETHODS: "z" } : {}),
     };
 
-    const Ds_MerchantParameters = jsonToStdB64(dsJson);
+    // V2 → MerchantParameters en Base64URL | V1 → Base64 estándar
+    const Ds_MerchantParameters =
+      SIG_VERSION === "V2"
+        ? toBase64UrlFromString(JSON.stringify(dsJson))
+        : jsonToStdB64(dsJson);
 
     let Ds_SignatureVersion, Ds_Signature;
     if (SIG_VERSION === "V2") {
