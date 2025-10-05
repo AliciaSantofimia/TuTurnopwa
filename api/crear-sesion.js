@@ -134,7 +134,8 @@ export default function handler(req, res) {
     // 1) Base64 estándar del JSON
     const Ds_MerchantParameters = jsonToStdB64(dsJson);
 
-    // 2) Firma V1 (3DES → HMAC-SHA256 → Base64 URL-safe)
+    // 2) Firma V1 (3DES → HMAC-SHA256 → Base64 ESTÁNDAR)
+
     const Ds_Signature = signV1(Ds_MerchantParameters, dsJson.DS_MERCHANT_ORDER);
 
     // 3) Versión
@@ -159,7 +160,7 @@ export default function handler(req, res) {
   <p>Redirigiendo al TPV…</p>
   <form method="post" action="${TPV_URL}">
     <input type="hidden" name="Ds_SignatureVersion" value="${Ds_SignatureVersion}">
-    <input type="hidden" name="Ds_MerchantParameters" value='${Ds_MerchantParameters}'>
+    <input type="hidden" name="Ds_MerchantParameters" value="${Ds_MerchantParameters}">
     <input type="hidden" name="Ds_Signature" value="${Ds_Signature}">
     <noscript><button type="submit">Continuar al pago</button></noscript>
   </form>
