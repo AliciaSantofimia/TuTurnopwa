@@ -71,12 +71,12 @@ function deriveKeyV1(order) {
   return enc; // bytes derivados -> clave HMAC
 }
 
-// HMAC-SHA256 sobre el Base64 de Ds_MerchantParameters -> Base64 URL-safe
+// HMAC-SHA256 sobre el Base64 de Ds_MerchantParameters -> Base64 ESTÁNDAR
 function signV1(paramsB64, order) {
   const hmacKey = deriveKeyV1(order);
-  const h = crypto.createHmac("sha256", hmacKey).update(paramsB64, "utf8").digest();
-  return toBase64Url(h);
+  return crypto.createHmac("sha256", hmacKey).update(paramsB64, "utf8").digest("base64");
 }
+
 
 // ---------- handler ----------
 export default function handler(req, res) {
