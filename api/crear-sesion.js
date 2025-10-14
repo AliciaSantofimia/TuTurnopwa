@@ -181,12 +181,22 @@ export default function handler(req, res) {
     }
 
     // --- Modo INSPECT: formulario visible para depurar ---
-    if ((mode || "").toString().toLowerCase() === "inspect") {
-      const html = `<!doctype html><html lang="es"><meta charset="utf-8">
+    if ((mode || "").toLowerCase() === "inspect") {
+  const short = (s) => (s ? `${s.slice(0, 24)}…${s.slice(-12)} (len ${s.length})` : "");
+  const html = `<!doctype html><html lang="es"><meta charset="utf-8">
 <title>Debug Redsys</title>
-<body style="font-family:sans-serif; max-width:800px; margin:2rem auto">
+<body style="font-family:sans-serif; max-width:900px; margin:2rem auto">
   <h1>Debug Redsys</h1>
   <p><strong>Action:</strong> ${TPV_URL}</p>
+
+  <h3>Previsualización (solo lectura)</h3>
+  <ul>
+    <li><b>Ds_SignatureVersion:</b> ${Ds_SignatureVersion}</li>
+    <li><b>Ds_MerchantParameters:</b> ${short(Ds_MerchantParameters)}</li>
+    <li><b>Ds_Signature:</b> ${short(Ds_Signature)}</li>
+  </ul>
+
+  <h3>Formulario que se enviará (POST)</h3>
   <form method="post" action="${TPV_URL}" target="_self" style="display:grid; gap:1rem">
     <label>Ds_SignatureVersion<br>
       <input name="Ds_SignatureVersion" value="${Ds_SignatureVersion}" style="width:100%">
@@ -199,13 +209,14 @@ export default function handler(req, res) {
     </label>
     <button type="submit" style="padding:.6rem 1rem">Enviar al TPV</button>
   </form>
+
   <hr>
-  <p><strong>MerchantParameters (JSON):</strong></p>
+  <p><strong>MerchantParameters (JSON legible):</strong></p>
   <pre>${JSON.stringify(dsJson, null, 2)}</pre>
 </body></html>`;
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      return res.status(200).send(html);
-    }
+  res.setHeader("Content-Type","text/html; charset=utf-8");
+  return res.status(200).send(html);
+}
 
     // --- HTML auto-submit por defecto ---
     const html = `<!doctype html><html lang="es"><meta charset="utf-8">
