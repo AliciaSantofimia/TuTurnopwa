@@ -30,9 +30,12 @@ export default function ResumenPagoTearium() {
     return oid;
   }
 
-  function irAPasarela({ precio, orderId, payMethod = "card" }) {
+  async function irAPasarela({ precio, orderId, payMethod = "card" }) {
+    // 1) Calcula importe y orderId válidos
     const amountCents = Math.max(1, Math.round(Number(precio) * 100));
     const oid = makeOrderId(orderId);
+
+    // 2) Pide sesión firmada en modo JSON (NO usar window.open)
     const qs = new URLSearchParams({
       orderId: oid,
       amountCents: String(amountCents),
@@ -40,21 +43,51 @@ export default function ResumenPagoTearium() {
       koUrl: URL_KO,
       notifyUrl: URL_NOTIFY,
       payMethod,
+      mode: "json",
     });
-    window.location.href = `/api/crear-sesion?${qs.toString()}`;
+
+    const res = await fetch(`/api/crear-sesion?${qs.toString()}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error(`crear-sesion fallo: ${res.status}`);
+    const data = await res.json(); // { action, Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature }
+
+    // 3) Crea el <form> y hace POST a Redsys en _self (recomendado para PWA/Safari)
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = data.action; // https://sis-t.redsys.es/sis/realizarPago
+    form.target = "_self";
+
+    const addHidden = (name, value) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+
+    addHidden("Ds_SignatureVersion", data.Ds_SignatureVersion);
+    addHidden("Ds_MerchantParameters", data.Ds_MerchantParameters);
+    addHidden("Ds_Signature", data.Ds_Signature);
+
+    document.body.appendChild(form);
+    form.submit(); // Disparo directo desde el gesto del usuario
   }
 
-  const handleConfirmarPago = () => {
-    if (!aceptaPoliticas) return;
+  const handleConfirmarPago = async () => {
+    if (!aceptaPoliticas || cargando) return;
     try {
-      setCargando(true);
-      irAPasarela({
+      setCargando(true); // No hacemos setCargando(false); la página navegará al TPV
+      await irAPasarela({
         precio: totalEuros,
         orderId: Date.now().toString(),
         payMethod: payMethodFromState || "card",
       });
-    } finally {
+    } catch (e) {
+      console.error(e);
       setCargando(false);
+      alert("No se pudo abrir el TPV. Intenta de nuevo en unos segundos.");
     }
   };
 
