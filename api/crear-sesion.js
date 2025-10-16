@@ -74,8 +74,15 @@ function deriveKeyV1(order) {
 }
 function signV1(paramsB64, order) {
   const k = deriveKeyV1(order);
-  return crypto.createHmac("sha256", k).update(paramsB64, "utf8").digest("base64"); // firma en Base64 estándar
+  const digest = crypto.createHmac("sha256", k).update(paramsB64, "utf8").digest();
+  // Devuelve la firma en Base64URL (sin '='), que muchos TPV esperan en V1.
+  return Buffer.from(digest)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
+
 
 // ---------- V2: AES-128 + HMAC-SHA512 ----------
 function key16FromSecretTxt() {
