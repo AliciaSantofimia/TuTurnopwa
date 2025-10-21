@@ -1,113 +1,76 @@
-// /api/notificacionTPV.js
+// api/notificacionTPV.js
 import crypto from "crypto";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, push } from "firebase/database";
-import { applyCors } from "./_cors.js";
-
 export const config = { runtime: "nodejs" };
 
-// --- Firebase ---
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.FIREBASE_DB_URL,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const SIG_VERSION = (process.env.REDSYS_SIG_VERSION || "V2").toUpperCase();
 
-// --- Redsys ---
-const SECRET_B64 = process.env.REDSYS_SECRET_B64;
+const b64urlToStd = (s) => s.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (s.length % 4)) % 4);
 
-// Deriva clave 3DES-CBC(order) como pide Redsys (HMAC-SHA256)
-function deriveKey(order) {
-  const key = Buffer.from(SECRET_B64, "base64");
+function key16FromSecretTxt() {
+  const txt = (process.env.REDSYS_SECRET_TXT || "").trim();
+  if (!txt) throw new Error("Falta REDSYS_SECRET_TXT");
+  let k = Buffer.from(txt.slice(0, 16), "utf8");
+  if (k.length < 16) k = Buffer.concat([k, Buffer.alloc(16 - k.length, 0)]);
+  return k;
+}
+function deriveKeyV2(order) {
+  const k16 = key16FromSecretTxt();
+  const iv = Buffer.alloc(16, 0);
+  const cipher = crypto.createCipheriv("aes-128-cbc", k16, iv);
+  cipher.setAutoPadding(true);
+  return Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
+}
+function getSecretV1Bytes() {
+  const b64 = (process.env.REDSYS_SECRET_B64 || "").trim();
+  if (!b64) throw new Error("Falta REDSYS_SECRET_B64");
+  return Buffer.from(b64, "base64");
+}
+function normalize3DESKey24(raw) {
+  let key = Buffer.from(raw);
+  if (key.length === 16) key = Buffer.concat([key, key.slice(0, 8)]);
+  if (key.length > 24) key = key.slice(0, 24);
+  if (key.length < 24) key = Buffer.concat([key, Buffer.alloc(24 - key.length, 0)]);
+  return key;
+}
+function deriveKeyV1(order) {
+  const key24 = normalize3DESKey24(getSecretV1Bytes());
   const iv = Buffer.alloc(8, 0);
-  const cipher = crypto.createCipheriv("des-ede3-cbc", key, iv);
+  const cipher = crypto.createCipheriv("des-ede3-cbc", key24, iv);
   cipher.setAutoPadding(true);
   return Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
 }
 
-// Firma binaria (Buffer) del MerchantParameters Base64
-function signBinary(mpB64, order) {
-  const key = deriveKey(order);
-  return crypto.createHmac("sha256", key).update(mpB64).digest(); // Buffer
-}
-
-// Normaliza y parsea el body de Redsys (x-www-form-urlencoded)
-function parseIncoming(req) {
-  if (req.method === "POST") {
-    if (typeof req.body === "string") {
-      // Vercel puede entregar el body como string si es urlencoded
-      const m = Object.fromEntries(new URLSearchParams(req.body));
-      return m;
-    }
-    if (req.body && typeof req.body === "object") {
-      return req.body;
-    }
-  }
-  // fallback para pruebas con GET
-  return req.query || {};
-}
-
-export default async function handler(req, res) {
-  // Opcional: CORS para tests desde navegador
-  if (applyCors(req, res)) return;
+export default function handler(req, res) {
+  const isPost = req.method === "POST";
+  if (!isPost) return res.status(405).end();
 
   try {
-    const incoming = parseIncoming(req);
-    const Ds_MerchantParameters = incoming?.Ds_MerchantParameters;
-    const Ds_Signature = incoming?.Ds_Signature;
+    const { Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature } = req.body || {};
 
-    if (!Ds_MerchantParameters || !Ds_Signature) {
-      return res.status(400).send("KO");
+    // Decodifica parámetros (Base64 estándar)
+    const jsonStr = Buffer.from(Ds_MerchantParameters, "base64").toString("utf8");
+    const data = JSON.parse(jsonStr);
+    const order = data.Ds_Order || data.DS_ORDER || data.DS_MERCHANT_ORDER;
+
+    // Recalcula firma
+    let expected;
+    if ((Ds_SignatureVersion || "").includes("512") || SIG_VERSION === "V2") {
+      const k = deriveKeyV2(order);
+      const digest = crypto.createHmac("sha512", k).update(Ds_MerchantParameters, "utf8").digest();
+      expected = digest.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    } else {
+      const k = deriveKeyV1(order);
+      expected = crypto.createHmac("sha256", k).update(Ds_MerchantParameters, "utf8").digest("base64");
     }
 
-    // Decodifica MerchantParameters
-    const decoded = JSON.parse(
-      Buffer.from(Ds_MerchantParameters, "base64").toString("utf8")
-    );
+    const ok = expected === (Ds_Signature || "").trim();
 
-    // Extrae ORDER del mensaje
-    const order =
-      decoded.Ds_Order ||
-      decoded.DS_ORDER ||
-      decoded.DS_MERCHANT_ORDER ||
-      decoded.Ds_Merchant_Order;
+    // *** Aquí ya puedes actualizar tu reserva/pedido ***
+    console.log("TPV notify:", { ok, order, raw: data });
 
-    if (!order) {
-      // Sin order no podemos derivar clave → KO
-      return res.status(400).send("KO");
-    }
-
-    // Firma local (Buffer)
-    const localSigBuf = signBinary(Ds_MerchantParameters, order);
-
-    // Firma remota → Buffer (acepta Base64 o Base64URL)
-    const remoteB64 = String(Ds_Signature).replace(/-/g, "+").replace(/_/g, "/");
-    const remoteSigBuf = Buffer.from(remoteB64, "base64");
-
-    // Comparación segura
-    const firmaOk =
-      remoteSigBuf.length === localSigBuf.length &&
-      crypto.timingSafeEqual(remoteSigBuf, localSigBuf);
-
-    // Autorizada si Ds_Response < 100 (numérico)
-    const respNum = parseInt(decoded.Ds_Response, 10);
-    const autorizada = Number.isFinite(respNum) && respNum < 100;
-
-    if (firmaOk && autorizada) {
-      // Guarda mínimo necesario; si quieres todo, guarda decoded tal cual
-      await push(ref(db, `reservas_confirmadas/${order}`), decoded);
-      return res.status(200).send("OK");
-    }
-
-    // (Opcional) Log mínimo de fallos de firma/resp en otra rama
-    // await push(ref(db, `reservas_fallidas/${order || "sin_order"}`), { decoded, firmaOk, respNum });
-
-    return res.status(400).send("KO");
+    res.status(200).send(ok ? "OK" : "BAD SIGN");
   } catch (e) {
-    console.error("notify error:", e);
-    return res.status(500).send("KO");
+    console.error(e);
+    res.status(200).send("BAD");
   }
 }
