@@ -17,7 +17,7 @@ export const config = { runtime: "nodejs" };
  */
 
 const FUC = process.env.REDSYS_FUC;
-const TERMINAL = process.env.REDSYS_TERMINAL || "001";
+const TERMINAL = process.env.REDSYS_TERMINAL || "1";
 const CURRENCY = process.env.REDSYS_CURRENCY || "978";
 
 const forceTest = process.env.REDSYS_FORCE_TEST === "1";
