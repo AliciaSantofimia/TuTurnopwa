@@ -43,20 +43,10 @@ const jsonToStdB64 = (obj) =>
 // Esta función intenta ambas para evitar SIS0042.
 function getSecretBytes() {
   const k = (process.env.REDSYS_SECRET_KEY || "").trim();
-  if (!k) throw new Error("Falta REDSYS_SECRET_KEY (clave secreta del banco)");
-
-  // 1) Intentar interpretarla como Base64 “real”
-  try {
-    const b = Buffer.from(k, "base64");
-    // Si al decodificar sale algo razonable (no vacío) y re-encode coincide (aprox), la aceptamos
-    if (b.length >= 16) return b;
-  } catch {
-    // ignore
-  }
-
-  // 2) Si no, usar bytes del texto tal cual
-  return Buffer.from(k, "utf8");
+  if (!k) throw new Error("Falta REDSYS_SECRET_KEY");
+  return Buffer.from(k, "utf8"); // FORZAR TEXTO
 }
+
 
 // Redsys usa 3DES con clave de 24 bytes:
 // - si tenemos 16 bytes → duplicamos 8 (K1K2K1)
