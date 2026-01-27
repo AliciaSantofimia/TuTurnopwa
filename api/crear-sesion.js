@@ -128,23 +128,25 @@ export default function handler(req, res) {
 
     // Parámetros Redsys (ojo a los nombres EXACTOS)
     const dsJson = {
-      Ds_Merchant_Amount: cents,
-      Ds_Merchant_Order: oid,
-      Ds_Merchant_MerchantCode: String(FUC),
-      Ds_Merchant_Terminal: String(TERMINAL),
-      Ds_Merchant_Currency: String(CURRENCY),
-      Ds_Merchant_TransactionType: "0",
-      Ds_Merchant_UrlOK: URL_OK,
-      Ds_Merchant_UrlKO: URL_KO,
-      ...(URL_NOTIFY ? { Ds_Merchant_MerchantURL: URL_NOTIFY } : {}),
-      ...(payMethod === "bizum" ? { Ds_Merchant_PayMethods: "z" } : {}),
-    };
+  DS_MERCHANT_AMOUNT: cents,
+  DS_MERCHANT_ORDER: oid,
+  DS_MERCHANT_MERCHANTCODE: String(FUC),
+  DS_MERCHANT_TERMINAL: String(TERMINAL),
+  DS_MERCHANT_CURRENCY: String(CURRENCY),
+  DS_MERCHANT_TRANSACTIONTYPE: "0",
+  DS_MERCHANT_URLOK: URL_OK,
+  DS_MERCHANT_URLKO: URL_KO,
+  ...(URL_NOTIFY ? { DS_MERCHANT_MERCHANTURL: URL_NOTIFY } : {}),
+  ...(payMethod === "bizum" ? { DS_MERCHANT_PAYMETHODS: "z" } : {}),
+};
+
 
     const Ds_MerchantParameters = jsonToStdB64(dsJson);
 
     // SHA256 V1
     const Ds_SignatureVersion = "HMAC_SHA256_V1";
-    const Ds_Signature = signSHA256V1(Ds_MerchantParameters, dsJson.Ds_Merchant_Order);
+    const Ds_Signature = signSHA256V1(Ds_MerchantParameters, dsJson.DS_MERCHANT_ORDER);
+
 
     // JSON debug
     if ((mode || "").toString().toLowerCase() === "json") {
