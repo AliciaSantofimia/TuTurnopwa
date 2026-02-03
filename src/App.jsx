@@ -122,6 +122,8 @@ import PoliticaCancelacion from "./PoliticaCancelacion.jsx";
 import CondicionesUso from "./CondicionesUso.jsx";
 import PoliticaPrivacidad from "./PoliticaPrivacidad.jsx";
 import CondicionesPago from "./CondicionesPago.jsx";
+import PoliticaCookies from "./PoliticaCookies";
+
 
 function App() {
   return (
