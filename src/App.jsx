@@ -256,6 +256,8 @@ function App() {
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/condiciones-pago" element={<CondicionesPago />} />
           <Route path="*" element={<Navigate to="/portada" replace />} />
+          <Route path="/politica-cookies" element={<PoliticaCookies />} />
+
 
         </Route>
       </Routes>

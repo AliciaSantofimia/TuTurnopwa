@@ -36,6 +36,10 @@ export default function Footer() {
         <Link to="/politica-piezas" className="hover:underline">
           Política de piezas
         </Link>
+        <Link to="/politica-cookies" className="hover:underline">
+  Política de cookies
+</Link>
+
       </nav>
     </footer>
   );
