@@ -2,12 +2,41 @@
 import crypto from "crypto";
 export const config = { runtime: "nodejs" };
 
-// Sustituir esto por process.env.VARIABLES en producción
-const FUC = "368564464"; //process.env.REDSYS_FUC;
-const TERMINAL = "001"; //process.env.REDSYS_TERMINAL;
-const CURRENCY = "978"; //process.env.REDSYS_CURRENCY;
-const REDSYS_SECRET_KEY = process.env.REDSYS_SECRET_KEY;
-const TPV_URL = "https://sis.redsys.es/sis/realizarPago";
+/**
+ * ENVs (Vercel):
+ * - REDSYS_FUC
+ * - REDSYS_TERMINAL=001
+ * - REDSYS_CURRENCY=978
+ * - REDSYS_URL_TEST=https://sis-t.redsys.es:25443/sis/realizarPago
+ * - REDSYS_URL_PROD=https://sis.redsys.es/sis/realizarPago
+ * - REDSYS_URL_OK, REDSYS_URL_KO, REDSYS_NOTIFY_URL
+ * - REDSYS_FORCE_TEST="1" (para forzar sandbox)
+ * - REDSYS_SECRET_TXT   ← V2 (SHA512 + AES). 16 chars, ej: sq7HjrUOBfKmC576
+ */
+
+const FUC = process.env.REDSYS_FUC;
+const TERMINAL = process.env.REDSYS_TERMINAL || "001";
+const CURRENCY = process.env.REDSYS_CURRENCY || "978";
+
+const forceTest = process.env.REDSYS_FORCE_TEST === "1";
+const isProdEnv = process.env.VERCEL_ENV === "production" && !forceTest;
+
+// --- URL del TPV con puerto 25443 en sandbox ---
+function ensureTestPort(urlStr) {
+  try {
+    const u = new URL(urlStr);
+    if (u.hostname === "sis-t.redsys.es" && !u.port) u.port = "25443";
+    return u.toString();
+  } catch {
+    return urlStr;
+  }
+}
+
+const RAW_TPV_URL = isProdEnv
+  ? (process.env.REDSYS_URL_PROD || "https://sis.redsys.es/sis/realizarPago")
+  : (process.env.REDSYS_URL_TEST || "https://sis-t.redsys.es:25443/sis/realizarPago");
+
+const TPV_URL = isProdEnv ? RAW_TPV_URL : ensureTestPort(RAW_TPV_URL);
 
 // ---------- utils ----------
 const isHttps = (u) => typeof u === "string" && /^https:\/\//i.test(u);
@@ -19,51 +48,30 @@ const jsonToStdB64 = (obj) => Buffer.from(JSON.stringify(obj), "utf8").toString(
 const toBase64Url = (buf) =>
   Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 
-// ---------- V1: HMAC_SHA256_V1 ----------
-function signV1(paramsB64, order) {
-  const key = Buffer.from(REDSYS_SECRET_KEY, "base64");
-  const iv = Buffer.alloc(8, 0);
-  const cipher = crypto.createCipheriv("des-ede3-cbc", key, iv);
-  cipher.setAutoPadding(false);
-
-  let orderPadded = order;
-  while (orderPadded.length % 8 !== 0) orderPadded += "\0";
-
-  const encrypted = Buffer.concat([
-    cipher.update(orderPadded, "utf8"),
-    cipher.final()
-  ]);
-
-  return crypto
-    .createHmac("sha256", encrypted)
-    .update(paramsB64)
-    .digest("base64");
+// ---------- V2: AES-128 + HMAC-SHA512 ----------
+function key16FromSecretTxt() {
+  const txt = (process.env.REDSYS_SECRET_TXT || "").trim();
+  if (!txt) throw new Error("Falta REDSYS_SECRET_TXT (V2)");
+  const sixteen = txt.slice(0, 16);
+  let k = Buffer.from(sixteen, "utf8");
+  if (k.length < 16) k = Buffer.concat([k, Buffer.alloc(16 - k.length, 0x00)]);
+  if (k.length > 16) k = k.subarray(0, 16);
+  return k;
 }
 
-// ---------- V2: AES-128 + HMAC-SHA512 ----------
-// function key16FromSecretTxt() {
-//   if (!REDSYS_SECRET_KEY) throw new Error("Falta REDSYS_SECRET_KEY (V2)");
-//   const txt = REDSYS_SECRET_KEY;
-//   const sixteen = txt.slice(0, 16);
-//   let k = Buffer.from(sixteen, "utf8");
-//   if (k.length < 16) k = Buffer.concat([k, Buffer.alloc(16 - k.length, 0x00)]);
-//   if (k.length > 16) k = k.subarray(0, 16);
-//   return k;
-// }
+function deriveKeyV2(order) {
+  const k16 = key16FromSecretTxt();
+  const iv = Buffer.alloc(16, 0x00); // IV = 0
+  const cipher = crypto.createCipheriv("aes-128-cbc", k16, iv);
+  cipher.setAutoPadding(true);       // PKCS#7
+  return Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
+}
 
-// function deriveKeyV2(order) {
-//   const k16 = key16FromSecretTxt();
-//   const iv = Buffer.alloc(16, 0x00); // IV = 0
-//   const cipher = crypto.createCipheriv("aes-128-cbc", k16, iv);
-//   cipher.setAutoPadding(true);       // PKCS#7
-//   return Buffer.concat([cipher.update(String(order), "utf8"), cipher.final()]);
-// }
-
-// function signV2(paramsB64, order) {
-//   const k = deriveKeyV2(order);
-//   const digest = crypto.createHmac("sha512", k).update(paramsB64, "utf8").digest();
-//   return toBase64Url(digest); // base64url sin '='
-// }
+function signV2(paramsB64, order) {
+  const k = deriveKeyV2(order);
+  const digest = crypto.createHmac("sha512", k).update(paramsB64, "utf8").digest();
+  return toBase64Url(digest); // base64url sin '='
+}
 
 // ---------- handler ----------
 export default function handler(req, res) {
@@ -74,6 +82,7 @@ export default function handler(req, res) {
   const src = isGet ? (req.query || {}) : (req.body || {});
 
   if (!FUC) return res.status(500).send("Falta REDSYS_FUC");
+  if (!process.env.REDSYS_SECRET_TXT) return res.status(500).send("Falta REDSYS_SECRET_TXT (V2)");
 
   try {
     const { orderId, amountCents, amount, okUrl, koUrl, notifyUrl, payMethod, mode } = src;
@@ -81,11 +90,10 @@ export default function handler(req, res) {
     // ORDER: numérico 4–12 dígitos → dejamos 12 dígitos
     let oid = String(orderId ?? Date.now()).replace(/\D/g, "");
     if (oid.length < 4) oid = (Date.now() % 1e12).toString();
-    oid.padStart(12, "0").slice(-12);
-    oid = 770644969415;
+    oid = oid.padStart(12, "0").slice(-12);
 
     // Importe en céntimos (>=1)
-    let cents = 100; //amountCents != null ? String(parseInt(amountCents, 10)) : null;
+    let cents = amountCents != null ? String(parseInt(amountCents, 10)) : null;
     if (!cents && amount != null) {
       const euros = String(amount).replace(",", ".");
       cents = String(Math.round(Number(euros) * 100));
@@ -95,9 +103,9 @@ export default function handler(req, res) {
     }
 
     // URLs
-    const URL_OK = "https://app.lapurisimaconchi.com/pago/exito"; //isHttps(okUrl) ? okUrl : process.env.REDSYS_URL_OK;
-    const URL_KO = "https://app.lapurisimaconchi.com/pago/error"; //isHttps(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
-    const URL_NOTIFY = "https://app.lapurisimaconchi.com/api/notificacionTPV";//isHttps(notifyUrl) ? notifyUrl : process.env.REDSYS_NOTIFY_URL;
+    const URL_OK = isHttps(okUrl) ? okUrl : process.env.REDSYS_URL_OK;
+    const URL_KO = isHttps(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
+    const URL_NOTIFY = isHttps(notifyUrl) ? notifyUrl : process.env.REDSYS_NOTIFY_URL;
     if (!isHttps(URL_OK) || !isHttps(URL_KO)) {
       return res.status(400).send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
     }
@@ -112,19 +120,16 @@ export default function handler(req, res) {
       Ds_Merchant_TransactionType: "0",
       Ds_Merchant_UrlOK: URL_OK,
       Ds_Merchant_UrlKO: URL_KO,
-      Ds_Merchant_PayMethods: "0", 
-      Ds_Merchant_MerchantURL: URL_NOTIFY
-      //...(URL_NOTIFY ? { Ds_Merchant_MerchantURL: URL_NOTIFY } : {}),
-      //...(payMethod === "bizum" ? { Ds_Merchant_PayMethods: "z" } : {}),
+      ...(URL_NOTIFY ? { Ds_Merchant_MerchantURL: URL_NOTIFY } : {}),
+      ...(payMethod === "bizum" ? { Ds_Merchant_PayMethods: "z" } : {}),
     };
 
     // MerchantParameters → Base64 estándar
     const Ds_MerchantParameters = jsonToStdB64(dsJson);
 
-    // Firma (V1)
-    const Ds_SignatureVersion = "HMAC_SHA256_V1";
-    //const Ds_Signature = signV2(Ds_MerchantParameters, dsJson.Ds_Merchant_Order);
-    const Ds_Signature = signV1(Ds_MerchantParameters, dsJson.Ds_Merchant_Order);
+    // Firma (V2)
+    const Ds_SignatureVersion = "HMAC_SHA512_V2";
+    const Ds_Signature = signV2(Ds_MerchantParameters, dsJson.Ds_Merchant_Order);
 
     // --- Respuesta JSON para depurar ---
     if ((mode || "").toString().toLowerCase() === "json") {
@@ -173,7 +178,6 @@ export default function handler(req, res) {
   <pre>${JSON.stringify(dsJson, null, 2)}</pre>
 </body></html>`;
       res.setHeader("Content-Type","text/html; charset=utf-8");
-      //console.log("Debug Redsys:", html);
       return res.status(200).send(html);
     }
 
