@@ -85,15 +85,22 @@ if (oid.length < 4) oid = (Date.now() % 1e12).toString();
 oid = oid.padStart(12, "0").slice(-12);
 
     // Importe en céntimos (>=1)
-    let cents = 100; //amountCents != null ? String(parseInt(amountCents, 10)) : null;
-    if (!cents && amount != null) {
-      const euros = String(amount).replace(",", ".");
-      cents = String(Math.round(Number(euros) * 100));
-    }
-    if (!cents || !/^\d+$/.test(cents) || Number(cents) < 1) {
-      return res.status(400).send("amountCents/amount inválido");
-    }
+let cents = null;
 
+//  Si ya viene en céntimos
+if (amountCents != null) {
+  cents = String(parseInt(amountCents, 10));
+}
+
+// Si viene en euros
+if (!cents && amount != null) {
+  const euros = String(amount).replace(",", ".");
+  cents = String(Math.round(Number(euros) * 100));
+}
+
+if (!cents || !/^\d+$/.test(cents) || Number(cents) < 1) {
+  return res.status(400).send("amountCents/amount inválido");
+}
     // URLs
     const URL_OK = "https://app.lapurisimaconchi.com/pago/exito"; //isHttps(okUrl) ? okUrl : process.env.REDSYS_URL_OK;
     const URL_KO = "https://app.lapurisimaconchi.com/pago/error"; //isHttps(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
