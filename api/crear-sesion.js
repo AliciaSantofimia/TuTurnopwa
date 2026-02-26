@@ -79,10 +79,10 @@ export default function handler(req, res) {
     const { orderId, amountCents, amount, okUrl, koUrl, notifyUrl, payMethod, mode } = src;
 
     // ORDER: numérico 4–12 dígitos → dejamos 12 dígitos
-    let oid = String(orderId ?? Date.now()).replace(/\D/g, "");
-    if (oid.length < 4) oid = (Date.now() % 1e12).toString();
-    oid.padStart(12, "0").slice(-12);
-    oid = 770644969415;
+    
+let oid = String(orderId ?? Date.now()).replace(/\D/g, "");
+if (oid.length < 4) oid = (Date.now() % 1e12).toString();
+oid = oid.padStart(12, "0").slice(-12);
 
     // Importe en céntimos (>=1)
     let cents = 100; //amountCents != null ? String(parseInt(amountCents, 10)) : null;
