@@ -1,31 +1,30 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
-
-const location = useLocation();
-const navigate = useNavigate();
-
-const datos = location.state;
-
-if (!datos) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <p>No hay datos de pago disponibles.</p>
-        <button
-          onClick={() => navigate("/")}
-          className="mt-4 bg-pink-400 text-white px-4 py-2 rounded"
-        >
-          Volver al inicio
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function ResumenPagoTearium() {
   const location = useLocation();
-  const { fecha, turno, plazas, precioTotal, payMethod: payMethodFromState } = location.state || {};
+  const navigate = useNavigate();
+
+  const datos = location.state;
+
+  if (!datos) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p>No hay datos de pago disponibles.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-4 bg-pink-400 text-white px-4 py-2 rounded"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { fecha, turno, plazas, precioTotal, payMethod: payMethodFromState } = datos;
+
   const [aceptaPoliticas, setAceptaPoliticas] = useState(false);
   const [cargando, setCargando] = useState(false);
 
@@ -33,12 +32,21 @@ export default function ResumenPagoTearium() {
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
   const totalEuros = useMemo(() => {
-    const total = Number(String(precioTotal ?? "").replace(/[^\d.,]/g, "").replace(",", "."));
-    return Number.isFinite(total) && total > 0 ? total : plazasNum * PRECIO_UNITARIO;
+    const total = Number(
+      String(precioTotal ?? "")
+        .replace(/[^\d.,]/g, "")
+        .replace(",", ".")
+    );
+    return Number.isFinite(total) && total > 0
+      ? total
+      : plazasNum * PRECIO_UNITARIO;
   }, [plazasNum, precioTotal]);
 
   const ORIGIN =
-    typeof window !== "undefined" ? window.location.origin : "https://app.lapurisimaconchi.com";
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://app.lapurisimaconchi.com";
+
   const URL_OK = new URL("/pago/exito", ORIGIN).toString();
   const URL_KO = new URL("/pago/error", ORIGIN).toString();
   const URL_NOTIFY = new URL("/api/notificacionTPV", ORIGIN).toString();
@@ -52,6 +60,8 @@ export default function ResumenPagoTearium() {
     return oid;
   }
 
+
+}
   async function irAPasarela({ precio, orderId, payMethod = "card" }) {
     // 1) Calcula importe y orderId válidos
     const amountCents = Math.max(1, Math.round(Number(precio) * 100));
