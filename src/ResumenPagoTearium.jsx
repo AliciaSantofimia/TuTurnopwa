@@ -1,5 +1,27 @@
 import React, { useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
+const location = useLocation();
+const navigate = useNavigate();
+
+const datos = location.state;
+
+if (!datos) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <p>No hay datos de pago disponibles.</p>
+        <button
+          onClick={() => navigate("/")}
+          className="mt-4 bg-pink-400 text-white px-4 py-2 rounded"
+        >
+          Volver al inicio
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ResumenPagoTearium() {
   const location = useLocation();
