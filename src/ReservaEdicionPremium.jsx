@@ -6,6 +6,7 @@ import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 const actualizarContadorReservas = async (uid) => {
   const userRef = ref(dbRealtime, "usuarios/" + uid);

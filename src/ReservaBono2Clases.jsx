@@ -6,6 +6,7 @@ import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 
 const actualizarContadorReservas = async (uid) => {
@@ -17,6 +18,14 @@ const actualizarContadorReservas = async (uid) => {
     await update(userRef, { reservas: nuevasReservas });
   }
 };
+const toISODate = (d) => d.toISOString().slice(0, 10);
+
+const todayISO = toISODate(new Date());
+const maxISO = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 2); // +2 años (cambia si quieres)
+  return toISODate(d);
+})();
 
 export default function ReservaBono2Clases() {
   const [fecha, setFecha] = useState("");
@@ -142,15 +151,15 @@ export default function ReservaBono2Clases() {
                 Selecciona el día:
               </label>
               <input
-                type="date"
-                id="fecha"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-                min="2025-01-01"
-                max="2025-12-31"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              />
+  type="date"
+  id="fecha"
+  value={fecha}
+  onChange={(e) => setFecha(e.target.value)}
+  min={todayISO}
+  max={maxISO}
+  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+  required
+/>
             </div>
 
             <div>

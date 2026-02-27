@@ -6,7 +6,7 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
-
+import DateInputReserva from "./components/DateInputReserva";
 
 export default function ReservaTornoIntensivoRegalo() {
   const [fecha, setFecha] = useState("");

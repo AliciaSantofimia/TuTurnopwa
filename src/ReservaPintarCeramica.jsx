@@ -5,6 +5,7 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasTotalesPorDia } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 const actualizarContadorReservas = async (uid) => {
   try {

@@ -7,6 +7,7 @@ import { dbRealtime } from "./firebase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 
 export default function Reserva4clases3hmesRegalo() {

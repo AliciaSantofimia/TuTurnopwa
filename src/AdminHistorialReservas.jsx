@@ -3,6 +3,7 @@ import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 
 const AdminHistorialReservas = () => {

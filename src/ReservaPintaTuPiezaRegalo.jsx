@@ -5,6 +5,7 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
+import DateInputReserva from "./components/DateInputReserva";
 
 export default function ReservaPintaTuPiezaRegalo() {
   const [fecha, setFecha] = useState("");

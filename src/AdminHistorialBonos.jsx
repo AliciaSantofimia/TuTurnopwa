@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
+import DateInputReserva from "./components/DateInputReserva";
 
 const AdminHistorialBonos = () => {
   const [bonos, setBonos] = useState([]);

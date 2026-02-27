@@ -5,7 +5,7 @@ import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
-
+import DateInputReserva from "./components/DateInputReserva";
 
 export default function Reserva2clases4hmesRegalo() {
   const [fecha, setFecha] = useState("");

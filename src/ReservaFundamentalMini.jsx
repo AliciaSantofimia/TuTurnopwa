@@ -6,6 +6,7 @@ import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver"; 
+import DateInputReserva from "./components/DateInputReserva";
 
 // FUNCIONES
 const actualizarContadorReservas = async (uid) => {
