@@ -169,4 +169,4 @@ export default function ResumenPagoTearium() {
       </div>
     </div>
   );
-}
+
