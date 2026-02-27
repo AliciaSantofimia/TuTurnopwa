@@ -23,7 +23,13 @@ export default function ResumenPagoTearium() {
     );
   }
 
-  const { fecha, turno, plazas, precioTotal, payMethod: payMethodFromState } = datos;
+  const {
+    fecha,
+    turno,
+    plazas,
+    precioTotal,
+    payMethod: payMethodFromState,
+  } = datos;
 
   const [aceptaPoliticas, setAceptaPoliticas] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -60,14 +66,10 @@ export default function ResumenPagoTearium() {
     return oid;
   }
 
-
-}
   async function irAPasarela({ precio, orderId, payMethod = "card" }) {
-    // 1) Calcula importe y orderId válidos
     const amountCents = Math.max(1, Math.round(Number(precio) * 100));
     const oid = makeOrderId(orderId);
 
-    // 2) Pide sesión firmada en modo JSON (NO usar window.open)
     const qs = new URLSearchParams({
       orderId: oid,
       amountCents: String(amountCents),
@@ -82,13 +84,14 @@ export default function ResumenPagoTearium() {
       method: "GET",
       credentials: "include",
     });
-    if (!res.ok) throw new Error(`crear-sesion fallo: ${res.status}`);
-    const data = await res.json(); // { action, Ds_SignatureVersion, Ds_MerchantParameters, Ds_Signature }
 
-    // 3) Crea el <form> y hace POST a Redsys en _self (recomendado para PWA/Safari)
+    if (!res.ok) throw new Error(`crear-sesion fallo: ${res.status}`);
+
+    const data = await res.json();
+
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = data.action; // https://sis-t.redsys.es/sis/realizarPago
+    form.action = data.action;
     form.target = "_self";
 
     const addHidden = (name, value) => {
@@ -104,13 +107,13 @@ export default function ResumenPagoTearium() {
     addHidden("Ds_Signature", data.Ds_Signature);
 
     document.body.appendChild(form);
-    form.submit(); // Disparo directo desde el gesto del usuario
+    form.submit();
   }
 
   const handleConfirmarPago = async () => {
     if (!aceptaPoliticas || cargando) return;
     try {
-      setCargando(true); // No hacemos setCargando(false); la página navegará al TPV
+      setCargando(true);
       await irAPasarela({
         precio: totalEuros,
         orderId: Date.now().toString(),
@@ -140,9 +143,14 @@ export default function ResumenPagoTearium() {
             <strong>Precio unitario:</strong> {PRECIO_UNITARIO.toFixed(2)} €
           </p>
         )}
+
         <p className="mb-4">
           <strong>Precio total:</strong>{" "}
-          {Number.isFinite(totalEuros) ? `${totalEuros.toFixed(2)} €` : <span className="text-red-600">— falta precio —</span>}
+          {Number.isFinite(totalEuros) ? (
+            `${totalEuros.toFixed(2)} €`
+          ) : (
+            <span className="text-red-600">— falta precio —</span>
+          )}
         </p>
 
         <label className="flex items-start mb-4 text-sm text-gray-700">
@@ -169,4 +177,4 @@ export default function ResumenPagoTearium() {
       </div>
     </div>
   );
-
+}
