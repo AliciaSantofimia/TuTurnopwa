@@ -8,23 +8,16 @@ import BotonVolver from "./BotonVolver";
 const CanjearTarjetaRegalo = () => {
   const [codigo, setCodigo] = useState("");
   const [mensaje, setMensaje] = useState("");
-  const [codigoValido, setCodigoValido] = useState(false);
   const navigate = useNavigate();
-
-  const rutasPorTipo = {
-    "2 clases de 3h al mes (tarjeta regalo)": "/reserva-2clases4hmes-regalo",
-    "4 clases de 3h al mes (tarjeta regalo)": "/reserva-4clases3hmes-regalo",
-    "Crea tu pieza favorita (tarjeta regalo)": "/reserva-creatupiezafavorita-regalo",
-    "Pinta tu pieza de cerámica (tarjeta regalo)": "/reserva-pintatupieza-regalo",
-    "Torno intensivo individual (tarjeta regalo)": "/reserva-tornointensivo-regalo"
-  };
 
   const handleValidar = async () => {
     setMensaje("");
     const auth = getAuth();
     const user = auth.currentUser;
 
-    if (!codigo.trim()) {
+    const code = codigo.trim();
+
+    if (!code) {
       setMensaje("Por favor, introduce un código.");
       return;
     }
@@ -35,7 +28,8 @@ const CanjearTarjetaRegalo = () => {
     }
 
     try {
-      const snapshot = await get(ref(dbRealtime, `tarjetas_regalo/${codigo}`));
+      const snapRef = ref(dbRealtime, `tarjetas_regalo/${code}`);
+      const snapshot = await get(snapRef);
 
       if (!snapshot.exists()) {
         setMensaje("❌ Código no válido. Revisa que lo has escrito bien.");
@@ -44,30 +38,38 @@ const CanjearTarjetaRegalo = () => {
 
       const tarjeta = snapshot.val();
 
+      // Si ya fue usada (consumida en una reserva), bloquea
       if (tarjeta.usado) {
-        setMensaje("❌ Este código ya ha sido canjeado.");
+        setMensaje("❌ Este código ya ha sido usado.");
         return;
       }
 
-      await update(ref(dbRealtime, `tarjetas_regalo/${codigo}`), {
-        usado: true,
+      // Si ya está canjeada por otra persona, bloquea
+      if (tarjeta.canjeadoPorUID && tarjeta.canjeadoPorUID !== user.uid) {
+        setMensaje("❌ Este código ya ha sido canjeado por otro usuario.");
+        return;
+      }
+
+      // Marcamos como CANJEADA (pero NO usada todavía)
+      await update(snapRef, {
+        canjeado: true,
         canjeadoPorUID: user.uid,
-        fechaCanje: new Date().toISOString()
+        fechaCanje: tarjeta.fechaCanje || new Date().toISOString(),
       });
 
-      const ruta = rutasPorTipo[tarjeta.tipo];
+      setMensaje("✅ Código válido. Ahora elige tu taller para reservar.");
 
-      if (ruta) {
-        navigate(ruta, {
-          state: {
-            desdeTarjeta: true,
-            codigo: codigo,
-            tipo: tarjeta.tipo
-          }
-        });
-      } else {
-        setMensaje("✅ Código válido, pero no se encontró la ruta del taller.");
-      }
+      // Te mando a la pantalla donde se eligen talleres.
+      // Ajusta esta ruta si tu “pantalla de categorías” no es /clases.
+      navigate("/clases", {
+        state: {
+          desdeTarjeta: true,
+          codigo: code,
+          // Guardamos info útil por si luego quieres limitar por importe o registrar el tipo
+          tipo: tarjeta.tipo || "tarjeta_regalo_universal",
+          saldo: tarjeta.precio || tarjeta.importe || tarjeta.valor || null,
+        },
+      });
     } catch (error) {
       console.error("Error al validar el código:", error);
       setMensaje("⚠️ Ocurrió un error al validar el código.");
@@ -83,6 +85,7 @@ const CanjearTarjetaRegalo = () => {
         <p style={styles.descripcion}>
           Introduce el código de tu tarjeta para acceder a tu taller.
         </p>
+
         <input
           type="text"
           placeholder="Introduce tu código"
@@ -90,9 +93,11 @@ const CanjearTarjetaRegalo = () => {
           onChange={(e) => setCodigo(e.target.value)}
           style={styles.input}
         />
+
         <button onClick={handleValidar} style={styles.btn}>
           VALIDAR CÓDIGO
         </button>
+
         {mensaje && <div style={styles.mensaje}>{mensaje}</div>}
       </div>
     </div>
@@ -151,7 +156,7 @@ const styles = {
     marginTop: 20,
     fontSize: "0.95rem",
     color: "#6b3700",
-  }
+  },
 };
 
 export default CanjearTarjetaRegalo;

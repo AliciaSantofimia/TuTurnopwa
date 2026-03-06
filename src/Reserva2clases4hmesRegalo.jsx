@@ -29,7 +29,7 @@ export default function Reserva2clases4hmesRegalo() {
       setUsuarioLogueado(!!user);
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   useEffect(() => {
     if (fecha) {
@@ -49,6 +49,7 @@ export default function Reserva2clases4hmesRegalo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!fecha || !turno || !metodo || !plazas) {
       alert("Por favor, completa todos los campos.");
       return;
@@ -66,7 +67,7 @@ export default function Reserva2clases4hmesRegalo() {
       tipoReserva: "tarjeta regalo",
       codigo: location.state?.codigo || "",
       precio: "0€",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     try {
@@ -89,8 +90,7 @@ export default function Reserva2clases4hmesRegalo() {
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
-       <BotonVolver volverA="/perfil" />
-
+        <BotonVolver volverA="/perfil" />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
           Reserva con tu tarjeta regalo
@@ -102,22 +102,20 @@ export default function Reserva2clases4hmesRegalo() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* FECHA */}
             <div>
               <label htmlFor="fecha" className="block font-bold text-sm mb-1">
                 Selecciona el día:
               </label>
-              <input
-                type="date"
+
+              <DateInputReserva
                 id="fecha"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                min="2025-01-01"
-                max="2025-12-31"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
               />
             </div>
 
+            {/* TURNO */}
             <div>
               <label htmlFor="turno" className="block font-bold text-sm mb-1">
                 Selecciona el turno:
@@ -135,6 +133,7 @@ export default function Reserva2clases4hmesRegalo() {
               </select>
             </div>
 
+            {/* MÉTODO */}
             <div>
               <label htmlFor="metodo" className="block font-bold text-sm mb-1">
                 Método:
@@ -158,6 +157,7 @@ export default function Reserva2clases4hmesRegalo() {
               </div>
             )}
 
+            {/* PLAZAS */}
             <div>
               <label htmlFor="plazas" className="block font-bold text-sm mb-1">
                 ¿Cuántas plazas deseas reservar?
@@ -177,7 +177,7 @@ export default function Reserva2clases4hmesRegalo() {
             <button
               type="submit"
               className="w-full bg-[#f4a6b4] hover:bg-[#e78fa0] text-white font-bold text-lg py-3 rounded-full transition"
-              disabled={!metodo || plazas > plazasDisponibles}
+              disabled={!metodo || Number(plazas) > plazasDisponibles}
             >
               Confirmar reserva con tarjeta regalo
             </button>

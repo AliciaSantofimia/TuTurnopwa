@@ -24,10 +24,9 @@ import Clases from "./Clases.jsx";
 import ClasesSoloVista from "./ClasesSoloVista.jsx";
 import EdicionPremium from "./EdicionPremium.jsx";
 import ReservaEdicionPremium from "./ReservaEdicionPremium.jsx";
-import CreativoPlus from "./CreativoPlus.jsx";
-import ReservaCreativoPlus from "./ReservaCreativoPlus.jsx";
-import BasicoEsencial from "./BasicoEsencial.jsx";
-import ReservaBasicoEsencial from "./ReservaBasicoEsencial.jsx";
+import CreaTuBrunchBowl from "./CreaTuBrunchBowl.jsx";
+import CreaTuPiezaFavorita from "./CreaTuPiezaFavorita";
+import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
 import PintarCeramica from "./PintarCeramica.jsx";
 import ReservaPintarCeramica from "./ReservaPintarCeramica.jsx";
 import FundamentalMini from "./FundamentalMini.jsx";
@@ -39,9 +38,27 @@ import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
 import ExpresContinuo from "./ExpresContinuo.jsx";
 import ReservaExpresContinuo from "./ReservaExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
-import GaleriaTarjetasRegalo from "./GaleriaTarjetasRegalo.jsx";
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo.jsx";
-
+import TalleresCrearPiezas from "./TalleresCrearPiezas";
+import TalleresCursosBonos from "./TalleresCursosBonos";
+import TalleresPintaDecora from "./TalleresPintaDecora";
+import TarjetaRegalo from "./TarjetaRegalo";
+import ReservaCreaTuBrunchBowl from "./ReservaCreaTuBrunchBowl.jsx";
+import CreaTuCuencoRamen from "./CreaTuCuencoRamen.jsx";
+import CreaTuBandejaHogar from "./CreaTuBandejaHogar.jsx";
+import ReservaCreaTuBandejaHogar from "./ReservaCreaTuBandejaHogar.jsx";
+import CreaTuTazaFavorita from "./CreaTuTazaFavorita.jsx";
+import ReservaCreaTuTazaFavorita from "./ReservaCreaTuTazaFavorita.jsx";
+import CreaTuMaceta from "./CreaTuMaceta.jsx";
+import ReservaCreaTuMaceta from "./ReservaCreaTuMaceta.jsx";
+import CreaTuGranCentroMesa from "./CreaTuGranCentroMesa.jsx";
+import ReservaCreaTuGranCentroMesa from "./ReservaCreaTuGranCentroMesa.jsx";
+import CreaTuJarraJarronGrande from "./CreaTuJarraJarronGrande.jsx";
+import ReservaCreaTuJarraJarronGrande from "./ReservaCreaTuJarraJarronGrande.jsx";
+import CreaTuSetMatcha from "./CreaTuSetMatcha.jsx";
+import ReservaCreaTuSetMatcha from "./ReservaCreaTuSetMatcha.jsx";
+import CreaTuSetSake from "./CreaTuSetSake.jsx";
+import ReservaCreaTuSetSake from "./ReservaCreaTuSetSake.jsx";
 
 
 // Clases solo vista
@@ -70,6 +87,8 @@ import ReservaPintaTuPiezaRegalo from "./ReservaPintaTuPiezaRegalo.jsx";
 //Reservas con las tarjetas regalo
 import ReservaTornoIntensivoRegalo from "./ReservaTornoIntensivoRegalo.jsx";
 import Reserva2clases4hmesRegalo from "./Reserva2clases4hmesRegalo.jsx";
+import ReservaCreaTuCuencoRamen from "./ReservaCreaTuCuencoRamen.jsx";
+
 
 
 
@@ -144,19 +163,67 @@ function App() {
           <Route path="/clases" element={<Clases />} />
           <Route path="/clases-solo" element={<ClasesSoloVista />} />
           <Route path="/edicion-premium" element={<EdicionPremium />} />
-          <Route path="/creativo-plus" element={<CreativoPlus />} />
-          <Route path="/basico-esencial" element={<BasicoEsencial />} />
+          <Route path="/crea-tu-brunch-bowl" element={<CreaTuBrunchBowl />} />
+          <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
           <Route path="/fundamental-mini" element={<FundamentalMini />} />
           <Route path="/bono-2-clases" element={<MensualBono2Clases />} />
           <Route path="/bono-4-clases" element={<MensualBono4Clases />} />
           <Route path="/exprescontinuo" element={<ExpresContinuo />} />
-          <Route path="/tarjeta-regalo" element={<GaleriaTarjetasRegalo />} />
-          <Route path="/tarjeta-regalo/2clases" element={<DetalleTarjeta2Clases />} />
-          <Route path="/tarjeta-regalo/4clases" element={<DetalleTarjeta4Clases />} />
-          <Route path="/tarjeta-regalo/creapiezafavorita" element={<DetalleTarjetaCreaTuPiezaFavorita />} />
-          <Route path="/tarjeta-regalo/pintatupieza" element={<DetalleTarjetaPintaTuPieza />} />
-          <Route path="/tarjeta-regalo/tornointensivo" element={<DetalleTarjetaTornoIntensivo />} />
+          <Route
+  path="/reserva-crea-tu-pieza-favorita"
+  element={<ReservaCreaTuPiezaFavorita />}
+ />
+ <Route
+  path="/reserva-crea-tu-brunch-bowl"
+  element={<ReservaCreaTuBrunchBowl />}
+/>
+<Route
+  path="/reserva-crea-tu-cuenco-ramen"
+  element={<ReservaCreaTuCuencoRamen />}
+/>
+<Route path="/crea-tu-bandeja-hogar" element={<CreaTuBandejaHogar />} />
+<Route
+  path="/reserva-crea-tu-bandeja-hogar"
+  element={<ReservaCreaTuBandejaHogar />}
+/>
+<Route path="/crea-tu-taza-favorita" element={<CreaTuTazaFavorita />} />
+<Route
+  path="/reserva-crea-tu-taza-favorita"
+  element={<ReservaCreaTuTazaFavorita />}
+/>
+<Route path="/crea-tu-maceta" element={<CreaTuMaceta />} />
+<Route path="/reserva-crea-tu-maceta" element={<ReservaCreaTuMaceta />} />
+<Route path="/crea-tu-gran-centro-mesa" element={<CreaTuGranCentroMesa />} />
+<Route
+  path="/reserva-crea-tu-gran-centro-mesa"
+  element={<ReservaCreaTuGranCentroMesa />}
+/>
+<Route
+  path="/crea-tu-jarra-jarron-grande"
+  element={<CreaTuJarraJarronGrande />}
+/>
+<Route
+  path="/reserva-crea-tu-jarra-jarron-grande"
+  element={<ReservaCreaTuJarraJarronGrande />}
+/>
+<Route path="/crea-tu-set-matcha" element={<CreaTuSetMatcha />} />
+<Route
+  path="/reserva-crea-tu-set-matcha"
+  element={<ReservaCreaTuSetMatcha />}
+/>
+<Route path="/crea-tu-set-sake" element={<CreaTuSetSake />} />
+<Route
+  path="/reserva-crea-tu-set-sake"
+  element={<ReservaCreaTuSetSake />}
+/>
+          
+          <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
+          <Route path="/talleres/crear-piezas" element={<TalleresCrearPiezas />} />
+          <Route path="/talleres/pinta-decora" element={<TalleresPintaDecora />} />
+          <Route path="/tarjeta-regalo" element={<TarjetaRegalo />} />
+          <Route path="/crea-tu-cuenco-ramen" element={<CreaTuCuencoRamen />} />
+           
 
           {/* Clases solo vista */}
           <Route path="/edicion-premium-solo" element={<EdicionPremiumSolo />} />
@@ -182,8 +249,9 @@ function App() {
           <Route path="/tarjeta-regalo-solo/4clases" element={<Clase4ClasesRegalo />} />
 
           {/* Canjear y reserva regalo */}
-          <Route path="/canjear-tarjeta" element={<CanjearTarjetaRegalo />} />
+          <Route path="/canjear-tarjeta-regalo" element={<CanjearTarjetaRegalo />} />
           <Route path="/reserva-pinta-tu-pieza-regalo" element={<ReservaPintaTuPiezaRegalo />} />
+          
 
           {/* Reservas tarjetas regalo*/}
           <Route path="/reserva-tornointensivo-regalo" element={<ReservaTornoIntensivoRegalo />}/>
@@ -192,8 +260,8 @@ function App() {
 
           {/* Reservas normales */}
           <Route path="/reserva-edicion-premium" element={<ReservaEdicionPremium />} />
-          <Route path="/reserva-creativo-plus" element={<ReservaCreativoPlus />} />
-          <Route path="/reserva-basico-esencial" element={<ReservaBasicoEsencial />} />
+          
+          
           <Route path="/reserva-pintar-ceramica" element={<ReservaPintarCeramica />} />
           <Route path="/reserva-fundamental-mini" element={<ReservaFundamentalMini />} />
           <Route path="/reserva-bono-2-clases" element={<ReservaBono2Clases />} />
