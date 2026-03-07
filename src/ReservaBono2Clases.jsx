@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+// OBSOLETO - pendiente de borrar cuando se haga limpieza del proyectoimport React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";

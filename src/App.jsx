@@ -59,7 +59,22 @@ import CreaTuSetMatcha from "./CreaTuSetMatcha.jsx";
 import ReservaCreaTuSetMatcha from "./ReservaCreaTuSetMatcha.jsx";
 import CreaTuSetSake from "./CreaTuSetSake.jsx";
 import ReservaCreaTuSetSake from "./ReservaCreaTuSetSake.jsx";
-
+import CreaTuTazaEscultorica from "./CreaTuTazaEscultorica";
+import ReservaCreaTuTazaEscultorica from "./ReservaCreaTuTazaEscultorica";
+import CreaTuMacetaOrganica from "./CreaTuMacetaOrganica";
+import ReservaCreaTuMacetaOrganica from "./ReservaCreaTuMacetaOrganica";
+import ModelaAManoYDecoraTusPiezasFavoritas from "./ModelaAManoYDecoraTusPiezasFavoritas";
+import ReservaModelaAManoYDecoraTusPiezasFavoritas from "./ReservaModelaAManoYDecoraTusPiezasFavoritas";
+import TornoAlfareroYDecoracion from "./TornoAlfareroYDecoracion";
+import ReservaTornoAlfareroYDecoracion from "./ReservaTornoAlfareroYDecoracion";
+import TornoAlfareroEmpezarDesdeCero from "./TornoAlfareroEmpezarDesdeCero";
+import ReservaTornoAlfareroEmpezarDesdeCero from "./ReservaTornoAlfareroEmpezarDesdeCero";
+import TornoAlfareroPerfeccionaLoQueYaSabes from "./TornoAlfareroPerfeccionaLoQueYaSabes";
+import ReservaTornoAlfareroPerfeccionaLoQueYaSabes from "./ReservaTornoAlfareroPerfeccionaLoQueYaSabes";
+import EspecialPintaTuPieza from "./EspecialPintaTuPieza";
+import ReservaEspecialPintaTuPieza from "./ReservaEspecialPintaTuPieza";
+import PintaTuPieza from "./PintaTuPieza";
+import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
 
 // Clases solo vista
 import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
@@ -217,6 +232,66 @@ function App() {
   path="/reserva-crea-tu-set-sake"
   element={<ReservaCreaTuSetSake />}
 />
+<Route
+  path="/crea-tu-taza-escultorica"
+  element={<CreaTuTazaEscultorica />}
+/>
+
+<Route
+  path="/reserva-crea-tu-taza-escultorica"
+  element={<ReservaCreaTuTazaEscultorica />}
+/>
+<Route path="/crea-tu-maceta-organica" element={<CreaTuMacetaOrganica />} />
+<Route path="/reserva-crea-tu-maceta-organica" element={<ReservaCreaTuMacetaOrganica />} />
+<Route
+  path="/modela-a-mano-y-decora-tus-piezas-favoritas"
+  element={<ModelaAManoYDecoraTusPiezasFavoritas />}
+/>
+
+<Route
+  path="/reserva-modela-a-mano-y-decora-tus-piezas-favoritas"
+  element={<ReservaModelaAManoYDecoraTusPiezasFavoritas />}
+/>
+<Route
+  path="/torno-alfarero-y-decoracion"
+  element={<TornoAlfareroYDecoracion />}
+/>
+
+<Route
+  path="/reserva-torno-alfarero-y-decoracion"
+  element={<ReservaTornoAlfareroYDecoracion />}
+/>
+<Route
+  path="/torno-alfarero-empezar-desde-cero"
+  element={<TornoAlfareroEmpezarDesdeCero />}
+/>
+
+<Route
+  path="/reserva-torno-alfarero-empezar-desde-cero"
+  element={<ReservaTornoAlfareroEmpezarDesdeCero />}
+/>
+<Route
+  path="/torno-alfarero-perfecciona-lo-que-ya-sabes"
+  element={<TornoAlfareroPerfeccionaLoQueYaSabes />}
+/>
+
+<Route
+  path="/reserva-torno-alfarero-perfecciona-lo-que-ya-sabes"
+  element={<ReservaTornoAlfareroPerfeccionaLoQueYaSabes />}
+/>
+<Route path="/talleres/pinta-decora" element={<TalleresPintaDecora />} />
+
+<Route
+  path="/especial-pinta-tu-pieza"
+  element={<EspecialPintaTuPieza />}
+/>
+
+<Route
+  path="/reserva-especial-pinta-tu-pieza"
+  element={<ReservaEspecialPintaTuPieza />}
+/>
+<Route path="/pinta-tu-pieza" element={<PintaTuPieza />} />
+<Route path="/reserva-pinta-tu-pieza" element={<ReservaPintaTuPieza />} />
           
           <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
           <Route path="/talleres/crear-piezas" element={<TalleresCrearPiezas />} />

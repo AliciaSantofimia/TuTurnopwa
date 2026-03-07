@@ -1,4 +1,5 @@
-// src/Reserva4clases3hmesRegalo.jsx
+
+// OBSOLETO - pendiente de borrar cuando se haga limpieza del proyecto// src/Reserva4clases3hmesRegalo.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
