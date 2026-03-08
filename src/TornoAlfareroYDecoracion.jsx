@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function TornoAlfareroYDecoracion() {
   const imagenes = [
-    "/img/torno-decoracion1.jpg",
-    "/img/torno-decoracion2.jpg",
-    "/img/torno-decoracion3.jpg",
-    "/img/torno-decoracion4.jpg",
-    "/img/torno-decoracion5.jpg",
+    "/img/tornoalfarero/torno-decoracion1.jpg",
+    "/img/tornoalfarero/torno-decoracion2.jpg",
+    "/img/tornoalfarero/torno-decoracion3.jpg",
+    "/img/tornoalfarero/torno-decoracion4.jpg",
+    "/img/tornoalfarero/torno-decoracion5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

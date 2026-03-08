@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuGranCentroMesa() {
   const imagenes = [
-    "/img/grancentromesa1.jpg",
-    "/img/grancentromesa2.jpg",
-    "/img/grancentromesa3.jpg",
-    "/img/grancentromesa4.jpg",
-    "/img/grancentromesa5.jpg",
-    "/img/grancentromesa6.jpg",
+    "/img/centrodemesa/grancentromesa1.jpg",
+    "/img/centrodemesa/grancentromesa2.jpg",
+    "/img/centrodemesa/grancentromesa3.jpg",
+    "/img/centrodemesa/grancentromesa4.jpg",
+    "/img/centrodemesa/grancentromesa5.jpg",
+    "/img/centrodemesa/grancentromesa6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

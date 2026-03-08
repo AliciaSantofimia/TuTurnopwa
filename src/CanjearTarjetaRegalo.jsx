@@ -61,15 +61,15 @@ const CanjearTarjetaRegalo = () => {
 
       // Te mando a la pantalla donde se eligen talleres.
       // Ajusta esta ruta si tu “pantalla de categorías” no es /clases.
-      navigate("/clases", {
-        state: {
-          desdeTarjeta: true,
-          codigo: code,
-          // Guardamos info útil por si luego quieres limitar por importe o registrar el tipo
-          tipo: tarjeta.tipo || "tarjeta_regalo_universal",
-          saldo: tarjeta.precio || tarjeta.importe || tarjeta.valor || null,
-        },
-      });
+      navigate("/reserva-con-tarjeta-regalo", {
+  state: {
+    desdeTarjeta: true,
+    codigo: code,
+    tipo: tarjeta.tipo || "tarjeta_regalo_universal",
+    importe: tarjeta.importe || tarjeta.precio || tarjeta.valor || null,
+    saldo: tarjeta.importe || tarjeta.precio || tarjeta.valor || null,
+  },
+});
     } catch (error) {
       console.error("Error al validar el código:", error);
       setMensaje("⚠️ Ocurrió un error al validar el código.");

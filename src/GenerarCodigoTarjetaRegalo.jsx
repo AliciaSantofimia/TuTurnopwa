@@ -4,11 +4,17 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { crearTarjetaRegalo } from "./crearTarjetaRegalo";
 import BotonVolver from "./BotonVolver";
 
-
 export default function GenerarCodigoTarjetaRegalo() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { tipo, desdeTarjeta } = location.state || {};
+
+  const {
+    importe,
+    desdeCompraTarjeta,
+    nombreRegalado,
+    nombreComprador,
+    mensaje,
+  } = location.state || {};
 
   const [codigo, setCodigo] = useState(null);
   const [error, setError] = useState("");
@@ -24,97 +30,117 @@ export default function GenerarCodigoTarjetaRegalo() {
 
   useEffect(() => {
     const generar = async () => {
-      if (tipo && user && desdeTarjeta) {
+      if (importe && user && desdeCompraTarjeta) {
         try {
-          const codigoGenerado = await crearTarjetaRegalo(tipo, user.uid);
+          const codigoGenerado = await crearTarjetaRegalo({
+            importe,
+            compradorUID: user.uid,
+          });
+
           if (codigoGenerado) {
             setCodigo(codigoGenerado);
-
-            setTimeout(() => {
-              if (tipo === "2clases") {
-                navigate("/tarjeta-regalo/2clases");
-              } else if (tipo === "pintatupieza") {
-                navigate("/tarjeta-regalo/pintatupieza");
-              } else if (tipo === "creapiezafavorita") {
-                navigate("/tarjeta-regalo/creapiezafavorita");
-              } else if (tipo === "tornointensivo") {
-                navigate("/tarjeta-regalo/tornointensivo");
-              } else if (tipo === "4clases") {
-                navigate("/tarjeta-regalo/4clases");
-              } else {
-                navigate("/menu");
-              }
-            }, 4000);
           } else {
-            setError("Error al generar el código de tarjeta.");
+            setError("No se pudo generar el código de la tarjeta regalo.");
           }
         } catch (e) {
-          setError("Error al generar el código.");
           console.error(e);
+          setError("Error al generar el código.");
         }
       } else {
-        setError("No se pudo generar el código. Faltan datos o acceso incorrecto.");
-        setTimeout(() => {
-          navigate("/menu");
-        }, 3000);
+        setError("Faltan datos para generar la tarjeta regalo.");
       }
     };
 
     if (user) {
       generar();
     }
-  }, [tipo, user, desdeTarjeta, navigate]);
+  }, [importe, user, desdeCompraTarjeta]);
 
   return (
-    <div style={{ padding: 24 }}>
-      <BotonVolver />
+    <div className="bg-[#fffef4] min-h-screen px-4 py-8 font-sans">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-md p-6">
+        <BotonVolver />
 
-      <h2>¡Tarjeta regalo generada!</h2>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {codigo ? (
-        <>
-          <p>Este es tu código único de tarjeta regalo:</p>
-          <h3 style={{
-            backgroundColor: "#f0f0f0",
-            padding: "10px",
-            fontSize: "1.2rem",
-            borderRadius: "6px",
-            display: "inline-block"
-          }}>
-            {codigo}
-          </h3>
-
-          <p style={{ marginTop: "12px" }}>
-            Puedes compartir este código con la persona que disfrutará de la clase.
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-yellow-900 font-serif mb-2">
+            ¡Tarjeta regalo generada!
+          </h1>
+          <p className="text-sm text-gray-600">
+            Ya puedes compartir este código con la persona que recibirá el regalo.
           </p>
+        </div>
 
-          <p style={{ fontSize: "0.9rem", color: "#777", marginTop: "8px" }}>
-            Redirigiendo automáticamente en unos segundos...
-          </p>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm mb-4">
+            {error}
+          </div>
+        )}
 
-          <button
-            onClick={() => navigate("/menu")}
-            style={{
-              marginTop: 16,
-              backgroundColor: "#f4a6b4",
-              color: "white",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              cursor: "pointer"
-            }}
-          >
-            Finalizar
-          </button>
-        </>
-      ) : (
-        !error && <p>Generando código...</p>
-      )}
+        {codigo ? (
+          <>
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-5 text-center mb-5">
+              <p className="text-sm text-gray-700 mb-2">
+                <strong>Importe de la tarjeta:</strong> {importe} €
+              </p>
+
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>Código único:</strong>
+              </p>
+
+              <div className="inline-block bg-[#f8f8f8] px-5 py-3 rounded-xl text-lg font-bold text-[#5c3c00] tracking-wide">
+                {codigo}
+              </div>
+            </div>
+
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4 mb-5 text-sm text-[#5c3c00]">
+              {nombreRegalado && (
+                <p className="mb-1">
+                  <strong>Para:</strong> {nombreRegalado}
+                </p>
+              )}
+              {nombreComprador && (
+                <p className="mb-1">
+                  <strong>De parte de:</strong> {nombreComprador}
+                </p>
+              )}
+              {mensaje && (
+                <p className="mt-2">
+                  <strong>Mensaje:</strong> {mensaje}
+                </p>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-600 text-center mb-6">
+              La persona que reciba este código podrá canjearlo en la app y usarlo
+              para reservar el taller que prefiera.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate("/tarjeta-regalo")}
+                className="flex-1 px-6 py-3 rounded-full text-white font-semibold
+                bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+                shadow-md hover:shadow-lg
+                hover:from-[#F4C542] hover:to-[#E5B92F]
+                transition-all duration-200"
+              >
+                Finalizar
+              </button>
+
+              <button
+                onClick={() => navigator.clipboard.writeText(codigo)}
+                className="flex-1 px-6 py-3 rounded-full border border-[#F4C542] text-[#6b3700] font-semibold bg-white hover:bg-[#fffaf0] transition"
+              >
+                Copiar código
+              </button>
+            </div>
+          </>
+        ) : (
+          !error && (
+            <p className="text-center text-gray-600">Generando código...</p>
+          )
+        )}
+      </div>
     </div>
   );
 }
-
-
-

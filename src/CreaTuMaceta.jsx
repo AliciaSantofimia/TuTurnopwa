@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuMaceta() {
   const imagenes = [
-    "/img/maceta1.jpg",
-    "/img/maceta2.jpg",
-    "/img/maceta3.jpg",
-    "/img/maceta4.jpg",
-    "/img/maceta5.jpg",
-    "/img/maceta6.jpg",
+    "/img/maceta/maceta1.jpg",
+    "/img/maceta/maceta2.jpg",
+    "/img/maceta/maceta3.jpg",
+    "/img/maceta/maceta4.jpg",
+    "/img/maceta/maceta5.jpg",
+    "/img/maceta/maceta6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

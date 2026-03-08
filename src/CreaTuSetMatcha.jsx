@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuSetMatcha() {
   const imagenes = [
-    "/img/setmatcha1.jpg",
-    "/img/setmatcha2.jpg",
-    "/img/setmatcha3.jpg",
-    "/img/setmatcha4.jpg",
-    "/img/setmatcha5.jpg",
-    "/img/setmatcha6.jpg",
+    "/img/matcha/setmatcha1.jpg",
+    "/img/matcha/setmatcha2.jpg",
+    "/img/matcha/setmatcha3.jpg",
+    "/img/matcha/setmatcha4.jpg",
+    "/img/matcha/setmatcha5.jpg",
+    "/img/matcha/setmatcha6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

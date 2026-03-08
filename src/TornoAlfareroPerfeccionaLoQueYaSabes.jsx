@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function TornoAlfareroPerfeccionaLoQueYaSabes() {
   const imagenes = [
-    "/img/torno-perfecciona1.jpg",
-    "/img/torno-perfecciona2.jpg",
-    "/img/torno-perfecciona3.jpg",
-    "/img/torno-perfecciona4.jpg",
-    "/img/torno-perfecciona5.jpg",
+    "/img/tornoperfecciona/torno-perfecciona1.jpg",
+    "/img/tornoperfecciona/torno-perfecciona2.jpg",
+    "/img/tornoperfecciona/torno-perfecciona3.jpg",
+    "/img/tornoperfecciona/torno-perfecciona4.jpg",
+    "/img/tornoperfecciona/torno-perfecciona5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuSetSake() {
   const imagenes = [
-    "/img/setsake1.jpg",
-    "/img/setsake2.jpg",
-    "/img/setsake3.jpg",
-    "/img/setsake4.jpg",
-    "/img/setsake5.jpg",
-    "/img/setsake6.jpg",
+    "/img/sake/setsake1.jpg",
+    "/img/sake/setsake2.jpg",
+    "/img/sake/setsake3.jpg",
+    "/img/sake/setsake4.jpg",
+    "/img/sake/setsake5.jpg",
+    "/img/sake/setsake6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuBrunchBowl() {
   const imagenes = [
-    "/img/brunchbowl1.jpg",
-    "/img/brunchbowl2.jpg",
-    "/img/brunchbowl3.jpg",
-    "/img/brunchbowl4.jpg",
-    "/img/brunchbowl5.jpg",
-    "/img/brunchbowl6.jpg",
+    "/img/brunchbowl/brunch1.jpg",
+    "/img/brunchbowl/brunch2.jpg",
+    "/img/brunchbowl/brunch3.jpg",
+    "/img/brunchbowl/brunch4.jpg",
+    "/img/brunchbowl/brunch5.jpg",
+    "/img/brunchbowl/brunch6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

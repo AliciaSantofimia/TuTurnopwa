@@ -19,7 +19,7 @@ export default function TheClub() {
         />
 
         <h1 className="text-3xl font-serif text-yellow-900 font-bold mb-4 text-center">
-          Pinta tu pieza en The Club ☕
+          Pinta tu pieza en The Club 
         </h1>
 
         <p className="text-gray-700 text-base mb-4">

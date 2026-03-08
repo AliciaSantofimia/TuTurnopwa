@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuBandejaHogar() {
   const imagenes = [
-    "/img/bandejahogar1.jpg",
-    "/img/bandejahogar2.jpg",
-    "/img/bandejahogar3.jpg",
-    "/img/bandejahogar4.jpg",
-    "/img/bandejahogar5.jpg",
-    "/img/bandejahogar6.jpg",
+    "/img/bandeja/bandeja1.jpg",
+    "/img/bandeja/bandeja2.jpg",
+    "/img/bandeja/bandeja3.jpg",
+    "/img/bandeja/bandeja4.jpg",
+    "/img/bandeja/bandeja5.jpg",
+    "/img/bandeja/bandeja6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

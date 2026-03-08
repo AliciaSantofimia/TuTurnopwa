@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuCuencoRamen() {
   const imagenes = [
-    "/img/cuencoramen1.jpg",
-    "/img/cuencoramen2.jpg",
-    "/img/cuencoramen3.jpg",
-    "/img/cuencoramen4.jpg",
-    "/img/cuencoramen5.jpg",
-    "/img/cuencoramen6.jpg",
+    "/img/ramen/ramen1.jpg",
+    "/img/ramen/ramen2.jpg",
+    "/img/ramen/ramen3.jpg",
+    "/img/ramen/ramen4.jpg",
+    "/img/ramen/ramen5.jpg",
+    "/img/ramen/ramen6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

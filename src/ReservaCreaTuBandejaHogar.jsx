@@ -28,8 +28,8 @@ export default function ReservaCreaTuBandejaHogar() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const desdeTarjeta =
-    location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
+
+  
 
   const maxTorno = 12;
   const maxTotales = 45;
@@ -93,7 +93,7 @@ export default function ReservaCreaTuBandejaHogar() {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estadoPago: "pendiente",
+        estadoPago: desdeTarjeta ? "pagado_con_tarjeta_regalo" : "pendiente",
         orderId,
         timestamp: new Date().toISOString(),
       };
@@ -113,23 +113,40 @@ export default function ReservaCreaTuBandejaHogar() {
       const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
       await push(userReservaRef, reserva);
 
+      
+
       await actualizarContadorReservas(user.uid);
 
-      navigate("/resumen-pago", {
-        state: {
-          desdeTarjeta,
-          tipo: "clase",
-          clase: "Crea tu bandeja de hogar",
-          precio: precioTotal,
-          precioUnitario,
-          precioTotal,
-          fecha,
-          turno,
-          metodo,
-          plazas: plazasNum,
-          orderId,
-        },
-      });
+      if (desdeTarjeta && codigoTarjeta) {
+        navigate("/pago/exito", {
+          state: {
+            clase: "Crea tu bandeja de hogar",
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            usandoTarjetaRegalo: true,
+            codigoTarjeta,
+            orderId,
+          },
+        });
+      } else {
+        navigate("/resumen-pago", {
+  state: {
+    tipo: "clase",
+    clase: "Crea tu bandeja de hogar",
+    precio: precioTotal,
+    precioUnitario,
+    precioTotal,
+    fecha,
+    turno,
+    metodo,
+    plazas: plazasNum,
+    orderId,
+  },
+});
+      }
     } catch (err) {
       console.error("Error al guardar la reserva:", err);
       alert("No se pudo guardar la reserva.");
@@ -145,11 +162,7 @@ export default function ReservaCreaTuBandejaHogar() {
           Reserva – Crea tu bandeja de hogar
         </h1>
 
-        {desdeTarjeta && (
-          <p className="text-sm text-green-700 text-center font-medium mb-4">
-            Estás usando una tarjeta regalo 🎁
-          </p>
-        )}
+         
 
         <BloqueoReserva>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -258,7 +271,7 @@ export default function ReservaCreaTuBandejaHogar() {
               transition-all duration-200"
               disabled={!metodo || plazasNum > plazasDisponibles || plazasDisponibles <= 0}
             >
-              Confirmar y pagar
+              {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
             </button>
           </form>
         </BloqueoReserva>

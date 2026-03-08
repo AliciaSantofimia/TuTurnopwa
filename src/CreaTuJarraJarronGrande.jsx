@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuJarraJarronGrande() {
   const imagenes = [
-    "/img/jarrajarrongrande1.jpg",
-    "/img/jarrajarrongrande2.jpg",
-    "/img/jarrajarrongrande3.jpg",
-    "/img/jarrajarrongrande4.jpg",
-    "/img/jarrajarrongrande5.jpg",
-    "/img/jarrajarrongrande6.jpg",
+    "/img/jarron/jarrajarrongrande1.jpg",
+    "/img/jarron/jarrajarrongrande2.jpg",
+    "/img/jarron/jarrajarrongrande3.jpg",
+    "/img/jarron/jarrajarrongrande4.jpg",
+    "/img/jarron/jarrajarrongrande5.jpg",
+    "/img/jarron/jarrajarrongrande6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

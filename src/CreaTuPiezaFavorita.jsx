@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuPiezaFavorita() {
   const imagenes = [
-    "/img/creatupiezafavorita1.jpg",
-    "/img/creatupiezafavorita2.jpg",
-    "/img/creatupiezafavorita3.jpg",
-    "/img/creatupiezafavorita4.jpg",
-    "/img/creatupiezafavorita5.jpg",
+    "/img/creatupiezafavorita/creatupieza1.jpg",
+    "/img/creatupiezafavorita/creatupieza2.jpg",
+    "/img/creatupiezafavorita/creatupieza3.jpg",
+    "/img/creatupiezafavorita/creatupieza4.jpg",
+    "/img/creatupiezafavorita/creatupieza5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

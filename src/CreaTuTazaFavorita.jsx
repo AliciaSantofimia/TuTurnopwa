@@ -4,12 +4,12 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuTazaFavorita() {
   const imagenes = [
-    "/img/tazafavorita1.jpg",
-    "/img/tazafavorita2.jpg",
-    "/img/tazafavorita3.jpg",
-    "/img/tazafavorita4.jpg",
-    "/img/tazafavorita5.jpg",
-    "/img/tazafavorita6.jpg",
+    "/img/tazafavorita/taza1.jpg",
+    "/img/tazafavorita/taza2.jpg",
+    "/img/tazafavorita/taza3.jpg",
+    "/img/tazafavorita/taza4.jpg",
+    "/img/tazafavorita/taza5.jpg",
+    "/img/tazafavorita/taza6.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

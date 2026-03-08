@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function ModelaAManoYDecoraTusPiezasFavoritas() {
   const imagenes = [
-    "/img/modelamano1.jpg",
-    "/img/modelamano2.jpg",
-    "/img/modelamano3.jpg",
-    "/img/modelamano4.jpg",
-    "/img/modelamano5.jpg",
+    "/img/modelamano/modelamano1.jpg",
+    "/img/modelamano/modelamano2.jpg",
+    "/img/modelamano/modelamano3.jpg",
+    "/img/modelamano/modelamano4.jpg",
+    "/img/modelamano/modelamano5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

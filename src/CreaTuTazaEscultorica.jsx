@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuTazaEscultorica() {
   const imagenes = [
-    "/img/tazaescultorica1.jpg",
-    "/img/tazaescultorica2.jpg",
-    "/img/tazaescultorica3.jpg",
-    "/img/tazaescultorica4.jpg",
-    "/img/tazaescultorica5.jpg",
+    "/img/tazaescultorica/tazaescultorica1.jpg",
+    "/img/tazaescultorica/tazaescultorica2.jpg",
+    "/img/tazaescultorica/tazaescultorica3.jpg",
+    "/img/tazaescultorica/tazaescultorica4.jpg",
+    "/img/tazaescultorica/tazaescultorica5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

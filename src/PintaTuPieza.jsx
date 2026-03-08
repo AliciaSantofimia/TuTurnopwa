@@ -4,10 +4,10 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function PintaTuPieza() {
   const imagenes = [
-    "/img/pintatupieza1.jpg",
-    "/img/pintatupieza2.jpg",
-    "/img/pintatupieza3.jpg",
-    "/img/pintatupieza4.jpg",
+    "/img/pintaceramica/pintatupieza1.jpg",
+    "/img/pintaceramica/pintatupieza2.jpg",
+    "/img/pintaceramica/pintatupieza3.jpg",
+    "/img/pintaceramica/pintatupieza4.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

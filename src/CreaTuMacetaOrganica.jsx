@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function CreaTuMacetaOrganica() {
   const imagenes = [
-    "/img/macetaorganica1.jpg",
-    "/img/macetaorganica2.jpg",
-    "/img/macetaorganica3.jpg",
-    "/img/macetaorganica4.jpg",
-    "/img/macetaorganica5.jpg",
+    "/img/macetaorganica/macetaorganica1.jpg",
+    "/img/macetaorganica/macetaorganica2.jpg",
+    "/img/macetaorganica/macetaorganica3.jpg",
+    "/img/macetaorganica/macetaorganica4.jpg",
+    "/img/macetaorganica/macetaorganica5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

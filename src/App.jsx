@@ -75,6 +75,10 @@ import EspecialPintaTuPieza from "./EspecialPintaTuPieza";
 import ReservaEspecialPintaTuPieza from "./ReservaEspecialPintaTuPieza";
 import PintaTuPieza from "./PintaTuPieza";
 import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
+import ComprarTarjetaRegalo from "./ComprarTarjetaRegalo";
+import GenerarCodigoTarjetaRegalo from "./GenerarCodigoTarjetaRegalo";
+import ReservaConTarjetaRegalo from "./ReservaConTarjetaRegalo";
+
 
 // Clases solo vista
 import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
@@ -146,6 +150,7 @@ import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 import AdminEliminarClase from "./AdminEliminarClase.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
 import AdminBloquearUsuario from "./AdminBloquearUsuario.jsx";
+
 
 //Clases Online
 import ClasesOnlineInfo from "./ClasesOnlineInfo.jsx";
@@ -292,6 +297,15 @@ function App() {
 />
 <Route path="/pinta-tu-pieza" element={<PintaTuPieza />} />
 <Route path="/reserva-pinta-tu-pieza" element={<ReservaPintaTuPieza />} />
+<Route path="/comprar-tarjeta-regalo" element={<ComprarTarjetaRegalo />} />
+<Route
+  path="/generar-codigo-tarjeta-regalo"
+  element={<GenerarCodigoTarjetaRegalo />}
+/>
+<Route
+  path="/reserva-con-tarjeta-regalo"
+  element={<ReservaConTarjetaRegalo />}
+/>
           
           <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
           <Route path="/talleres/crear-piezas" element={<TalleresCrearPiezas />} />

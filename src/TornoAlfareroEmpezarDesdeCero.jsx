@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function TornoAlfareroEmpezarDesdeCero() {
   const imagenes = [
-    "/img/torno-desde-cero1.jpg",
-    "/img/torno-desde-cero2.jpg",
-    "/img/torno-desde-cero3.jpg",
-    "/img/torno-desde-cero4.jpg",
-    "/img/torno-desde-cero5.jpg",
+    "/img/tornodesdecero/torno-desde-cero1.jpg",
+    "/img/tornodesdecero/torno-desde-cero2.jpg",
+    "/img/tornodesdecero/torno-desde-cero3.jpg",
+    "/img/tornodesdecero/torno-desde-cero4.jpg",
+    "/img/tornodesdecero/torno-desde-cero5.jpg",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);

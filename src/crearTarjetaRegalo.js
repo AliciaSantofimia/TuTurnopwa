@@ -1,39 +1,49 @@
-// src/crearTarjetaRegalo.js
-import { ref, set } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
-// Generador de código aleatorio con formato XXXX-XXXX
-function generarCodigo() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const generarCodigoAleatorio = (longitud = 8) => {
+  const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let resultado = "";
+
+  for (let i = 0; i < longitud; i++) {
+    resultado += caracteres.charAt(
+      Math.floor(Math.random() * caracteres.length)
+    );
+  }
+
+  return `TTC-${resultado}`;
+};
+
+const generarCodigoUnico = async () => {
   let codigo = "";
-  for (let i = 0; i < 4; i++) {
-    codigo += chars[Math.floor(Math.random() * chars.length)];
+  let existe = true;
+
+  while (existe) {
+    codigo = generarCodigoAleatorio();
+    const snapshot = await get(ref(dbRealtime, `tarjetas_regalo/${codigo}`));
+    existe = snapshot.exists();
   }
-  codigo += "-";
-  for (let i = 0; i < 4; i++) {
-    codigo += chars[Math.floor(Math.random() * chars.length)];
-  }
+
   return codigo;
-}
+};
 
-// Crea una tarjeta regalo con todos los datos necesarios
-export async function crearTarjetaRegalo(tipo, compradorUID) {
-  const codigo = generarCodigo();
+export const crearTarjetaRegalo = async ({ importe, compradorUID }) => {
+  const codigo = await generarCodigoUnico();
 
-  const nuevaTarjeta = {
-    tipo,
+  const tarjeta = {
     codigo,
+    importe,
+    tipo: "tarjeta_regalo_universal",
+    usado: false,
+    canjeado: false,
+    canjeadoPorUID: "",
     compradorUID,
     fechaCompra: new Date().toISOString(),
-    usado: false,
-    desdeTarjeta: true // ✅ Campo clave para distinguir de reservas normales
+    fechaCanje: null,
+    fechaUso: null,
   };
 
-  try {
-    await set(ref(dbRealtime, `tarjetas_regalo/${codigo}`), nuevaTarjeta);
-    return codigo;
-  } catch (error) {
-    console.error("❌ Error al crear tarjeta regalo:", error);
-    return null;
-  }
-}
+  await set(ref(dbRealtime, `tarjetas_regalo/${codigo}`), tarjeta);
+
+  return codigo;
+};
