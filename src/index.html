@@ -1,11 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TuTurnoApp</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+
+  <title>TuTurnoApp | App de reservas para talleres creativos</title>
+  <meta name="description" content="TuTurnoApp es una app de reservas para talleres creativos. Organiza clases, plazas, pagos, bonos y tarjetas regalo de forma sencilla." />
+  <link rel="canonical" href="https://www.tuturnoapp.es/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:site_name" content="TuTurnoApp" />
+  <meta property="og:title" content="TuTurnoApp | App de reservas para talleres creativos" />
+  <meta property="og:description" content="Organiza reservas, pagos, bonos y tarjetas regalo para talleres creativos desde una sola app." />
+  <meta property="og:url" content="https://www.tuturnoapp.es/" />
+  <meta property="og:image" content="https://www.tuturnoapp.es/preview.jpg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TuTurnoApp | App de reservas para talleres creativos" />
+  <meta name="twitter:description" content="Organiza reservas, pagos, bonos y tarjetas regalo para talleres creativos desde una sola app." />
+  <meta name="twitter:image" content="https://www.tuturnoapp.es/preview.jpg" />
+
+  <link rel="icon" type="image/png" href="favicon.png" />
   <style>
     :root {
       --paper: #f6f1e8;
@@ -196,10 +213,10 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(3rem, 5.6vw, 6.6rem);
-      line-height: 0.94;
+      font-size: clamp(2.8rem, 4.8vw, 5.5rem);
+      line-height: 0.95;
       letter-spacing: -0.07em;
-      max-width: 11ch;
+      max-width: 10ch;
     }
 
     .highlight {
@@ -249,7 +266,7 @@
     .margin-note {
       position: absolute;
       right: 20px;
-      top: 120px;
+      top: 290px;
       width: 180px;
       background: var(--butter);
       border-radius: 18px 22px 16px 20px;
@@ -260,6 +277,7 @@
       line-height: 1.55;
       color: #57463d;
       border: 1px solid rgba(63,50,43,0.08);
+      white-space: pre-line;
     }
 
     .margin-note strong { display: block; margin-bottom: 6px; }
@@ -382,6 +400,7 @@
       color: var(--muted);
       font-size: 0.98rem;
       line-height: 1.55;
+      white-space: pre-line;
     }
 
     .note-card {
@@ -394,6 +413,7 @@
       margin: 8px 0 14px;
       font-size: 1.6rem;
       letter-spacing: -0.03em;
+      white-space: pre-line;
     }
 
     .note-card p {
@@ -401,6 +421,7 @@
       color: var(--muted);
       line-height: 1.7;
       font-size: 1rem;
+      white-space: pre-line;
     }
 
     .mini-tags {
@@ -535,7 +556,10 @@
       .hero { gap: 18px; }
       .sheet-inner { padding: 30px 22px 24px; }
       .visual-board { grid-template-columns: 1fr; }
-      h1 { font-size: clamp(2.6rem, 12vw, 4.4rem); }
+      h1 {
+        font-size: clamp(2.4rem, 11vw, 4rem);
+        max-width: 100%;
+      }
       .intro p { font-size: 1rem; }
       .card-inner { padding: 26px 22px 22px; }
       .cta-row { flex-direction: column; }
@@ -560,13 +584,13 @@
     <section class="hero" id="inicio">
       <article class="sheet">
         <div class="sheet-inner">
-          <div class="kicker">TuTurnoApp · libreta de estudio creativo</div>
-          <h1>Una app de <span class="highlight">reservas creativas</span> para talleres con alma.</h1>
+          <div class="kicker">UNA LIBRETA DIGITAL PARA TUS TALLERES</div>
+          <h1>Tu libreta de reservas,<br><span class="highlight">ahora en una app.</span></h1>
 
           <div class="intro">
-            <p><strong>TuTurnoApp</strong> es una app pensada para talleres creativos y espacios con actividades: cerámica, pintura, fotografía, costura, cocina, flores, lettering y más.</p>
-            <p>Sirve para organizar reservas, controlar plazas, gestionar pagos, vender bonos o tarjetas regalo y ofrecer una experiencia más clara tanto para el negocio como para quien reserva.</p>
-            <p>Nació personalizada para <strong>La Purísima Conchi</strong>, pero la base puede adaptarse y reutilizarse para otros talleres de cualquier tipo.</p>
+            <p><strong>TuTurnoApp</strong> es una app pensada para talleres creativos y espacios donde se organizan actividades como cerámica, pintura, fotografía, costura, cocina, arte floral, lettering y muchas más.</p>
+            <p>Funciona como una <strong>libreta digital de reservas</strong>: permite organizar plazas, gestionar pagos, ofrecer bonos o tarjetas regalo y mantener todo más claro tanto para el negocio como para quien reserva.</p>
+            <p>TuTurnoApp comenzó desarrollándose para el taller <strong>La Purísima Conchi</strong>, y a partir de esa experiencia se diseñó una base que puede adaptarse fácilmente a otros talleres y proyectos.</p>
           </div>
 
           <div class="cta-row">
@@ -574,10 +598,11 @@
             <a class="btn secondary" href="#sobre-mi">Quién está detrás</a>
           </div>
 
-          <div class="margin-note">
-            <strong>En resumen:</strong>
-            reservas, pagos, bonos, control de plazas y una experiencia más cuidada para talleres creativos.
-          </div>
+          <div class="margin-note"><strong>En resumen:</strong>
+una forma sencilla
+de organizar
+las reservas
+de tu taller</div>
         </div>
       </article>
 
@@ -597,13 +622,19 @@
               </div>
             </div>
           </div>
-          <div class="caption">Una base visual y funcional que luego se puede personalizar para cada taller.</div>
+          <div class="caption">El taller tiene
+todo organizado
+en un solo lugar</div>
         </article>
 
         <article class="scrap note-card">
-          <h3>Como una libreta de proyecto, pero digital</h3>
-          <p>La idea no es hacer una app fría o genérica, sino una herramienta útil con sensibilidad visual. Algo práctico, pero con personalidad.</p>
-          <p>Por eso esta propuesta mezcla estructura clara, tonos suaves y un estilo que recuerda a una libreta de estudio creativo.</p>
+          <h3>Como una libreta
+de reservas
+pero digital</h3>
+          <p>Una herramienta sencilla
+para talleres que prefieren
+usar el tiempo en crear antes que en organizar</p>
+
           <div class="mini-tags">
             <span>Reservas</span>
             <span>Bonos</span>
@@ -619,8 +650,9 @@
       <article class="card span-12 soft-peach">
         <div class="card-inner">
           <h2>Qué es TuTurnoApp, explicado fácil</h2>
-          <p>TuTurnoApp es una solución digital para talleres y negocios creativos que necesitan organizar reservas sin depender de mensajes, hojas sueltas o gestión manual. El usuario puede ver actividades, elegir fecha, reservar y pagar; y el negocio puede controlar plazas, consultar reservas y ordenar mejor su día a día.</p>
-          <p>No está pensada como una app cerrada para un único sitio, sino como una <strong>base reutilizable</strong> que puede adaptarse a distintos talleres. Cambiando contenidos, imágenes, estilo visual y reglas de reserva, puede convertirse en una app propia para cada marca.</p>
+          <p><strong>Es una app pensada para talleres y espacios donde se organizan actividades.</strong></p>
+          <p>Permite gestionar reservas de forma sencilla, sin depender de mensajes, hojas sueltas o sistemas improvisados. Las personas pueden ver las actividades disponibles, elegir fecha y reservar fácilmente, mientras el taller mantiene el control de plazas y organiza mejor su día a día.</p>
+          <p>La app no está pensada para un único taller. Funciona como una <strong>base adaptable</strong> que puede personalizarse para distintos proyectos cambiando contenidos, imágenes y estilo.</p>
         </div>
       </article>
 
@@ -629,7 +661,7 @@
           <h2>Qué puede hacer</h2>
           <ul>
             <li>Reservas de clases y talleres</li>
-            <li>Compra de bonos y tarjetas regalo</li>
+            <li>Gestión de bonos y tarjetas regalo</li>
             <li>Control de plazas disponibles</li>
             <li>Perfil de usuario con historial</li>
             <li>Panel para administración del taller</li>
@@ -640,8 +672,8 @@
 
       <article class="card span-7 soft-sage">
         <div class="card-inner">
-          <h2>Ideal para talleres como...</h2>
-          <p>Cerámica, pintura, ilustración, fotografía, costura, joyería, cocina, flores, manualidades, encuadernación, grabado o cualquier espacio donde haya grupos, horarios, reservas y personas con ganas de aprender algo bonito.</p>
+          <h2>Ideal para talleres donde...</h2>
+          <p>Se organizan clases o actividades con plazas limitadas, horarios y personas que quieren reservar de forma clara y sencilla.</p>
           <div class="pills">
             <span>Cerámica</span>
             <span>Pintura</span>
@@ -659,22 +691,17 @@
         <div class="card-inner">
           <h2>Quién está detrás</h2>
           <p>Soy <strong>Alicia Santofimia Melero</strong>, la persona que ha creado TuTurnoApp.</p>
-          <p>Me gustan los proyectos útiles, las cosas bonitas y el orden dentro del caos. TuTurnoApp es mi primera app y el comienzo de un camino en el que quiero seguir creando herramientas digitales pensadas para proyectos creativos y personas que hacen cosas con sus manos.</p>
-          <p>Me gusta pensar en las personas que van a usar lo que hago. Tengo una mezcla de curiosidad, mirada creativa y esa cabezonería buena que hace falta para empezar algo desde cero y seguir mejorándolo poco a poco hasta que todo encaja.</p>
-        </div>
-      </article>
-
-      <article class="card span-4 soft-peach">
-        <div class="card-inner">
-          <h2>Mini resumen sincero</h2>
-          <p>Una app para talleres creativos, hecha con cariño y pensada para evitar el típico momento de: <strong>“espera, ¿quién había reservado esta plaza?”</strong></p>
+          <p>Me gustan los proyectos útiles, las cosas bonitas y el orden dentro del caos. TuTurnoApp nace de esa mezcla: una herramienta pensada para talleres y proyectos creativos que necesitan organizar sus reservas de forma clara y sencilla.</p>
+          <p>Es mi primera app y el comienzo de un camino en el que quiero seguir creando herramientas digitales útiles para proyectos creativos y personas que hacen cosas con sus manos.</p>
         </div>
       </article>
 
       <article class="card span-6 soft-paper">
         <div class="card-inner">
           <h2>Por qué puede reutilizarse</h2>
-          <p>La lógica principal ya sirve para muchos casos: usuarios, reservas, horarios, aforo, pagos, bonos y gestión. Luego se adapta el diseño, los textos, las clases y las reglas concretas de cada taller. Eso hace que TuTurnoApp no sea solo una app cerrada, sino una base sólida para personalizar según cada negocio.</p>
+          <p>TuTurnoApp tiene una base que ya resuelve muchas de las necesidades habituales de un taller: usuarios, reservas, horarios, plazas o gestión de actividades.</p>
+          <p>A partir de ahí se pueden adaptar el diseño, los textos, las clases y las reglas de funcionamiento según cada proyecto.</p>
+          <p>Por eso no es solo una app pensada para un único taller, sino una base que puede personalizarse para distintos negocios creativos.</p>
         </div>
       </article>
 
@@ -683,8 +710,9 @@
           <h2>Contacto</h2>
           <p>Si tienes un taller creativo y te gustaría tener una app similar, puedes escribirme aquí:</p>
           <p><strong>contactotuturnoapp@gmail.com</strong></p>
+          <p>Estaré encantada de leerte.</p>
           <div class="cta-row">
-            <a class="btn primary" href="mailto:contactotuturnoapp@gmail.com">Escribirme</a>
+            <a class="btn primary" href="mailto:contactotuturnoapp@gmail.com">Escríbeme</a>
           </div>
         </div>
       </article>
@@ -696,4 +724,3 @@
   </main>
 </body>
 </html>
-
