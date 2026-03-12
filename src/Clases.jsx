@@ -7,39 +7,52 @@ export default function Clases() {
   const navigate = useNavigate();
 
   const categorias = [
-    {
-      id: 1,
-      titulo: "Crear piezas desde cero",
-      descripcion: ["Talleres de 1 sesión", "Talleres de 2 sesiones"],
-      ruta: "/talleres/crear-piezas",
-      color:  "border-[#F4C542]",
-      imagen: "/img/vasijaedicionpremium.png",
-    },
-    {
-      id: 2,
-      titulo: "Cursos y bonos mensuales",
-      descripcion: ["Cursos de torno y modelado", "Bonos mensuales"],
-      ruta: "/talleres/cursos-bonos",
-      color:  "border-[#F4C542]",
-      imagen: "/img/vasijabono4.png",
-    },
-    {
-      id: 3,
-      titulo: "Pinta y decora tu pieza",
-      descripcion: ["Talleres para pintar cerámica", "Opciones especiales"],
-      ruta: "/talleres/pinta-decora",
-      color:  "border-[#F4C542]",
-      imagen: "/img/vasijapintarceramica.png",
-    },
-    {
-      id: 4,
-      titulo: "Tarjeta regalo",
-      descripcion: ["Regala un taller sin fecha fija", "Ideal para sorprender a alguien"],
-      ruta: "/tarjeta-regalo",
-      color:  "border-[#F4C542]",
-      imagen: "/img/vasijatarjetaregalo.png",
-    },
-  ];
+  {
+    id: 1,
+    titulo: "Crear piezas desde cero",
+    descripcion: ["Talleres de 1 sesión", "Talleres de 2 sesiones"],
+    ruta: "/talleres/crear-piezas",
+    color: "border-[#F4C542]",
+    imagen: "/img/vasijaedicionpremium.png",
+  },
+  {
+    id: 2,
+    titulo: "Cursos y bonos mensuales",
+    descripcion: ["Cursos de torno y modelado", "Bonos mensuales"],
+    ruta: "/talleres/cursos-bonos",
+    color: "border-[#F4C542]",
+    imagen: "/img/vasijabono4.png",
+  },
+  {
+    id: 3,
+    titulo: "Clase suelta con continuidad",
+    descripcion: [
+      "Clases sueltas para continuar tu proyecto o empezar uno nuevo en el taller",
+    ],
+    ruta: "/talleres/clase-suelta-continuidad",
+    color: "border-[#F4C542]",
+    imagen: "/img/vasijaclasesuelta.png",
+  },
+  {
+    id: 4,
+    titulo: "Pinta y decora tu pieza",
+    descripcion: ["Talleres para pintar cerámica", "Opciones especiales"],
+    ruta: "/talleres/pinta-decora",
+    color: "border-[#F4C542]",
+    imagen: "/img/vasijapintarceramica.png",
+  },
+  {
+    id: 5,
+    titulo: "Tarjeta regalo",
+    descripcion: [
+      "Regala un taller sin fecha fija",
+      "Ideal para sorprender a alguien",
+    ],
+    ruta: "/tarjeta-regalo",
+    color: "border-[#F4C542]",
+    imagen: "/img/vasijatarjetaregalo.png",
+  },
+];
 
   const handleClick = (categoria) => {
     const currentUser = getAuth().currentUser;

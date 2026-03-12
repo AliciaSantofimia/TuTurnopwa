@@ -78,6 +78,8 @@ import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
 import ComprarTarjetaRegalo from "./ComprarTarjetaRegalo";
 import GenerarCodigoTarjetaRegalo from "./GenerarCodigoTarjetaRegalo";
 import ReservaConTarjetaRegalo from "./ReservaConTarjetaRegalo";
+import ClaseSueltaContinuidad from "./ClaseSueltaContinuidad";
+import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 
 
 // Clases solo vista
@@ -305,6 +307,15 @@ function App() {
 <Route
   path="/reserva-con-tarjeta-regalo"
   element={<ReservaConTarjetaRegalo />}
+/>
+<Route
+  path="/talleres/clase-suelta-continuidad"
+  element={<ClaseSueltaContinuidad />}
+/>
+
+<Route
+  path="/reserva-clase-suelta-continuidad"
+  element={<ReservaClaseSueltaContinuidad />}
 />
           
           <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
