@@ -4,11 +4,11 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function ClaseSueltaContinuidad() {
   const imagenes = [
-    "/img/clasesuelta/clase-suelta1.jpg",
-    "/img/clasesuelta/clase-suelta2.jpg",
-    "/img/clasesuelta/clase-suelta3.jpg",
-    "/img/clasesuelta/clase-suelta4.jpg",
-    "/img/clasesuelta/clase-suelta5.jpg",
+    "/img/clasesuelta/clase-suelta1.JPG",
+    "/img/clasesuelta/clase-suelta2.JPG",
+    "/img/clasesuelta/clase-suelta3.JPG",
+    "/img/clasesuelta/clase-suelta4.JPG",
+    "/img/clasesuelta/clase-suelta5.JPG",
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
