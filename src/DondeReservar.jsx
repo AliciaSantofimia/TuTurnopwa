@@ -111,7 +111,7 @@ export default function DondeReservar() {
         >
           
           <img
-            src="/img/mi-perfil.jpg"
+            src="/img/perfil-usuario.jpg"
             alt="Mi perfil"
              className="w-24 h-24 object-contain rounded-xl mx-auto"
           />
@@ -130,7 +130,7 @@ export default function DondeReservar() {
             className="bg-[#fdf3e7] p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
           >
             <img
-              src="/img/admin.jpg"
+              src="/img/panel.jpg"
               alt="Panel admin"
               className="w-24 h-auto mx-auto"
             />
