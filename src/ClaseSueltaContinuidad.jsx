@@ -4,7 +4,7 @@ import PantallaConVolver from "./PantallaConVolver";
 
 export default function ClaseSueltaContinuidad() {
   const imagenes = [
-    "/img/clasesuelta/clase-suelta1.JPG",
+    "/img/clasesuelta/recorte.JPG",
     "/img/clasesuelta/clase-suelta2.JPG",
     "/img/clasesuelta/clase-suelta3.JPG",
     "/img/clasesuelta/clase-suelta4.JPG",
@@ -22,7 +22,7 @@ export default function ClaseSueltaContinuidad() {
               <img
                 src={imagenActiva}
                 alt="Clase suelta con continuidad"
-                className="w-full h-[420px] object-cover"
+                className="w-full h-[420px] object-cover object-[center_80%]"
               />
             </div>
 
