@@ -29,8 +29,6 @@ import CreaTuPiezaFavorita from "./CreaTuPiezaFavorita";
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
 import PintarCeramica from "./PintarCeramica.jsx";
 import ReservaPintarCeramica from "./ReservaPintarCeramica.jsx";
-import FundamentalMini from "./FundamentalMini.jsx";
-import ReservaFundamentalMini from "./ReservaFundamentalMini.jsx";
 import MensualBono2Clases from "./MensualBono2Clases.jsx";
 import ReservaBono2Clases from "./ReservaBono2Clases.jsx";
 import MensualBono4Clases from "./MensualBono4Clases.jsx";
@@ -88,7 +86,6 @@ import CreativoPlusSolo from "./CreativoPlusSolo.jsx";
 import BasicoEsencialSolo from "./BasicoEsencialSolo.jsx";
 import Bono2ClasesSolo from "./Bono2ClasesSolo.jsx";
 import Bono4ClasesSolo from "./Bono4ClasesSolo.jsx";
-import FundamentalMiniSolo from "./FundamentalMiniSolo.jsx";
 import PintaTuPiezaDeCeramicaSolo from "./PintaTuPiezaDeCeramicaSolo.jsx";
 import ExpresContinuoSolo from "./ExpresContinuoSolo.jsx";
 
@@ -188,7 +185,7 @@ function App() {
           <Route path="/crea-tu-brunch-bowl" element={<CreaTuBrunchBowl />} />
           <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
-          <Route path="/fundamental-mini" element={<FundamentalMini />} />
+          
           <Route path="/bono-2-clases" element={<MensualBono2Clases />} />
           <Route path="/bono-4-clases" element={<MensualBono4Clases />} />
           <Route path="/exprescontinuo" element={<ExpresContinuo />} />
@@ -331,7 +328,7 @@ function App() {
           <Route path="/basico-esencial-solo" element={<BasicoEsencialSolo />} />
           <Route path="/bono-2-clases-solo" element={<Bono2ClasesSolo />} />
           <Route path="/bono-4-clases-solo" element={<Bono4ClasesSolo />} />
-          <Route path="/fundamental-mini-solo" element={<FundamentalMiniSolo />} />
+          
           <Route path="/exprescontinuo-solo" element={<ExpresContinuoSolo />} />
 
           {/* Tarjetas regalo solo vista */}
@@ -363,7 +360,7 @@ function App() {
           
           
           <Route path="/reserva-pintar-ceramica" element={<ReservaPintarCeramica />} />
-          <Route path="/reserva-fundamental-mini" element={<ReservaFundamentalMini />} />
+          
           <Route path="/reserva-bono-2-clases" element={<ReservaBono2Clases />} />
           <Route path="/reserva-bono-4-clases" element={<ReservaBono4Clases />} />
           <Route path="/reserva-exprescontinuo" element={<ReservaExpresContinuo />} />
