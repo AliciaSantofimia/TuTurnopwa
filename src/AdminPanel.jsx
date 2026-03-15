@@ -16,6 +16,7 @@ const AdminPanel = () => {
     bonosActivos: 0,
     solicitudesPendientes: 0,
     proximasClases: [],
+    ocupacionPorClase: [],
   });
 
   const [cargando, setCargando] = useState(true);
@@ -38,7 +39,7 @@ const AdminPanel = () => {
         const manana = mananaDate.toISOString().slice(0, 10);
 
         const inicioSemana = new Date(hoyDate);
-        const dia = inicioSemana.getDay(); // 0 domingo, 1 lunes...
+        const dia = inicioSemana.getDay(); // 0 domingo
         const diferenciaLunes = dia === 0 ? -6 : 1 - dia;
         inicioSemana.setDate(inicioSemana.getDate() + diferenciaLunes);
         inicioSemana.setHours(0, 0, 0, 0);
@@ -63,7 +64,9 @@ const AdminPanel = () => {
         let plazasHoy = 0;
         let plazasSemana = 0;
         let bonosActivos = 0;
+
         const proximas = [];
+        const ocupacionMap = {};
 
         if (usersSnap.exists()) {
           const usuarios = usersSnap.val();
@@ -75,6 +78,7 @@ const AdminPanel = () => {
 
                 const fechaReserva = reserva.fecha || reserva.fechaInicio || null;
                 const plazasReserva = Number(reserva.plazas || 1);
+                const claseReserva = reserva.clase || "Clase sin nombre";
                 const estado = reserva.estado || "activa";
 
                 if (!fechaReserva) return;
@@ -94,11 +98,22 @@ const AdminPanel = () => {
                 if (fechaObj >= inicioSemana && fechaObj <= finSemana) {
                   reservasSemana += 1;
                   plazasSemana += plazasReserva;
+
+                  if (!ocupacionMap[claseReserva]) {
+                    ocupacionMap[claseReserva] = {
+                      clase: claseReserva,
+                      reservas: 0,
+                      plazas: 0,
+                    };
+                  }
+
+                  ocupacionMap[claseReserva].reservas += 1;
+                  ocupacionMap[claseReserva].plazas += plazasReserva;
                 }
 
                 if (fechaReserva >= hoy) {
                   proximas.push({
-                    clase: reserva.clase || "Clase sin nombre",
+                    clase: claseReserva,
                     fecha: fechaReserva,
                     turno: reserva.turno || "Sin turno",
                     plazas: plazasReserva,
@@ -124,6 +139,10 @@ const AdminPanel = () => {
           return fechaA - fechaB;
         });
 
+        const ocupacionPorClase = Object.values(ocupacionMap).sort(
+          (a, b) => b.plazas - a.plazas
+        );
+
         const solicitudesCambio = cambioSnap.exists()
           ? Object.keys(cambioSnap.val()).length
           : 0;
@@ -141,6 +160,7 @@ const AdminPanel = () => {
           bonosActivos,
           solicitudesPendientes: solicitudesCambio + solicitudesEliminacion,
           proximasClases: proximas.slice(0, 12),
+          ocupacionPorClase,
         });
       } catch (error) {
         console.error("Error al cargar el panel admin:", error);
@@ -296,28 +316,49 @@ const AdminPanel = () => {
             </div>
           </div>
 
-          <div style={styles.proximasBox(esMovil)}>
-            <h3 style={styles.proximasTitulo(esMovil)}>Próximas reservas por día</h3>
+          <div style={styles.panelDoble(esMovil)}>
+            <div style={styles.proximasBox(esMovil)}>
+              <h3 style={styles.proximasTitulo(esMovil)}>Próximas reservas por día</h3>
 
-            {cargando ? (
-              <p style={styles.proximasTexto(esMovil)}>Cargando...</p>
-            ) : dashboard.proximasClases.length === 0 ? (
-              <p style={styles.proximasTexto(esMovil)}>No hay próximas clases registradas.</p>
-            ) : (
-              Object.entries(proximasAgrupadas).map(([fecha, clases]) => (
-                <div key={fecha} style={styles.grupoFecha}>
-                  <div style={styles.fechaGrupo}>{formatearFecha(fecha)}</div>
-                  {clases.map((clase, index) => (
-                    <div key={index} style={styles.proximaFila(esMovil)}>
-                      <span style={styles.proximaClase(esMovil)}>{clase.clase}</span>
-                      <span style={styles.proximaMeta(esMovil)}>
-                        {clase.turno} · {clase.plazas} plaza{clase.plazas > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ))
-            )}
+              {cargando ? (
+                <p style={styles.proximasTexto(esMovil)}>Cargando...</p>
+              ) : dashboard.proximasClases.length === 0 ? (
+                <p style={styles.proximasTexto(esMovil)}>No hay próximas clases registradas.</p>
+              ) : (
+                Object.entries(proximasAgrupadas).map(([fecha, clases]) => (
+                  <div key={fecha} style={styles.grupoFecha}>
+                    <div style={styles.fechaGrupo}>{formatearFecha(fecha)}</div>
+                    {clases.map((clase, index) => (
+                      <div key={index} style={styles.proximaFila(esMovil)}>
+                        <span style={styles.proximaClase(esMovil)}>{clase.clase}</span>
+                        <span style={styles.proximaMeta(esMovil)}>
+                          {clase.turno} · {clase.plazas} plaza{clase.plazas > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={styles.proximasBox(esMovil)}>
+              <h3 style={styles.proximasTitulo(esMovil)}>Estado de ocupación por clase</h3>
+
+              {cargando ? (
+                <p style={styles.proximasTexto(esMovil)}>Cargando...</p>
+              ) : dashboard.ocupacionPorClase.length === 0 ? (
+                <p style={styles.proximasTexto(esMovil)}>No hay reservas esta semana.</p>
+              ) : (
+                dashboard.ocupacionPorClase.map((item, index) => (
+                  <div key={index} style={styles.proximaFila(esMovil)}>
+                    <span style={styles.proximaClase(esMovil)}>{item.clase}</span>
+                    <span style={styles.proximaMeta(esMovil)}>
+                      {item.reservas} reserva{item.reservas > 1 ? "s" : ""} · {item.plazas} plaza{item.plazas > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
@@ -352,6 +393,7 @@ const styles = {
     display: "block",
     position: "relative",
   }),
+
   volverApp: (esMovil) => ({
     position: "fixed",
     top: esMovil ? 12 : 20,
@@ -367,6 +409,7 @@ const styles = {
     zIndex: 999,
     maxWidth: esMovil ? "calc(100vw - 24px)" : "none",
   }),
+
   panelContainer: (esMovil) => ({
     backgroundColor: "#ffffff",
     borderRadius: esMovil ? 22 : 28,
@@ -377,6 +420,7 @@ const styles = {
     margin: esMovil ? "58px auto 0" : "0 auto",
     boxSizing: "border-box",
   }),
+
   tituloContainer: (esMovil) => ({
     display: "flex",
     flexDirection: esMovil ? "column" : "row",
@@ -386,14 +430,17 @@ const styles = {
     marginBottom: 28,
     textAlign: "left",
   }),
+
   tituloTextoBox: {
     width: "100%",
   },
+
   icono: (esMovil) => ({
     width: esMovil ? 58 : 64,
     height: esMovil ? 58 : 64,
     objectFit: "contain",
   }),
+
   titulo: (esMovil) => ({
     color: "#2f2f2f",
     fontSize: esMovil ? "1.8rem" : "2rem",
@@ -401,12 +448,14 @@ const styles = {
     margin: 0,
     lineHeight: 1.1,
   }),
+
   descripcionTitulo: (esMovil) => ({
     margin: "6px 0 0 0",
     color: "#7a7a7a",
     fontSize: esMovil ? "0.95rem" : "0.98rem",
     lineHeight: 1.35,
   }),
+
   bloquePrincipal: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -414,6 +463,7 @@ const styles = {
     padding: esMovil ? 16 : 22,
     marginBottom: 24,
   }),
+
   seccionCard: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -421,24 +471,28 @@ const styles = {
     padding: esMovil ? 16 : 22,
     marginBottom: 18,
   }),
+
   subtitulo: (esMovil) => ({
     color: "#4b3a2a",
     fontSize: esMovil ? "1.2rem" : "1.35rem",
     margin: "0 0 16px 0",
     fontWeight: 700,
   }),
+
   subtituloSeccion: (esMovil) => ({
     color: "#4b3a2a",
     fontSize: esMovil ? "1.1rem" : "1.25rem",
     margin: "0 0 14px 0",
     fontWeight: 700,
   }),
+
   dashboardGrid: (esMovil) => ({
     display: "grid",
     gridTemplateColumns: esMovil ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 14,
     marginBottom: 18,
   }),
+
   dashboardCard: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
@@ -446,6 +500,7 @@ const styles = {
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   }),
+
   dashboardLabel: (esMovil) => ({
     margin: 0,
     fontSize: esMovil ? "0.92rem" : "0.95rem",
@@ -453,12 +508,20 @@ const styles = {
     fontWeight: 600,
     lineHeight: 1.35,
   }),
+
   dashboardValue: (esMovil) => ({
     margin: "10px 0 0 0",
     fontSize: esMovil ? "1.8rem" : "1.6rem",
     color: "#333",
     fontWeight: "bold",
   }),
+
+  panelDoble: (esMovil) => ({
+    display: "grid",
+    gridTemplateColumns: esMovil ? "1fr" : "1fr 1fr",
+    gap: 16,
+  }),
+
   proximasBox: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
@@ -466,27 +529,32 @@ const styles = {
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   }),
+
   proximasTitulo: (esMovil) => ({
     margin: "0 0 12px 0",
     color: "#5b5b5b",
     fontSize: esMovil ? "1rem" : "1.05rem",
     fontWeight: 700,
   }),
+
   proximasTexto: (esMovil) => ({
     margin: 0,
     color: "#7a7a7a",
     fontSize: esMovil ? "0.92rem" : "0.95rem",
     lineHeight: 1.4,
   }),
+
   grupoFecha: {
     marginBottom: 12,
   },
+
   fechaGrupo: {
     fontWeight: 700,
     color: "#5b4a2d",
     marginBottom: 6,
     fontSize: "0.95rem",
   },
+
   proximaFila: (esMovil) => ({
     display: "flex",
     flexDirection: esMovil ? "column" : "row",
@@ -497,21 +565,25 @@ const styles = {
     borderBottom: "1px solid #f1e7c6",
     fontSize: "0.95rem",
   }),
+
   proximaClase: (esMovil) => ({
     color: "#333",
     fontWeight: 600,
     lineHeight: 1.35,
   }),
+
   proximaMeta: (esMovil) => ({
     color: "#7a7a7a",
     whiteSpace: esMovil ? "normal" : "nowrap",
     lineHeight: 1.35,
   }),
+
   botonesContainer: {
     display: "grid",
     gridTemplateColumns: "1fr",
     gap: 10,
   },
+
   btn: (esMovil) => ({
     display: "block",
     width: "100%",
