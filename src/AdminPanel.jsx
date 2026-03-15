@@ -16,6 +16,16 @@ const AdminPanel = () => {
   });
 
   const [cargando, setCargando] = useState(true);
+  const [esMovil, setEsMovil] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setEsMovil(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const cargarDashboard = async () => {
@@ -158,76 +168,76 @@ const AdminPanel = () => {
   ];
 
   return (
-    <div style={styles.body}>
+    <div style={styles.body(esMovil)}>
       <button
         onClick={() => navigate("/dondereservar")}
-        style={styles.volverApp}
+        style={styles.volverApp(esMovil)}
       >
         🏠 Volver a la app
       </button>
 
-      <div style={styles.panelContainer}>
+      <div style={styles.panelContainer(esMovil)}>
         <BotonVolver />
 
-        <div style={styles.tituloContainer}>
+        <div style={styles.tituloContainer(esMovil)}>
           <img
             src="/img/logoPCsin.png"
             alt="Logo La Purísima Conchi"
-            style={styles.icono}
+            style={styles.icono(esMovil)}
           />
-          <div>
-            <h1 style={styles.titulo}>La Purísima Conchi</h1>
-            <p style={styles.descripcionTitulo}>
+          <div style={styles.tituloTextoBox(esMovil)}>
+            <h1 style={styles.titulo(esMovil)}>La Purísima Conchi</h1>
+            <p style={styles.descripcionTitulo(esMovil)}>
               Panel de administración del taller
             </p>
           </div>
         </div>
 
-        <div style={styles.bloquePrincipal}>
-          <h2 style={styles.subtitulo}>Panel de control</h2>
+        <div style={styles.bloquePrincipal(esMovil)}>
+          <h2 style={styles.subtitulo(esMovil)}>Panel de control</h2>
 
-          <div style={styles.dashboardGrid}>
-            <div style={styles.dashboardCard}>
-              <p style={styles.dashboardLabel}>Reservas para hoy</p>
-              <p style={styles.dashboardValue}>
+          <div style={styles.dashboardGrid(esMovil)}>
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Reservas para hoy</p>
+              <p style={styles.dashboardValue(esMovil)}>
                 {cargando ? "..." : dashboard.reservasHoy}
               </p>
             </div>
 
-            <div style={styles.dashboardCard}>
-              <p style={styles.dashboardLabel}>Plazas ocupadas hoy</p>
-              <p style={styles.dashboardValue}>
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Plazas ocupadas hoy</p>
+              <p style={styles.dashboardValue(esMovil)}>
                 {cargando ? "..." : dashboard.plazasHoy}
               </p>
             </div>
 
-            <div style={styles.dashboardCard}>
-              <p style={styles.dashboardLabel}>Bonos activos</p>
-              <p style={styles.dashboardValue}>
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Bonos activos</p>
+              <p style={styles.dashboardValue(esMovil)}>
                 {cargando ? "..." : dashboard.bonosActivos}
               </p>
             </div>
 
-            <div style={styles.dashboardCard}>
-              <p style={styles.dashboardLabel}>Solicitudes pendientes</p>
-              <p style={styles.dashboardValue}>
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Solicitudes pendientes</p>
+              <p style={styles.dashboardValue(esMovil)}>
                 {cargando ? "..." : dashboard.solicitudesPendientes}
               </p>
             </div>
           </div>
 
-          <div style={styles.proximasBox}>
-            <h3 style={styles.proximasTitulo}>Próximas clases</h3>
+          <div style={styles.proximasBox(esMovil)}>
+            <h3 style={styles.proximasTitulo(esMovil)}>Próximas clases</h3>
 
             {cargando ? (
-              <p style={styles.proximasTexto}>Cargando...</p>
+              <p style={styles.proximasTexto(esMovil)}>Cargando...</p>
             ) : dashboard.proximasClases.length === 0 ? (
-              <p style={styles.proximasTexto}>No hay próximas clases registradas.</p>
+              <p style={styles.proximasTexto(esMovil)}>No hay próximas clases registradas.</p>
             ) : (
               dashboard.proximasClases.map((clase, index) => (
-                <div key={index} style={styles.proximaFila}>
-                  <span style={styles.proximaClase}>{clase.clase}</span>
-                  <span style={styles.proximaMeta}>
+                <div key={index} style={styles.proximaFila(esMovil)}>
+                  <span style={styles.proximaClase(esMovil)}>{clase.clase}</span>
+                  <span style={styles.proximaMeta(esMovil)}>
                     {formatearFecha(clase.fecha)} · {clase.turno}
                   </span>
                 </div>
@@ -237,14 +247,14 @@ const AdminPanel = () => {
         </div>
 
         {seccionesAdmin.map((seccion) => (
-          <div key={seccion.titulo} style={styles.seccionCard}>
-            <h2 style={styles.subtituloSeccion}>{seccion.titulo}</h2>
+          <div key={seccion.titulo} style={styles.seccionCard(esMovil)}>
+            <h2 style={styles.subtituloSeccion(esMovil)}>{seccion.titulo}</h2>
 
             <div style={styles.botonesContainer}>
               {seccion.acciones.map((accion) => (
                 <button
                   key={accion.texto}
-                  style={styles.btn}
+                  style={styles.btn(esMovil)}
                   onClick={() => navigate(accion.ruta)}
                 >
                   {accion.texto}
@@ -259,166 +269,205 @@ const AdminPanel = () => {
 };
 
 const styles = {
-  body: {
+  body: (esMovil) => ({
     backgroundColor: "#fdf8ee",
     fontFamily: "'Segoe UI', sans-serif",
-    padding: 40,
+    padding: esMovil ? "16px 12px 24px" : 40,
     minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    display: "block",
     position: "relative",
-  },
-  volverApp: {
+  }),
+
+  volverApp: (esMovil) => ({
     position: "fixed",
-    top: 20,
-    right: 20,
+    top: esMovil ? 12 : 20,
+    right: esMovil ? 12 : 20,
     backgroundColor: "#b76e4d",
     color: "white",
-    padding: "10px 16px",
+    padding: esMovil ? "10px 14px" : "10px 16px",
     border: "none",
     borderRadius: "12px",
     cursor: "pointer",
-    fontSize: "0.95rem",
+    fontSize: esMovil ? "0.9rem" : "0.95rem",
     boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
     zIndex: 999,
-  },
-  panelContainer: {
+    maxWidth: esMovil ? "calc(100vw - 24px)" : "none",
+  }),
+
+  panelContainer: (esMovil) => ({
     backgroundColor: "#ffffff",
-    borderRadius: 28,
-    padding: 36,
+    borderRadius: esMovil ? 22 : 28,
+    padding: esMovil ? 18 : 36,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
     maxWidth: 920,
     width: "100%",
-  },
-  tituloContainer: {
+    margin: esMovil ? "58px auto 0" : "0 auto",
+    boxSizing: "border-box",
+  }),
+
+  tituloContainer: (esMovil) => ({
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 18,
+    flexDirection: esMovil ? "column" : "row",
+    alignItems: esMovil ? "flex-start" : "center",
+    justifyContent: esMovil ? "flex-start" : "center",
+    gap: esMovil ? 12 : 18,
     marginBottom: 28,
-    textAlign: "left",
-  },
-  icono: {
-    width: 64,
-    height: 64,
+    textAlign: esMovil ? "left" : "left",
+  }),
+
+  tituloTextoBox: (esMovil) => ({
+    width: "100%",
+  }),
+
+  icono: (esMovil) => ({
+    width: esMovil ? 58 : 64,
+    height: esMovil ? 58 : 64,
     objectFit: "contain",
-  },
-  titulo: {
+  }),
+
+  titulo: (esMovil) => ({
     color: "#2f2f2f",
-    fontSize: "2rem",
+    fontSize: esMovil ? "1.8rem" : "2rem",
     fontWeight: "bold",
     margin: 0,
-  },
-  descripcionTitulo: {
+    lineHeight: 1.1,
+  }),
+
+  descripcionTitulo: (esMovil) => ({
     margin: "6px 0 0 0",
     color: "#7a7a7a",
-    fontSize: "0.98rem",
-  },
-  bloquePrincipal: {
+    fontSize: esMovil ? "0.95rem" : "0.98rem",
+    lineHeight: 1.35,
+  }),
+
+  bloquePrincipal: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
     borderRadius: 22,
-    padding: 22,
+    padding: esMovil ? 16 : 22,
     marginBottom: 24,
-  },
-  seccionCard: {
+  }),
+
+  seccionCard: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
     borderRadius: 22,
-    padding: 22,
+    padding: esMovil ? 16 : 22,
     marginBottom: 18,
-  },
-  subtitulo: {
+  }),
+
+  subtitulo: (esMovil) => ({
     color: "#4b3a2a",
-    fontSize: "1.35rem",
+    fontSize: esMovil ? "1.2rem" : "1.35rem",
     margin: "0 0 16px 0",
     fontWeight: 700,
-  },
-  subtituloSeccion: {
+  }),
+
+  subtituloSeccion: (esMovil) => ({
     color: "#4b3a2a",
-    fontSize: "1.25rem",
+    fontSize: esMovil ? "1.1rem" : "1.25rem",
     margin: "0 0 14px 0",
     fontWeight: 700,
-  },
-  dashboardGrid: {
+  }),
+
+  dashboardGrid: (esMovil) => ({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gridTemplateColumns: esMovil
+      ? "1fr"
+      : "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 14,
     marginBottom: 18,
-  },
-  dashboardCard: {
+  }),
+
+  dashboardCard: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
-    padding: 18,
+    padding: esMovil ? 16 : 18,
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-  },
-  dashboardLabel: {
+  }),
+
+  dashboardLabel: (esMovil) => ({
     margin: 0,
-    fontSize: "0.95rem",
+    fontSize: esMovil ? "0.92rem" : "0.95rem",
     color: "#7a6331",
     fontWeight: 600,
-  },
-  dashboardValue: {
+    lineHeight: 1.35,
+  }),
+
+  dashboardValue: (esMovil) => ({
     margin: "10px 0 0 0",
-    fontSize: "1.6rem",
+    fontSize: esMovil ? "1.8rem" : "1.6rem",
     color: "#333",
     fontWeight: "bold",
-  },
-  proximasBox: {
+  }),
+
+  proximasBox: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
-    padding: 18,
+    padding: esMovil ? 16 : 18,
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-  },
-  proximasTitulo: {
+  }),
+
+  proximasTitulo: (esMovil) => ({
     margin: "0 0 12px 0",
     color: "#5b5b5b",
-    fontSize: "1.05rem",
+    fontSize: esMovil ? "1rem" : "1.05rem",
     fontWeight: 700,
-  },
-  proximasTexto: {
+  }),
+
+  proximasTexto: (esMovil) => ({
     margin: 0,
     color: "#7a7a7a",
-    fontSize: "0.95rem",
-  },
-  proximaFila: {
+    fontSize: esMovil ? "0.92rem" : "0.95rem",
+    lineHeight: 1.4,
+  }),
+
+  proximaFila: (esMovil) => ({
     display: "flex",
+    flexDirection: esMovil ? "column" : "row",
     justifyContent: "space-between",
-    gap: 12,
+    alignItems: esMovil ? "flex-start" : "center",
+    gap: esMovil ? 4 : 12,
     padding: "10px 0",
     borderBottom: "1px solid #f1e7c6",
     fontSize: "0.95rem",
-  },
-  proximaClase: {
+  }),
+
+  proximaClase: (esMovil) => ({
     color: "#333",
     fontWeight: 600,
-  },
-  proximaMeta: {
+    lineHeight: 1.35,
+  }),
+
+  proximaMeta: (esMovil) => ({
     color: "#7a7a7a",
-    whiteSpace: "nowrap",
-  },
+    whiteSpace: esMovil ? "normal" : "nowrap",
+    lineHeight: 1.35,
+  }),
+
   botonesContainer: {
     display: "grid",
     gridTemplateColumns: "1fr",
     gap: 10,
   },
-  btn: {
+
+  btn: (esMovil) => ({
     display: "block",
     width: "100%",
-    padding: "14px 16px",
+    padding: esMovil ? "13px 14px" : "14px 16px",
     backgroundColor: "#fffaf0",
     color: "#3d3126",
     border: "1px solid #eadfbe",
     borderRadius: 14,
-    fontSize: "1rem",
+    fontSize: esMovil ? "0.96rem" : "1rem",
     textAlign: "left",
     cursor: "pointer",
     transition: "all 0.2s ease",
     boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-  },
+    lineHeight: 1.35,
+  }),
 };
 
 export default AdminPanel;
