@@ -12,19 +12,24 @@ export default function CreaTuMacetaOrganica() {
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
+  const [modalAbierto, setModalAbierto] = useState(false);
 
   return (
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
-          <div className="p-5">
-           <div className="rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[280px] md:min-h-[420px]">
-  <img
-    src={imagenActiva}
-    alt="Crea tu maceta orgánica"
-    className="w-full h-auto max-h-[70vh] object-contain"
-  />
-</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="p-4 sm:p-5">
+            <button
+              type="button"
+              onClick={() => setModalAbierto(true)}
+              className="w-full rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[260px] sm:min-h-[320px] md:min-h-[420px]"
+            >
+              <img
+                src={imagenActiva}
+                alt="Crea tu maceta orgánica"
+                className="w-full h-auto max-h-[70vh] object-contain"
+              />
+            </button>
 
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
               {imagenes.map((img, index) => (
@@ -32,7 +37,7 @@ export default function CreaTuMacetaOrganica() {
                   key={index}
                   type="button"
                   onClick={() => setImagenActiva(img)}
-                  className={`rounded-xl overflow-hidden border-2 min-w-[72px] h-[72px] ${
+                  className={`shrink-0 rounded-xl overflow-hidden border-2 w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] ${
                     imagenActiva === img ? "border-[#F4C542]" : "border-[#f1e7c6]"
                   }`}
                 >
@@ -44,24 +49,28 @@ export default function CreaTuMacetaOrganica() {
                 </button>
               ))}
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Toca la imagen para verla en grande
+            </p>
           </div>
 
-          <div className="p-6 flex flex-col justify-start">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2">
+          <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
               CREA TU MACETA ORGÁNICA
             </h1>
 
-            <p className="text-xl font-semibold text-[#6b3700] mb-4">
+            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               59,00 €
             </p>
 
-            <div className="mb-5">
+            <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   <strong>Antes de realizar la compra:</strong> por favor,
                   escríbenos por WhatsApp para consultar la disponibilidad de
                   fechas y horarios. Una vez confirmada la disponibilidad,
@@ -71,27 +80,27 @@ export default function CreaTuMacetaOrganica() {
                 </p>
               </div>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Descubre la cerámica más natural y libre con esta formación de
                 <strong> dos sesiones</strong>, donde podrás modelar y esmaltar
                 un <strong>cuenco o una maceta de forma orgánica</strong>,
                 inspirada en la textura, el gesto y el movimiento del barro.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Durante la primera sesión trabajarás el modelado de la pieza,
                 explorando formas irregulares, curvas suaves, relieves y
                 texturas aplicadas con herramientas o elementos naturales.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 En la segunda sesión podrás decorarla con esmaltes y pigmentos,
                 eligiendo entre una gran variedad de colores y acabados que
                 realzarán sus superficies y contrastes.
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   En este taller las piezas se realizarán con un tamaño máximo
                   aproximado de <strong>15 × 15 cm</strong>, manteniendo
                   proporciones equilibradas y adecuadas para el secado y la
@@ -108,7 +117,7 @@ export default function CreaTuMacetaOrganica() {
                 Primera sesión – Modelado y texturizado
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Crear un cuenco o una maceta mediante técnicas manuales (churros, planchas o pellizco).</li>
                 <li>• Dar forma de manera libre y orgánica, trabajando curvas, irregularidades y volúmenes naturales.</li>
                 <li>• Aplicar texturas con herramientas, sellos o materiales naturales (hojas, tejidos, cuerda, piedra…).</li>
@@ -120,14 +129,14 @@ export default function CreaTuMacetaOrganica() {
                 Segunda sesión – Decoración y esmaltado
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Aplicar esmaltes y pigmentos cerámicos sobre superficies texturadas.</li>
                 <li>• Observar cómo los esmaltes reaccionan en diferentes profundidades y relieves.</li>
                 <li>• Combinar colores, brillos y mates para destacar la textura y el movimiento de la pieza.</li>
               </ul>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Contamos con una gran variedad de esmaltes y pigmentos
                   perfectos para realzar las texturas naturales y los acabados
                   artesanales.
@@ -138,7 +147,7 @@ export default function CreaTuMacetaOrganica() {
                 Qué incluye:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Todos los materiales, herramientas y esmaltes necesarios.</li>
                 <li>• Cocciones completas en horno cerámico.</li>
                 <li>• Esmaltado de una pieza incluido (cuenco o maceta).</li>
@@ -149,7 +158,7 @@ export default function CreaTuMacetaOrganica() {
                 Duración:
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Formación de dos sesiones de aproximadamente 3 horas cada una.
                 La segunda sesión se programa tras el secado y primera cocción
                 (bizcochado), para garantizar que la pieza esté lista para
@@ -157,7 +166,7 @@ export default function CreaTuMacetaOrganica() {
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Entre la primera y la segunda sesión pueden pasar entre 2 y 4
                   semanas, según el ritmo de secado y la carga del horno.
                 </p>
@@ -167,37 +176,37 @@ export default function CreaTuMacetaOrganica() {
                 Entrega de tu pieza:
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Tu pieza no se entrega el mismo día de la segunda sesión.
                 Después del esmaltado realizaremos la cocción final.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 El plazo estimado de entrega oscila entre <strong>2 y 3 semanas tras el esmaltado</strong>.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Para recoger tu pieza, deberás seguir las indicaciones que
                 encontrarás en la categoría <strong>“Quiero recoger mi pieza”</strong> de
                 nuestra web. Allí encontrarás toda la información actualizada
                 sobre los plazos y el procedimiento de recogida.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Esta formación te permitirá disfrutar del proceso cerámico de
                 forma intuitiva y sensorial, explorando el modelado orgánico, la
                 textura y el color en una pieza de formato medio y carácter
                 artesanal.
               </p>
 
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 leading-relaxed break-words">
                 ¡Te esperamos en el estudio para crear con tus manos una pieza
                 única y llena de movimiento!
               </p>
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
-              <p className="text-sm text-gray-700 italic mb-2">
+              <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                 <strong>Nota importante:</strong> Las tarifas están sujetas a
                 cambios. Si no asististe a tu formación o bono en la fecha
                 original y deseas reprogramarlo cuando las tarifas hayan
@@ -205,7 +214,7 @@ export default function CreaTuMacetaOrganica() {
                 acorde a la cantidad ya pagada.
               </p>
 
-              <p className="text-sm text-gray-700 italic">
+              <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Antes de reservar:</strong> por favor revisa nuestra
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
@@ -218,6 +227,32 @@ export default function CreaTuMacetaOrganica() {
           </div>
         </div>
       </div>
+
+      {modalAbierto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setModalAbierto(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setModalAbierto(false)}
+              className="absolute top-2 right-2 bg-white text-black rounded-full w-10 h-10 text-xl font-bold shadow"
+            >
+              ×
+            </button>
+
+            <img
+              src={imagenActiva}
+              alt="Crea tu maceta orgánica ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl"
+            />
+          </div>
+        </div>
+      )}
     </PantallaConVolver>
   );
 }

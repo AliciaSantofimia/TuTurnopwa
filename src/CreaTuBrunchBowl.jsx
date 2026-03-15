@@ -13,20 +13,24 @@ export default function CreaTuBrunchBowl() {
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
+  const [modalAbierto, setModalAbierto] = useState(false);
 
   return (
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
-          {/* Galería izquierda */}
-          <div className="p-5">
-            <div className="rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center">
-  <img
-    src={imagenActiva}
-    alt="Crea tu Brunch Bowl"
-    className="w-full h-auto max-h-[70vh] object-contain"
-  />
-</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="p-4 sm:p-5">
+            <button
+              type="button"
+              onClick={() => setModalAbierto(true)}
+              className="w-full rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[260px] sm:min-h-[320px] md:min-h-[420px]"
+            >
+              <img
+                src={imagenActiva}
+                alt="Crea tu Brunch Bowl"
+                className="w-full h-auto max-h-[70vh] object-contain"
+              />
+            </button>
 
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
               {imagenes.map((img, index) => (
@@ -34,7 +38,7 @@ export default function CreaTuBrunchBowl() {
                   key={index}
                   type="button"
                   onClick={() => setImagenActiva(img)}
-                  className={`rounded-xl overflow-hidden border-2 min-w-[72px] h-[72px] ${
+                  className={`shrink-0 rounded-xl overflow-hidden border-2 w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] ${
                     imagenActiva === img
                       ? "border-[#F4C542]"
                       : "border-[#f1e7c6]"
@@ -48,25 +52,28 @@ export default function CreaTuBrunchBowl() {
                 </button>
               ))}
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Toca la imagen para verla en grande
+            </p>
           </div>
 
-          {/* Contenido derecha */}
-          <div className="p-6 flex flex-col justify-start">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2">
+          <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
               CREA TU BRUNCH BOWL
             </h1>
 
-            <p className="text-xl font-semibold text-[#6b3700] mb-4">
+            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               55,00 €
             </p>
 
-            <div className="mb-5">
+            <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   <strong>Antes de reservar:</strong> consulta la disponibilidad
                   de fechas y horarios. Una vez confirmada, podrás realizar la
                   compra a través de la web y después facilitarnos el número de
@@ -75,7 +82,7 @@ export default function CreaTuBrunchBowl() {
                 </p>
               </div>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Participa en una formación práctica de cerámica en la que
                 aprenderás las bases del modelado y la decoración cerámica a
                 través de la creación de tu propio <strong>Brunch Bowl</strong>,
@@ -83,7 +90,7 @@ export default function CreaTuBrunchBowl() {
                 ideal para desayunos, frutas, ensaladas o sopas.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Esta formación se realiza en <strong>una sola sesión</strong> y
                 está diseñada tanto para principiantes como para personas que
                 deseen reforzar sus conocimientos en técnicas manuales o torno
@@ -94,7 +101,7 @@ export default function CreaTuBrunchBowl() {
                 Qué aprenderás:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>
                   • Fundamentos del modelado cerámico, eligiendo entre técnica a
                   mano o torno alfarero.
@@ -117,7 +124,7 @@ export default function CreaTuBrunchBowl() {
                 Qué incluye:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Todos los materiales y herramientas necesarios.</li>
                 <li>• Cocciones completas en horno cerámico.</li>
                 <li>• Esmaltado de una pieza incluida (tu Brunch Bowl).</li>
@@ -130,14 +137,14 @@ export default function CreaTuBrunchBowl() {
                 Duración:
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Formación de una única sesión de alrededor de 3 horas. Consulta
                 el horario disponible y elige el momento que mejor se adapta a
                 ti.
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Si durante el tiempo de la formación te da tiempo a realizar
                   una segunda pieza, podrás hacerlo sin coste adicional siempre
                   dentro del tiempo asignado a la sesión.
@@ -148,25 +155,25 @@ export default function CreaTuBrunchBowl() {
                 Entrega de tu pieza:
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Tu Brunch Bowl no se entrega el mismo día. El proceso de secado y
                 cocción requiere tiempo y cuidado, y puede variar según el clima
                 y el tamaño de las piezas.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 El plazo estimado de entrega oscila entre <strong>2 semanas y 1
                 mes y medio</strong>.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Para recoger tu pieza, deberás seguir las indicaciones que
                 encontrarás en la categoría “Quiero recoger mi pieza” de nuestra
                 web. Allí encontrarás toda la información actualizada sobre los
                 plazos y el procedimiento de recogida.
               </p>
 
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 leading-relaxed break-words">
                 Esta formación te permitirá comprender los tiempos, materiales y
                 procesos esenciales del trabajo cerámico funcional, finalizando
                 con una pieza creada íntegramente por ti.
@@ -174,7 +181,7 @@ export default function CreaTuBrunchBowl() {
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
-              <p className="text-sm text-gray-700 italic mb-2">
+              <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                 <strong>Nota importante:</strong> Las tarifas están sujetas a
                 cambios. Si no asistes a tu formación o bono en la fecha original
                 y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás
@@ -182,7 +189,7 @@ export default function CreaTuBrunchBowl() {
                 ya pagada.
               </p>
 
-              <p className="text-sm text-gray-700 italic">
+              <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Antes de reservar:</strong> por favor revisa nuestra
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
@@ -195,6 +202,32 @@ export default function CreaTuBrunchBowl() {
           </div>
         </div>
       </div>
+
+      {modalAbierto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setModalAbierto(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setModalAbierto(false)}
+              className="absolute top-2 right-2 bg-white text-black rounded-full w-10 h-10 text-xl font-bold shadow"
+            >
+              ×
+            </button>
+
+            <img
+              src={imagenActiva}
+              alt="Crea tu Brunch Bowl ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl"
+            />
+          </div>
+        </div>
+      )}
     </PantallaConVolver>
   );
 }
