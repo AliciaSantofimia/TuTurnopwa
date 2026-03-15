@@ -12,19 +12,24 @@ export default function TornoAlfareroEmpezarDesdeCero() {
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
+  const [modalAbierto, setModalAbierto] = useState(false);
 
   return (
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
-          <div className="p-5">
-            <div className="rounded-2xl overflow-hidden bg-[#f8f8f8]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="p-4 sm:p-5">
+            <button
+              type="button"
+              onClick={() => setModalAbierto(true)}
+              className="w-full rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[260px] sm:min-h-[320px] md:min-h-[420px]"
+            >
               <img
                 src={imagenActiva}
                 alt="Torno alfarero empezar desde cero"
-                className="w-full h-[420px] object-cover"
+                className="w-full h-auto max-h-[70vh] object-contain"
               />
-            </div>
+            </button>
 
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
               {imagenes.map((img, index) => (
@@ -32,7 +37,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                   key={index}
                   type="button"
                   onClick={() => setImagenActiva(img)}
-                  className={`rounded-xl overflow-hidden border-2 min-w-[72px] h-[72px] ${
+                  className={`shrink-0 rounded-xl overflow-hidden border-2 w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] ${
                     imagenActiva === img ? "border-[#F4C542]" : "border-[#f1e7c6]"
                   }`}
                 >
@@ -44,28 +49,32 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 </button>
               ))}
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Toca la imagen para verla en grande
+            </p>
           </div>
 
-          <div className="p-6 flex flex-col justify-start">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase">
+          <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
               Torno alfarero. Empezar bien desde cero o perfecciona lo que ya sabes
             </h1>
 
-            <p className="text-base text-[#6b3700] font-medium mb-1">
+            <p className="text-base text-[#6b3700] font-medium mb-1 leading-relaxed break-words">
               4 clases de 3 horas
             </p>
 
-            <p className="text-xl font-semibold text-[#6b3700] mb-4">
+            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-relaxed break-words">
               120,00 €
             </p>
 
-            <div className="mb-5">
+            <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   <strong>Antes de realizar la compra:</strong> por favor,
                   escríbenos por WhatsApp para consultar la disponibilidad de
                   plazas y horarios. Una vez confirmada la disponibilidad,
@@ -75,20 +84,20 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 </p>
               </div>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Un curso pensado para quienes quieren aprender torno desde cero
                 o para quienes ya lo han probado, pero sienten que algo no acaba
                 de salir bien.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Durante <strong>4 clases prácticas</strong> aprenderás a dominar
                 las bases reales del torno, corrigiendo errores habituales y
                 entendiendo por fin qué hace que una pieza salga equilibrada,
                 centrada y firme.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Aquí no se trata de decorar, sino de aprender a tornear de
                 verdad: desde el centrado hasta el retorneado, con piezas que
                 luego se cuecen y podrás recoger totalmente terminadas
@@ -96,7 +105,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Ideal si quieres construir una base sólida o pulir la técnica
                   que creías dominar.
                 </p>
@@ -106,11 +115,11 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 Qué aprenderás
               </p>
 
-              <p className="text-sm text-gray-700 mb-2">
+              <p className="text-sm text-gray-700 mb-2 leading-relaxed break-words">
                 Durante las 4 sesiones (3 horas cada una):
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Preparar correctamente el barro antes de tornear.</li>
                 <li>• Entender cómo controlar la presión, el agua y la velocidad.</li>
                 <li>• Centrar, abrir y levantar paredes con equilibrio y precisión.</li>
@@ -124,7 +133,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
               </ul>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Empezarás con lo esencial, y terminarás comprendiendo cómo
                   “leer” el barro y responder a sus movimientos.
                 </p>
@@ -134,7 +143,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 Qué incluye:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• 4 clases de 3 horas cada una.</li>
                 <li>• Todos los materiales, herramientas y cocciones.</li>
                 <li>• Formación práctica personalizada en cada paso.</li>
@@ -142,7 +151,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
               </ul>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   <strong>Este curso no incluye decoración ni color.</strong> Si
                   más adelante deseas darles acabado o esmalte, podrás hacerlo
                   contratando un bono mensual o clases sueltas de continuidad.
@@ -153,22 +162,22 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 Horario y duración:
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Formación de 4 sesiones de 3 horas cada una, con horarios flexibles.
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Las clases de torno se imparten principalmente los viernes por la
                 tarde, aunque podemos adaptar tu horario según la disponibilidad
                 del estudio.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Cada nivel se completa en un ciclo de 6 clases consecutivas.
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Tras completar este nivel, podrás continuar perfeccionando tu
                   técnica o avanzar hacia decoraciones y esmaltados.
                 </p>
@@ -178,40 +187,40 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 Entrega de tus piezas:
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Tus piezas se cocerán en el estudio una vez finalizadas y
                 estarán listas para recoger tras el proceso de cocción.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 El plazo estimado de entrega oscila aproximadamente entre
                 <strong> 2 y 4 semanas</strong>, según el secado y la carga del horno.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Para recoger tus piezas, deberás seguir las indicaciones que
                 encontrarás en la categoría <strong>“Quiero recoger mi pieza”</strong> de
                 nuestra web.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Este curso te permitirá entender de verdad el torno y conseguir
                 resultados firmes y equilibrados, tanto si es tu primera vez
                 como si ya lo has intentado antes sin lograr estabilidad o control.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Aprenderás a trabajar con calma, técnica y seguridad,
                 disfrutando del proceso tanto como del resultado.
               </p>
 
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 leading-relaxed break-words">
                 ¡Te esperamos en el estudio para empezar desde cero (o volver a empezar mejor)!
               </p>
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
-              <p className="text-sm text-gray-700 italic mb-2">
+              <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                 <strong>Nota importante:</strong> Las tarifas están sujetas a
                 cambios. Si no asististe a tu curso o bono en la fecha original
                 y deseas reprogramarlo cuando las tarifas hayan cambiado,
@@ -219,7 +228,7 @@ export default function TornoAlfareroEmpezarDesdeCero() {
                 cantidad ya pagada.
               </p>
 
-              <p className="text-sm text-gray-700 italic">
+              <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Antes de reservar:</strong> por favor revisa nuestra
                 Política de Reserva. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
@@ -232,6 +241,32 @@ export default function TornoAlfareroEmpezarDesdeCero() {
           </div>
         </div>
       </div>
+
+      {modalAbierto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setModalAbierto(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setModalAbierto(false)}
+              className="absolute top-2 right-2 bg-white text-black rounded-full w-10 h-10 text-xl font-bold shadow"
+            >
+              ×
+            </button>
+
+            <img
+              src={imagenActiva}
+              alt="Torno alfarero empezar desde cero ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl"
+            />
+          </div>
+        </div>
+      )}
     </PantallaConVolver>
   );
 }
