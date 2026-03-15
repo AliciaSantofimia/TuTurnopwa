@@ -12,27 +12,32 @@ export default function ClaseSueltaContinuidad() {
   ];
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
+  const [modalAbierto, setModalAbierto] = useState(false);
 
   return (
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
-          <div className="p-5">
-           <div className="rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[280px] md:min-h-[420px]">
-  <img
-    src={imagenActiva}
-    alt="Clase suelta con continuidad"
-    className="w-full h-auto max-h-[70vh] object-contain"
-  />
-</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="p-4 sm:p-5">
+            <button
+              type="button"
+              onClick={() => setModalAbierto(true)}
+              className="w-full rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[260px] sm:min-h-[320px] md:min-h-[420px]"
+            >
+              <img
+                src={imagenActiva}
+                alt="Clase suelta con continuidad"
+                className="w-full h-auto max-h-[70vh] object-contain"
+              />
+            </button>
 
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin">
               {imagenes.map((img, index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => setImagenActiva(img)}
-                  className={`rounded-xl overflow-hidden border-2 min-w-[72px] h-[72px] ${
+                  className={`shrink-0 rounded-xl overflow-hidden border-2 w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] ${
                     imagenActiva === img
                       ? "border-[#F4C542]"
                       : "border-[#f1e7c6]"
@@ -46,24 +51,28 @@ export default function ClaseSueltaContinuidad() {
                 </button>
               ))}
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Toca la imagen para verla en grande
+            </p>
           </div>
 
-          <div className="p-6 flex flex-col justify-start">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2">
+          <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
               CLASE SUELTA CON CONTINUIDAD
             </h1>
 
-            <p className="text-xl font-semibold text-[#6b3700] mb-4">
+            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               Torno: 32,00 € · Modelado a mano o decoración: 27,00 €
             </p>
 
-            <div className="mb-5">
+            <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información de la clase
               </h2>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   <strong>Antes de reservar:</strong> consulta la disponibilidad
                   de fechas y horarios. Esta opción está pensada para personas
                   que desean asistir a clases sueltas sin compromiso mensual,
@@ -72,14 +81,14 @@ export default function ClaseSueltaContinuidad() {
                 </p>
               </div>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 La clase suelta con continuidad es una opción flexible para
                 quienes quieren seguir aprendiendo cerámica y avanzar en sus
                 piezas sin necesidad de contratar un bono mensual desde el
                 principio.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Puedes venir de forma puntual y comprar cada sesión por separado,
                 continuando tu proyecto poco a poco en el taller. Es ideal tanto
                 para personas que ya han tenido contacto con la cerámica como
@@ -87,7 +96,7 @@ export default function ClaseSueltaContinuidad() {
                 fijo.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Durante estas clases podrás elegir entre trabajar en{" "}
                 <strong>torno</strong>, realizar piezas de{" "}
                 <strong>modelado a mano</strong> o dedicar la sesión a la{" "}
@@ -96,7 +105,7 @@ export default function ClaseSueltaContinuidad() {
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic">
+                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                   Si finalmente realizas <strong>4 clases</strong>, se aplicará
                   el <strong>precio de bono</strong> en lugar de cobrarlas como
                   sesiones sueltas independientes.
@@ -107,7 +116,7 @@ export default function ClaseSueltaContinuidad() {
                 Precios:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Clase suelta de torno: 32,00 €</li>
                 <li>
                   • Clase suelta de modelado a mano o decoración con esmaltes:
@@ -119,7 +128,7 @@ export default function ClaseSueltaContinuidad() {
                 Qué podrás hacer en esta clase:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>
                   • Continuar una pieza empezada anteriormente en el taller.
                 </li>
@@ -140,7 +149,7 @@ export default function ClaseSueltaContinuidad() {
                 Qué incluye:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4">
+              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
                 <li>• Arcilla y materiales necesarios para la sesión.</li>
                 <li>• Uso de herramientas y espacio de trabajo del taller.</li>
                 <li>• Esmaltes y decoración, cuando formen parte del proceso.</li>
@@ -152,7 +161,7 @@ export default function ClaseSueltaContinuidad() {
                 Duración:
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Clase de aproximadamente <strong>3 horas</strong>, pensada para
                 avanzar de forma real en tu pieza o práctica, con tiempo para
                 trabajar con calma y resolver dudas durante el proceso.
@@ -162,7 +171,7 @@ export default function ClaseSueltaContinuidad() {
                 Importante:
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 El tiempo necesario para finalizar una pieza dependerá del tipo
                 de trabajo elegido, del ritmo de cada persona y de la técnica
                 utilizada. Algunas piezas pueden requerir varias sesiones para
@@ -173,26 +182,26 @@ export default function ClaseSueltaContinuidad() {
                 Entrega de tus piezas:
               </p>
 
-              <p className="text-sm text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Las piezas no se entregan el mismo día. Después de cada sesión,
                 deben pasar por su proceso de secado, primera cocción, esmaltado
                 si corresponde, y cocción final.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 El plazo estimado puede variar entre{" "}
                 <strong>2 semanas y 1 mes y medio</strong>, según el clima, el
                 volumen de trabajo del taller y el tipo de pieza.
               </p>
 
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Para recoger tus piezas, sigue las indicaciones disponibles en
                 la sección <strong>“Quiero recoger mi pieza”</strong> de la web,
                 donde encontrarás la información actualizada sobre plazos y
                 procedimiento.
               </p>
 
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 leading-relaxed break-words">
                 Esta modalidad está pensada para ofrecerte continuidad y
                 flexibilidad, permitiéndote aprender y disfrutar del proceso
                 cerámico a tu ritmo, sin perder el seguimiento de tus piezas.
@@ -200,14 +209,14 @@ export default function ClaseSueltaContinuidad() {
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
-              <p className="text-sm text-gray-700 italic mb-2">
+              <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                 <strong>Nota importante:</strong> Las tarifas están sujetas a
                 cambios. Si no asistes a tu clase en la fecha reservada y deseas
                 reprogramarla cuando las tarifas hayan cambiado, deberás abonar
                 la diferencia o adaptarte a la tarifa vigente.
               </p>
 
-              <p className="text-sm text-gray-700 italic">
+              <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Antes de reservar:</strong> por favor revisa nuestra
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
@@ -220,6 +229,32 @@ export default function ClaseSueltaContinuidad() {
           </div>
         </div>
       </div>
+
+      {modalAbierto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setModalAbierto(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setModalAbierto(false)}
+              className="absolute top-2 right-2 bg-white text-black rounded-full w-10 h-10 text-xl font-bold shadow"
+            >
+              ×
+            </button>
+
+            <img
+              src={imagenActiva}
+              alt="Clase suelta con continuidad ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl"
+            />
+          </div>
+        </div>
+      )}
     </PantallaConVolver>
   );
 }
