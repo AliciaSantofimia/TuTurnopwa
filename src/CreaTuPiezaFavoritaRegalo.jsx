@@ -24,10 +24,10 @@ export default function CreaTuPiezaFavoritaRegalo() {
       </h1>
 
       <img
-        src="/img/creatupiezafavoritaregalo.jpg"
-        alt="Crear pieza"
-        className="w-64 h-auto mb-4"
-      />
+  src="/img/creatupiezafavoritaregalo.jpg"
+  alt="Crear pieza"
+  className="w-full max-w-md h-auto mb-6 rounded-xl shadow-sm"
+/>
 
       <p className="mb-4">
         Una clase de 3 horas para modelar y decorar tu propia pieza desde cero.

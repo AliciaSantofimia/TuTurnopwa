@@ -20,13 +20,13 @@ export default function CreaTuCuencoRamen() {
         <div className="grid md:grid-cols-2 gap-0">
           {/* Galería izquierda */}
           <div className="p-5">
-            <div className="rounded-2xl overflow-hidden bg-[#f8f8f8]">
-              <img
-                src={imagenActiva}
-                alt="Crea tu cuenco para ramen"
-                className="w-full h-[420px] object-cover"
-              />
-            </div>
+           <div className="rounded-2xl overflow-hidden bg-[#f8f8f8] flex items-center justify-center min-h-[280px] md:min-h-[420px]">
+  <img
+    src={imagenActiva}
+    alt="Crea tu cuenco para ramen"
+    className="w-full h-auto max-h-[70vh] object-contain"
+  />
+</div>
 
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
               {imagenes.map((img, index) => (
