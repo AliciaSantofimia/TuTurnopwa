@@ -9,7 +9,10 @@ const AdminPanel = () => {
 
   const [dashboard, setDashboard] = useState({
     reservasHoy: 0,
+    reservasManana: 0,
+    reservasSemana: 0,
     plazasHoy: 0,
+    plazasSemana: 0,
     bonosActivos: 0,
     solicitudesPendientes: 0,
     proximasClases: [],
@@ -19,10 +22,7 @@ const AdminPanel = () => {
   const [esMovil, setEsMovil] = useState(window.innerWidth < 768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setEsMovil(window.innerWidth < 768);
-    };
-
+    const handleResize = () => setEsMovil(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -30,7 +30,22 @@ const AdminPanel = () => {
   useEffect(() => {
     const cargarDashboard = async () => {
       try {
-        const hoy = new Date().toISOString().slice(0, 10);
+        const hoyDate = new Date();
+        const hoy = hoyDate.toISOString().slice(0, 10);
+
+        const mananaDate = new Date(hoyDate);
+        mananaDate.setDate(mananaDate.getDate() + 1);
+        const manana = mananaDate.toISOString().slice(0, 10);
+
+        const inicioSemana = new Date(hoyDate);
+        const dia = inicioSemana.getDay(); // 0 domingo, 1 lunes...
+        const diferenciaLunes = dia === 0 ? -6 : 1 - dia;
+        inicioSemana.setDate(inicioSemana.getDate() + diferenciaLunes);
+        inicioSemana.setHours(0, 0, 0, 0);
+
+        const finSemana = new Date(inicioSemana);
+        finSemana.setDate(finSemana.getDate() + 6);
+        finSemana.setHours(23, 59, 59, 999);
 
         const usersRef = ref(dbRealtime, "usuarios");
         const solicitudesCambioRef = ref(dbRealtime, "solicitudesCambioClases");
@@ -43,7 +58,10 @@ const AdminPanel = () => {
         ]);
 
         let reservasHoy = 0;
+        let reservasManana = 0;
+        let reservasSemana = 0;
         let plazasHoy = 0;
+        let plazasSemana = 0;
         let bonosActivos = 0;
         const proximas = [];
 
@@ -57,17 +75,33 @@ const AdminPanel = () => {
 
                 const fechaReserva = reserva.fecha || reserva.fechaInicio || null;
                 const plazasReserva = Number(reserva.plazas || 1);
+                const estado = reserva.estado || "activa";
+
+                if (!fechaReserva) return;
+                if (estado === "cancelada") return;
+
+                const fechaObj = new Date(`${fechaReserva}T00:00:00`);
 
                 if (fechaReserva === hoy) {
                   reservasHoy += 1;
                   plazasHoy += plazasReserva;
                 }
 
-                if (fechaReserva && fechaReserva >= hoy) {
+                if (fechaReserva === manana) {
+                  reservasManana += 1;
+                }
+
+                if (fechaObj >= inicioSemana && fechaObj <= finSemana) {
+                  reservasSemana += 1;
+                  plazasSemana += plazasReserva;
+                }
+
+                if (fechaReserva >= hoy) {
                   proximas.push({
                     clase: reserva.clase || "Clase sin nombre",
                     fecha: fechaReserva,
                     turno: reserva.turno || "Sin turno",
+                    plazas: plazasReserva,
                   });
                 }
               });
@@ -100,10 +134,13 @@ const AdminPanel = () => {
 
         setDashboard({
           reservasHoy,
+          reservasManana,
+          reservasSemana,
           plazasHoy,
+          plazasSemana,
           bonosActivos,
           solicitudesPendientes: solicitudesCambio + solicitudesEliminacion,
-          proximasClases: proximas.slice(0, 5),
+          proximasClases: proximas.slice(0, 12),
         });
       } catch (error) {
         console.error("Error al cargar el panel admin:", error);
@@ -118,8 +155,23 @@ const AdminPanel = () => {
   const formatearFecha = (fecha) => {
     if (!fecha) return "Sin fecha";
     const d = new Date(`${fecha}T00:00:00`);
-    return d.toLocaleDateString("es-ES");
+    return d.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
+
+  const agruparPorFecha = (clases) => {
+    const grupos = {};
+    clases.forEach((clase) => {
+      if (!grupos[clase.fecha]) grupos[clase.fecha] = [];
+      grupos[clase.fecha].push(clase);
+    });
+    return grupos;
+  };
+
+  const proximasAgrupadas = agruparPorFecha(dashboard.proximasClases);
 
   const seccionesAdmin = [
     {
@@ -169,10 +221,7 @@ const AdminPanel = () => {
 
   return (
     <div style={styles.body(esMovil)}>
-      <button
-        onClick={() => navigate("/dondereservar")}
-        style={styles.volverApp(esMovil)}
-      >
+      <button onClick={() => navigate("/dondereservar")} style={styles.volverApp(esMovil)}>
         🏠 Volver a la app
       </button>
 
@@ -185,7 +234,7 @@ const AdminPanel = () => {
             alt="Logo La Purísima Conchi"
             style={styles.icono(esMovil)}
           />
-          <div style={styles.tituloTextoBox(esMovil)}>
+          <div style={styles.tituloTextoBox}>
             <h1 style={styles.titulo(esMovil)}>La Purísima Conchi</h1>
             <p style={styles.descripcionTitulo(esMovil)}>
               Panel de administración del taller
@@ -205,9 +254,30 @@ const AdminPanel = () => {
             </div>
 
             <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Reservas para mañana</p>
+              <p style={styles.dashboardValue(esMovil)}>
+                {cargando ? "..." : dashboard.reservasManana}
+              </p>
+            </div>
+
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Reservas esta semana</p>
+              <p style={styles.dashboardValue(esMovil)}>
+                {cargando ? "..." : dashboard.reservasSemana}
+              </p>
+            </div>
+
+            <div style={styles.dashboardCard(esMovil)}>
               <p style={styles.dashboardLabel(esMovil)}>Plazas ocupadas hoy</p>
               <p style={styles.dashboardValue(esMovil)}>
                 {cargando ? "..." : dashboard.plazasHoy}
+              </p>
+            </div>
+
+            <div style={styles.dashboardCard(esMovil)}>
+              <p style={styles.dashboardLabel(esMovil)}>Plazas esta semana</p>
+              <p style={styles.dashboardValue(esMovil)}>
+                {cargando ? "..." : dashboard.plazasSemana}
               </p>
             </div>
 
@@ -227,19 +297,24 @@ const AdminPanel = () => {
           </div>
 
           <div style={styles.proximasBox(esMovil)}>
-            <h3 style={styles.proximasTitulo(esMovil)}>Próximas clases</h3>
+            <h3 style={styles.proximasTitulo(esMovil)}>Próximas reservas por día</h3>
 
             {cargando ? (
               <p style={styles.proximasTexto(esMovil)}>Cargando...</p>
             ) : dashboard.proximasClases.length === 0 ? (
               <p style={styles.proximasTexto(esMovil)}>No hay próximas clases registradas.</p>
             ) : (
-              dashboard.proximasClases.map((clase, index) => (
-                <div key={index} style={styles.proximaFila(esMovil)}>
-                  <span style={styles.proximaClase(esMovil)}>{clase.clase}</span>
-                  <span style={styles.proximaMeta(esMovil)}>
-                    {formatearFecha(clase.fecha)} · {clase.turno}
-                  </span>
+              Object.entries(proximasAgrupadas).map(([fecha, clases]) => (
+                <div key={fecha} style={styles.grupoFecha}>
+                  <div style={styles.fechaGrupo}>{formatearFecha(fecha)}</div>
+                  {clases.map((clase, index) => (
+                    <div key={index} style={styles.proximaFila(esMovil)}>
+                      <span style={styles.proximaClase(esMovil)}>{clase.clase}</span>
+                      <span style={styles.proximaMeta(esMovil)}>
+                        {clase.turno} · {clase.plazas} plaza{clase.plazas > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))
             )}
@@ -277,7 +352,6 @@ const styles = {
     display: "block",
     position: "relative",
   }),
-
   volverApp: (esMovil) => ({
     position: "fixed",
     top: esMovil ? 12 : 20,
@@ -293,7 +367,6 @@ const styles = {
     zIndex: 999,
     maxWidth: esMovil ? "calc(100vw - 24px)" : "none",
   }),
-
   panelContainer: (esMovil) => ({
     backgroundColor: "#ffffff",
     borderRadius: esMovil ? 22 : 28,
@@ -304,7 +377,6 @@ const styles = {
     margin: esMovil ? "58px auto 0" : "0 auto",
     boxSizing: "border-box",
   }),
-
   tituloContainer: (esMovil) => ({
     display: "flex",
     flexDirection: esMovil ? "column" : "row",
@@ -312,19 +384,16 @@ const styles = {
     justifyContent: esMovil ? "flex-start" : "center",
     gap: esMovil ? 12 : 18,
     marginBottom: 28,
-    textAlign: esMovil ? "left" : "left",
+    textAlign: "left",
   }),
-
-  tituloTextoBox: (esMovil) => ({
+  tituloTextoBox: {
     width: "100%",
-  }),
-
+  },
   icono: (esMovil) => ({
     width: esMovil ? 58 : 64,
     height: esMovil ? 58 : 64,
     objectFit: "contain",
   }),
-
   titulo: (esMovil) => ({
     color: "#2f2f2f",
     fontSize: esMovil ? "1.8rem" : "2rem",
@@ -332,14 +401,12 @@ const styles = {
     margin: 0,
     lineHeight: 1.1,
   }),
-
   descripcionTitulo: (esMovil) => ({
     margin: "6px 0 0 0",
     color: "#7a7a7a",
     fontSize: esMovil ? "0.95rem" : "0.98rem",
     lineHeight: 1.35,
   }),
-
   bloquePrincipal: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -347,7 +414,6 @@ const styles = {
     padding: esMovil ? 16 : 22,
     marginBottom: 24,
   }),
-
   seccionCard: (esMovil) => ({
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -355,30 +421,24 @@ const styles = {
     padding: esMovil ? 16 : 22,
     marginBottom: 18,
   }),
-
   subtitulo: (esMovil) => ({
     color: "#4b3a2a",
     fontSize: esMovil ? "1.2rem" : "1.35rem",
     margin: "0 0 16px 0",
     fontWeight: 700,
   }),
-
   subtituloSeccion: (esMovil) => ({
     color: "#4b3a2a",
     fontSize: esMovil ? "1.1rem" : "1.25rem",
     margin: "0 0 14px 0",
     fontWeight: 700,
   }),
-
   dashboardGrid: (esMovil) => ({
     display: "grid",
-    gridTemplateColumns: esMovil
-      ? "1fr"
-      : "repeat(auto-fit, minmax(220px, 1fr))",
+    gridTemplateColumns: esMovil ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 14,
     marginBottom: 18,
   }),
-
   dashboardCard: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
@@ -386,7 +446,6 @@ const styles = {
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   }),
-
   dashboardLabel: (esMovil) => ({
     margin: 0,
     fontSize: esMovil ? "0.92rem" : "0.95rem",
@@ -394,14 +453,12 @@ const styles = {
     fontWeight: 600,
     lineHeight: 1.35,
   }),
-
   dashboardValue: (esMovil) => ({
     margin: "10px 0 0 0",
     fontSize: esMovil ? "1.8rem" : "1.6rem",
     color: "#333",
     fontWeight: "bold",
   }),
-
   proximasBox: (esMovil) => ({
     backgroundColor: "#fff8da",
     borderRadius: 18,
@@ -409,50 +466,52 @@ const styles = {
     border: "1px solid #f1e7c6",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   }),
-
   proximasTitulo: (esMovil) => ({
     margin: "0 0 12px 0",
     color: "#5b5b5b",
     fontSize: esMovil ? "1rem" : "1.05rem",
     fontWeight: 700,
   }),
-
   proximasTexto: (esMovil) => ({
     margin: 0,
     color: "#7a7a7a",
     fontSize: esMovil ? "0.92rem" : "0.95rem",
     lineHeight: 1.4,
   }),
-
+  grupoFecha: {
+    marginBottom: 12,
+  },
+  fechaGrupo: {
+    fontWeight: 700,
+    color: "#5b4a2d",
+    marginBottom: 6,
+    fontSize: "0.95rem",
+  },
   proximaFila: (esMovil) => ({
     display: "flex",
     flexDirection: esMovil ? "column" : "row",
     justifyContent: "space-between",
     alignItems: esMovil ? "flex-start" : "center",
     gap: esMovil ? 4 : 12,
-    padding: "10px 0",
+    padding: "8px 0",
     borderBottom: "1px solid #f1e7c6",
     fontSize: "0.95rem",
   }),
-
   proximaClase: (esMovil) => ({
     color: "#333",
     fontWeight: 600,
     lineHeight: 1.35,
   }),
-
   proximaMeta: (esMovil) => ({
     color: "#7a7a7a",
     whiteSpace: esMovil ? "normal" : "nowrap",
     lineHeight: 1.35,
   }),
-
   botonesContainer: {
     display: "grid",
     gridTemplateColumns: "1fr",
     gap: 10,
   },
-
   btn: (esMovil) => ({
     display: "block",
     width: "100%",
