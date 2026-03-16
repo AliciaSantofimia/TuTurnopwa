@@ -12,11 +12,22 @@ const AdminVerInscripciones = () => {
   useEffect(() => {
     const cargarInscripciones = async () => {
       try {
-        const snapshot = await get(ref(dbRealtime, `reservas/${nombreClase}`));
+        const [claseSnap, reservasSnap] = await Promise.all([
+          get(ref(dbRealtime, `clases/${nombreClase}`)),
+          get(ref(dbRealtime, `reservas/${nombreClase}`)),
+        ]);
+
+        if (claseSnap.exists()) {
+          const clase = claseSnap.val();
+          setTituloClase(clase.nombre || nombreClase);
+        } else {
+          setTituloClase(nombreClase || "Clase");
+        }
+
         const resultados = [];
 
-        if (snapshot.exists()) {
-          snapshot.forEach((fechaSnap) => {
+        if (reservasSnap.exists()) {
+          reservasSnap.forEach((fechaSnap) => {
             const fecha = fechaSnap.key;
 
             fechaSnap.forEach((turnoSnap) => {
@@ -27,6 +38,7 @@ const AdminVerInscripciones = () => {
 
                 tipoSnap.forEach((reservaSnap) => {
                   const data = reservaSnap.val();
+
                   resultados.push({
                     nombre: data.nombre || "—",
                     email: data.email || "—",
@@ -41,9 +53,16 @@ const AdminVerInscripciones = () => {
           });
         }
 
+        resultados.sort((a, b) => {
+          const fechaA = new Date(`${a.fecha}T00:00:00`);
+          const fechaB = new Date(`${b.fecha}T00:00:00`);
+          return fechaA - fechaB;
+        });
+
         setInscripciones(resultados);
       } catch (error) {
         console.error("Error al cargar inscripciones:", error);
+        setInscripciones([]);
       }
     };
 
@@ -52,53 +71,63 @@ const AdminVerInscripciones = () => {
 
   return (
     <div style={styles.body}>
-      <BotonVolver />
+      <div style={styles.container}>
+        <BotonVolver />
 
-      <h2 style={styles.titulo}>👥 Inscripciones - {tituloClase}</h2>
+        <h2 style={styles.titulo}>👥 Inscripciones - {tituloClase}</h2>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Nombre</th>
-            <th style={styles.th}>Email</th>
-            <th style={styles.th}>Fecha</th>
-            <th style={styles.th}>Turno</th>
-            <th style={styles.th}>Tipo</th>
-            <th style={styles.th}>Plazas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inscripciones.map((item, index) => (
-            <tr key={index}>
-              <td style={styles.td}>{item.nombre}</td>
-              <td style={styles.td}>{item.email}</td>
-              <td style={styles.td}>{item.fecha}</td>
-              <td style={styles.td}>{item.turno}</td>
-              <td style={styles.td}>{item.tipo}</td>
-              <td style={styles.td}>{item.plazas}</td>
-            </tr>
-          ))}
-          {inscripciones.length === 0 && (
+        <table style={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: 20 }}>
-                No hay inscripciones registradas para esta clase.
-              </td>
+              <th style={styles.th}>Nombre</th>
+              <th style={styles.th}>Email</th>
+              <th style={styles.th}>Fecha</th>
+              <th style={styles.th}>Turno</th>
+              <th style={styles.th}>Tipo</th>
+              <th style={styles.th}>Plazas</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {inscripciones.map((item, index) => (
+              <tr key={index}>
+                <td style={styles.td}>{item.nombre}</td>
+                <td style={styles.td}>{item.email}</td>
+                <td style={styles.td}>{item.fecha}</td>
+                <td style={styles.td}>{item.turno}</td>
+                <td style={styles.td}>{item.tipo}</td>
+                <td style={styles.td}>{item.plazas}</td>
+              </tr>
+            ))}
+
+            {inscripciones.length === 0 && (
+              <tr>
+                <td colSpan="6" style={styles.emptyTd}>
+                  No hay inscripciones registradas para esta clase.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
 
 const styles = {
   body: {
-    backgroundColor: "#f0f4f8",
+    backgroundColor: "#fdf8ee",
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
-
+  container: {
+    maxWidth: 1000,
+    margin: "0 auto",
+    backgroundColor: "#ffffff",
+    borderRadius: 28,
+    padding: 28,
+    boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
+  },
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -125,6 +154,11 @@ const styles = {
     padding: "12px 16px",
     textAlign: "left",
     borderBottom: "1px solid #eee",
+  },
+  emptyTd: {
+    textAlign: "center",
+    padding: 20,
+    color: "#666",
   },
 };
 

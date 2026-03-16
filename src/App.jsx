@@ -284,7 +284,7 @@ function App() {
   path="/reserva-torno-alfarero-perfecciona-lo-que-ya-sabes"
   element={<ReservaTornoAlfareroPerfeccionaLoQueYaSabes />}
 />
-<Route path="/talleres/pinta-decora" element={<TalleresPintaDecora />} />
+
 
 <Route
   path="/especial-pinta-tu-pieza"
