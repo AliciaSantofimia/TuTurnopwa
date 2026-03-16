@@ -73,16 +73,7 @@ export default function TornoAlfareroPerfeccionaLoQueYaSabes() {
                 Información del producto
               </h2>
 
-              <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                  <strong>Antes de realizar la compra:</strong> por favor,
-                  escríbenos por WhatsApp para consultar la disponibilidad de
-                  plazas y horarios. Una vez confirmada la disponibilidad,
-                  podrás realizar la compra a través de la web y facilitarnos el
-                  número de pedido que recibirás por correo electrónico para
-                  formalizar tu reserva.
-                </p>
-              </div>
+             
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Un curso pensado para quienes quieren aprender torno desde cero
@@ -198,9 +189,10 @@ export default function TornoAlfareroPerfeccionaLoQueYaSabes() {
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Para recoger tus piezas, deberás seguir las indicaciones que
-                encontrarás en la categoría <strong>“Quiero recoger mi pieza”</strong> de
-                nuestra web.
+                Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
+
+Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
+Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">

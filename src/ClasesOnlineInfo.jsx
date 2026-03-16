@@ -40,17 +40,21 @@ export default function ClasesOnlineInfo() {
           <ul className="list-disc list-inside mt-2 space-y-1">
             <li>Sesiones grupales en directo (Zoom/Meet).</li>
             <li>Duración habitual: 90–120 minutos.</li>
-            <li>Precio: 25 € por sesión.</li>
+            <li>Precio: Consulta con el taller para más información.</li>
           </ul>
         </div>
 
         <div className="flex justify-center">
-          <button
-            onClick={() => navigate("/reserva-online")}
-            className="bg-[#a85d38] text-white px-6 py-3 rounded-xl text-lg hover:bg-[#8f4f2e] transition"
-          >
-            Reservar clase online
-          </button>
+         <div className="flex justify-center">
+  <a
+    href="https://wa.me/644671664?text=Hola,%20me%20interesa%20reservar%20una%20clase%20online%20de%20La%20Pur%C3%ADsima%20Conchi"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-[#a85d38] text-white px-6 py-3 rounded-xl text-lg hover:bg-[#8f4f2e] transition inline-block"
+  >
+    Contactar con el taller
+  </a>
+</div>
         </div>
       </div>
     </div>

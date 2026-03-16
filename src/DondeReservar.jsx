@@ -111,7 +111,7 @@ export default function DondeReservar() {
         >
           
           <img
-            src="/img/perfil-usuario.jpg"
+            src="/img/panel-negro.jpg"
             alt="Mi perfil"
              className="w-24 h-24 object-contain rounded-xl mx-auto"
           />
@@ -127,10 +127,10 @@ export default function DondeReservar() {
         <div className="mt-10 flex flex-col items-center">
           <div
             onClick={() => navigate("/admin-panel")}
-            className="bg-[#fdf3e7] p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
+            className="bg-yellow-300 p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
           >
             <img
-              src="/img/panel.jpg"
+              src="/img/panel-admin-negro.jpg"
               alt="Panel admin"
               className="w-24 h-auto mx-auto"
             />

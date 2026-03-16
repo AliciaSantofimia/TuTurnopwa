@@ -72,15 +72,7 @@ export default function CreaTuBandejaHogar() {
                 Información del producto
               </h2>
 
-              <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                  <strong>Antes de reservar:</strong> consulta la disponibilidad
-                  de fechas y horarios. Una vez confirmada la disponibilidad,
-                  podrás realizar la compra a través de la web y después
-                  facilitarnos el número de pedido que recibirás por correo
-                  electrónico para formalizar tu reserva.
-                </p>
-              </div>
+              
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
                 <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
@@ -181,9 +173,8 @@ export default function CreaTuBandejaHogar() {
               </p>
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Tus piezas no se entregarán el mismo día. El proceso de secado y
-                cocción requiere tiempo y puede variar según el clima y el tamaño
-                de las piezas.
+                Tus piezas no estarán listas el mismo día.
+Después de la clase, necesitan pasar por un proceso de secado y cocción en el horno, que requiere tiempo y puede variar según el clima y el tamaño de las piezas.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
@@ -192,10 +183,10 @@ export default function CreaTuBandejaHogar() {
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Para recoger tus piezas, deberás seguir las indicaciones que
-                encontrarás en la categoría “Quiero recoger mi pieza” de nuestra
-                web. Allí encontrarás toda la información actualizada sobre los
-                plazos y el procedimiento de recogida.
+                Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
+
+Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
+Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">

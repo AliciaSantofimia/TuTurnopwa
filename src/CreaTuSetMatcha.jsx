@@ -70,15 +70,7 @@ export default function CreaTuSetMatcha() {
                 Información del producto
               </h2>
 
-              <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                  <strong>Antes de reservar:</strong> consulta la disponibilidad
-                  de fechas y horarios. Una vez confirmada la disponibilidad,
-                  podrás realizar la compra a través de la web y después
-                  facilitarnos el número de pedido que recibirás por correo
-                  electrónico para formalizar tu reserva.
-                </p>
-              </div>
+            
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Crea tu propio <strong>set de matcha</strong> artesanal en una

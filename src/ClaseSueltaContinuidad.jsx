@@ -71,15 +71,7 @@ export default function ClaseSueltaContinuidad() {
                 Información de la clase
               </h2>
 
-              <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                  <strong>Antes de reservar:</strong> consulta la disponibilidad
-                  de fechas y horarios. Esta opción está pensada para personas
-                  que desean asistir a clases sueltas sin compromiso mensual,
-                  manteniendo la posibilidad de continuar su proceso en el
-                  taller.
-                </p>
-              </div>
+              
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 La clase suelta con continuidad es una opción flexible para
@@ -195,10 +187,10 @@ export default function ClaseSueltaContinuidad() {
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Para recoger tus piezas, sigue las indicaciones disponibles en
-                la sección <strong>“Quiero recoger mi pieza”</strong> de la web,
-                donde encontrarás la información actualizada sobre plazos y
-                procedimiento.
+                Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
+
+Para saber si tu pieza ya está disponible y cómo recogerla, entra en <strong>"Quiero recoger mi pieza"</strong> dentro de tu <strong>perfil</strong> .
+Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">

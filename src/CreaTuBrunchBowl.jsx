@@ -72,15 +72,7 @@ export default function CreaTuBrunchBowl() {
                 Información del producto
               </h2>
 
-              <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                  <strong>Antes de reservar:</strong> consulta la disponibilidad
-                  de fechas y horarios. Una vez confirmada, podrás realizar la
-                  compra a través de la web y después facilitarnos el número de
-                  pedido que recibirás por correo electrónico para formalizar tu
-                  reserva.
-                </p>
-              </div>
+            
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Participa en una formación práctica de cerámica en la que
@@ -167,10 +159,10 @@ export default function CreaTuBrunchBowl() {
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Para recoger tu pieza, deberás seguir las indicaciones que
-                encontrarás en la categoría “Quiero recoger mi pieza” de nuestra
-                web. Allí encontrarás toda la información actualizada sobre los
-                plazos y el procedimiento de recogida.
+                Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
+
+Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
+Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">
