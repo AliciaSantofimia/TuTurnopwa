@@ -13,14 +13,12 @@ export default function PerfilUsuario() {
   const [avisos, setAvisos] = useState([]);
   const [reservaActiva, setReservaActiva] = useState(null);
   const [reservasPasadas, setReservasPasadas] = useState([]);
-  const [tarjetas, setTarjetas] = useState([]);
-  const [mostrarHistorial, setMostrarHistorial] = useState(false);
-  const [mostrarTarjetas, setMostrarTarjetas] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setEmail(user.email);
+
         const userRef = ref(dbRealtime, "usuarios/" + user.uid);
         const snapshot = await get(userRef);
         if (snapshot.exists()) setNombre(snapshot.val().nombre);
@@ -45,17 +43,11 @@ export default function PerfilUsuario() {
           const historial = Object.values(snapHistorial.val());
           setReservasPasadas(historial);
         }
-
-        const snapTarjetas = await get(ref(dbRealtime, "tarjetas_regalo"));
-        if (snapTarjetas.exists()) {
-          const data = Object.values(snapTarjetas.val());
-          const propias = data.filter(t => t.compradorUID === user.uid && t.desdeTarjeta === true);
-          setTarjetas(propias);
-        }
       } else {
         navigate("/login");
       }
     });
+
     return () => unsubscribe();
   }, [navigate]);
 
@@ -65,184 +57,246 @@ export default function PerfilUsuario() {
 
   return (
     <PantallaConVolver volverA="/dondereservar">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6 text-[#333] mx-auto">
-        <h1 className="text-center text-[1.6rem] text-[#3b3025] font-semibold mb-6">
-          Tu perfil
-        </h1>
-
-        {/* Datos básicos */}
-        <p className="text-sm mb-1"><strong>Nombre:</strong> {nombre}</p>
-        <p className="text-sm mb-4"><strong>Email:</strong> {email}</p>
-
-        {/* Reservas activas — más arriba y destacadas */}
-        {reservaActiva && (
-          <div className="mb-6 text-sm bg-yellow-50 p-3 rounded-xl border border-yellow-200">
-            <h3 className="font-semibold mb-2 text-yellow-800">🎯 Tu reserva activa</h3>
-            <p><strong>Clase:</strong> {reservaActiva.clase}</p>
-            <p><strong>Fecha:</strong> {reservaActiva.fecha}</p>
-            <p><strong>Turno:</strong> {reservaActiva.turno}</p>
-            <p><strong>Ubicación:</strong> {reservaActiva.ubicacion}</p>
-          </div>
-        )}
-
-        {/* Acciones principales más compactas */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <button
-            className="bg-yellow-400 hover:bg-yellow-300 text-[#3b3025] font-bold py-2 rounded-xl text-sm shadow"
-            onClick={() => navigate("/dondereservar")}
-          >
-            🗓️ Reservar
-          </button>
-          <button
-            className="bg-pink-300 hover:bg-pink-200 text-[#3b3025] font-bold py-2 rounded-xl text-sm shadow"
-            onClick={() => navigate("/canjear-tarjeta")}
-          >
-            🎁 Canjear
-          </button>
+      <div className="max-w-md w-full mx-auto bg-[#fcfaf6] rounded-[30px] shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-[#eee6da] p-5 text-[#3b3025]">
+        {/* Cabecera */}
+        <div className="text-center mb-6">
+          <h1 className="text-[2rem] font-serif font-bold text-[#6f3d22] mb-2">
+            Tu perfil
+          </h1>
+          <p className="text-sm text-[#7b6d62]">
+            Consulta tus reservas, avisos y datos de tu cuenta
+          </p>
         </div>
 
-        {/* Avisos: último visible + anteriores en desplegable */}
-        {avisos && avisos.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-red-700 font-semibold mb-2">📢 Avisos recibidos</h2>
+        {/* Datos usuario */}
+        <div className="bg-white rounded-2xl border border-[#efe7db] px-4 py-4 shadow-sm mb-5">
+          <p className="text-sm mb-2">
+            <span className="font-semibold text-[#3b3025]">Nombre:</span>{" "}
+            {nombre || "—"}
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold text-[#3b3025]">Email:</span>{" "}
+            {email || "—"}
+          </p>
+        </div>
 
-            {/* Último aviso */}
-            <div className="bg-red-50 p-3 rounded border border-red-200 mb-2 text-sm">
-              <strong>
-                {avisos[0]?.fecha
-                  ? new Date(avisos[0].fecha).toLocaleDateString("es-ES")
-                  : ""}
-                :
-              </strong>{" "}
-              {avisos[0]?.mensaje}
+        {/* Reserva activa */}
+        <div className="bg-[#f8f1d8] rounded-2xl border border-[#e7d36f] px-4 py-4 shadow-sm mb-5">
+          <h2 className="text-base font-semibold text-[#8b5a00] mb-3">
+            Tu reserva activa
+          </h2>
+
+          {reservaActiva ? (
+            <div className="space-y-1 text-sm text-[#3b3025]">
+              <p><span className="font-semibold">Clase:</span> {reservaActiva.clase}</p>
+              <p><span className="font-semibold">Fecha:</span> {reservaActiva.fecha}</p>
+              <p><span className="font-semibold">Turno:</span> {reservaActiva.turno}</p>
+              <p><span className="font-semibold">Ubicación:</span> {reservaActiva.ubicacion}</p>
             </div>
+          ) : (
+            <p className="text-sm text-[#7b6d62]">
+              No tienes ninguna reserva activa en este momento.
+            </p>
+          )}
+        </div>
 
-            {/* Desplegable con anteriores */}
-            {avisos.length > 1 && (
-              <details className="bg-white rounded-xl border border-red-200 p-3">
-                <summary className="cursor-pointer text-sm text-red-700 font-semibold">
-                  Ver {avisos.length - 1} aviso{avisos.length - 1 > 1 ? "s" : ""} anterior{avisos.length - 1 > 1 ? "es" : ""}
-                </summary>
-                <ul className="text-sm space-y-1 mt-2">
-                  {avisos.slice(1).map((aviso, idx) => (
-                    <li key={idx} className="bg-red-50 p-2 rounded border border-red-100">
-                      <strong>
-                        {aviso.fecha
-                          ? new Date(aviso.fecha).toLocaleDateString("es-ES")
-                          : ""}
-                        :
-                      </strong>{" "}
-                      {aviso.mensaje}
-                    </li>
-                  ))}
-                </ul>
-              </details>
+        {/* Botones principales */}
+<div className="grid grid-cols-2 gap-3 mb-6">
+  <button
+    className="bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-bold py-3 rounded-2xl text-sm shadow-md transition"
+    onClick={() => navigate("/dondereservar")}
+  >
+    🗓️ Reservar
+  </button>
+
+  <button
+    className="bg-[#e6a6cf] hover:bg-[#dc96c6] text-[#3b3025] font-bold py-3 rounded-2xl text-sm shadow-md transition"
+    onClick={() => navigate("/canjear-tarjeta")}
+  >
+     Canjear tarjeta regalo
+  </button>
+</div>
+
+{/* Avisos */}
+<section className="mb-5">
+
+          {avisos.length > 0 ? (
+            <>
+              <div className="bg-[#fff3f3] p-3 rounded-2xl border border-red-200 text-sm shadow-sm mb-2">
+                <strong>
+                  {avisos[0]?.fecha
+                    ? new Date(avisos[0].fecha).toLocaleDateString("es-ES")
+                    : ""}
+                  :
+                </strong>{" "}
+                {avisos[0]?.mensaje}
+              </div>
+
+              {avisos.length > 1 && (
+                <details className="bg-white rounded-2xl border border-red-200 p-3 shadow-sm">
+                  <summary className="cursor-pointer text-sm text-red-700 font-semibold">
+                    Ver {avisos.length - 1} aviso{avisos.length - 1 > 1 ? "s" : ""} anterior{avisos.length - 1 > 1 ? "es" : ""}
+                  </summary>
+
+                  <ul className="text-sm space-y-2 mt-3">
+                    {avisos.slice(1).map((aviso, idx) => (
+                      <li
+                        key={idx}
+                        className="bg-red-50 p-2 rounded-xl border border-red-100"
+                      >
+                        <strong>
+                          {aviso.fecha
+                            ? new Date(aviso.fecha).toLocaleDateString("es-ES")
+                            : ""}
+                          :
+                        </strong>{" "}
+                        {aviso.mensaje}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </>
+          ) : (
+            <div className="bg-white rounded-2xl border border-[#efe7db] p-3 text-sm text-[#7b6d62] shadow-sm">
+              No tienes avisos por ahora.
+            </div>
+          )}
+        </section>
+
+        {/* Historial reservas */}
+        <details className="mb-5 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
+          <summary className="cursor-pointer font-semibold text-[#3b3025]">
+            📚 Historial de reservas
+          </summary>
+
+          <div className="mt-3">
+            {reservasPasadas.length > 0 ? (
+              <ul className="text-sm space-y-2">
+                {reservasPasadas.map((r, i) => (
+                  <li key={i} className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]">
+                    <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
+                    {r.ubicacion ? ` en ${r.ubicacion}` : ""}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#7b6d62]">
+                Aún no tienes reservas anteriores.
+              </p>
             )}
           </div>
-        )}
+        </details>
 
-        {/* Tarjetas regalo (toggle) */}
-        <button
-          onClick={() => setMostrarTarjetas(!mostrarTarjetas)}
-          className="text-blue-700 text-sm underline mb-3"
-        >
-          {mostrarTarjetas ? "Ocultar" : "Ver historial de tarjetas"}
-        </button>
-        {mostrarTarjetas && (
-          <ul className="text-sm mb-6">
-            {tarjetas.map((t, i) => (
-              <li key={i} className="mb-2 bg-gray-50 p-2 rounded-xl border">
-                <strong>{t.tipo}</strong> — Código: {t.codigo}<br />Fecha: {new Date(t.fechaCompra).toLocaleDateString()}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* Historial (toggle) */}
-        <button
-          onClick={() => setMostrarHistorial(!mostrarHistorial)}
-          className="text-blue-700 text-sm underline mb-3"
-        >
-          {mostrarHistorial ? "Ocultar" : "Ver historial de reservas"}
-        </button>
-        {mostrarHistorial && (
-          <ul className="text-sm space-y-2 mb-6">
-            {reservasPasadas.map((r, i) => (
-              <li key={i} className="bg-gray-50 p-2 rounded-xl border">
-                <strong>{r.fecha}</strong> — {r.clase} ({r.turno}) en {r.ubicacion || ""}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* Recoger pieza — plegable */}
-        <details className="mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-4 shadow">
-          <summary className="cursor-pointer text-base font-semibold text-yellow-800">
-            🏺 Quiero recoger mi pieza
+        {/* Recoger pieza */}
+        <details className="mb-5 bg-[#fbf4d8] border border-[#ead66d] rounded-2xl p-4 shadow-sm">
+          <summary className="cursor-pointer text-base font-semibold text-[#8a5a00]">
+             Quiero recoger mi pieza
           </summary>
-          <p className="text-sm text-gray-800 mt-3">
-            ¿Has venido al taller y estás esperando tu pieza? Recuerda que el proceso de cocción puede tardar hasta <strong>30 días</strong>. Cuando tu pieza esté lista, la subiremos a una carpeta con fotos. Si la reconoces, ¡ya puedes venir a recogerla!
+
+          <p className="text-sm text-[#3b3025] mt-3 leading-6">
+            Tus piezas no estarán listas el mismo día. Después de la clase,
+            necesitan pasar por el proceso de secado y cocción. Cuando estén listas,
+            se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
           </p>
+
           <a
             href="https://drive.google.com/drive/folders/1J0f79NLH--SZ9DGIaFO2n5hSNdjU7rUn"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-3 px-4 py-2 text-white font-semibold bg-yellow-500 hover:bg-yellow-600 rounded-full transition-shadow shadow-md hover:shadow-lg"
+            className="inline-block mt-4 px-5 py-2.5 text-white font-semibold bg-[#e0a800] hover:bg-[#c99300] rounded-full transition shadow-md"
           >
             Ver piezas listas
           </a>
         </details>
 
-        {/* Contacto — plegable y compacto */}
-        <details className="mb-6 bg-gray-50 border rounded-2xl p-4 shadow">
-          <summary className="cursor-pointer text-base font-semibold text-gray-800">
+        {/* Contacto */}
+        <details className="mb-6 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
+          <summary className="cursor-pointer text-base font-semibold text-[#3b3025]">
             📍 Información de contacto
           </summary>
 
-          <ul className="mt-3 text-sm text-gray-800 space-y-1">
-            <li>📞 <a href="tel:+34644671664" className="text-blue-600 hover:underline">644 671 664</a></li>
-            <li>📧 <a href="mailto:lapurisimaconchioficial@gmail.com" className="text-blue-600 hover:underline">lapurisimaconchioficial@gmail.com</a></li>
+          <ul className="mt-3 text-sm text-[#3b3025] space-y-2">
+            <li>
+              📞{" "}
+              <a href="tel:+34644671664" className="text-blue-600 hover:underline">
+                644 671 664
+              </a>
+            </li>
+            <li>
+              📧{" "}
+              <a
+                href="mailto:lapurisimaconchioficial@gmail.com"
+                className="text-blue-600 hover:underline"
+              >
+                lapurisimaconchioficial@gmail.com
+              </a>
+            </li>
             <li>🏠 Calle Israel Nº5, Córdoba - España</li>
           </ul>
 
-          <div className="flex gap-2 mt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
             <button
               onClick={() => (window.location.href = "tel:+34644671664")}
-              className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+              className="px-3 py-2 bg-[#f5f1ea] hover:bg-[#ebe4da] rounded-xl text-sm"
             >
               Llamar
             </button>
+
             <button
-              onClick={() => (window.location.href = "mailto:lapurisimaconchioficial@gmail.com")}
-              className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+              onClick={() =>
+                (window.location.href =
+                  "mailto:lapurisimaconchioficial@gmail.com")
+              }
+              className="px-3 py-2 bg-[#f5f1ea] hover:bg-[#ebe4da] rounded-xl text-sm"
             >
               Email
             </button>
+
             <button
-              onClick={() => window.open("https://maps.google.com/?q=Calle+Israel+5+Córdoba", "_blank")}
-              className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+              onClick={() =>
+                window.open(
+                  "https://maps.google.com/?q=Calle+Israel+5+Córdoba",
+                  "_blank"
+                )
+              }
+              className="px-3 py-2 bg-[#f5f1ea] hover:bg-[#ebe4da] rounded-xl text-sm"
             >
               Cómo llegar
             </button>
           </div>
         </details>
 
+        {/* Cerrar sesión */}
+        <button
+          onClick={handleLogout}
+          className="w-full mb-5 bg-[#7a4326] hover:bg-[#66361d] text-white py-3 rounded-2xl font-semibold shadow-md transition"
+        >
+          Cerrar sesión
+        </button>
+
         {/* Legales */}
-        <div className="text-center text-sm space-y-2 pb-6">
+        <div className="text-center text-sm space-y-2">
           <p>
             <button
               onClick={() => navigate("/politica-privacidad")}
-              className="text-red-500 underline hover:text-red-700"
-            >Política de Privacidad</button>
+              className="text-[#c35b5b] underline hover:text-[#a94747]"
+            >
+              Política de Privacidad
+            </button>
           </p>
           <p>
             <button
               onClick={() => navigate("/condiciones-pago")}
-              className="text-red-500 underline hover:text-red-700"
-            >Condiciones del Servicio de Pago</button>
+              className="text-[#c35b5b] underline hover:text-[#a94747]"
+            >
+              Condiciones del Servicio de Pago
+            </button>
           </p>
         </div>
       </div>
+
+      <Footer />
     </PantallaConVolver>
   );
-}       
+}

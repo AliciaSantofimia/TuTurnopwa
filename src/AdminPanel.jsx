@@ -195,12 +195,11 @@ const AdminPanel = () => {
 
   const seccionesAdmin = [
     {
-      titulo: "Clases",
-      acciones: [
-        { texto: "Ver clases", ruta: "/admin-listado-clases" },
-        { texto: "Ver inscripciones por clase", ruta: "/admin-ver-inscripciones" },
-      ],
-    },
+  titulo: "Clases",
+  acciones: [
+    { texto: "Inscritos por clase", ruta: "/admin-listado-clases" },
+  ],
+},
     {
       titulo: "Reservas",
       acciones: [

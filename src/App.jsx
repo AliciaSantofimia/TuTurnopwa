@@ -36,7 +36,7 @@ import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
 import ExpresContinuo from "./ExpresContinuo.jsx";
 import ReservaExpresContinuo from "./ReservaExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
-import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo.jsx";
+
 import TalleresCrearPiezas from "./TalleresCrearPiezas";
 import TalleresCursosBonos from "./TalleresCursosBonos";
 import TalleresPintaDecora from "./TalleresPintaDecora";
@@ -149,6 +149,7 @@ import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 import AdminEliminarClase from "./AdminEliminarClase.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
 import AdminBloquearUsuario from "./AdminBloquearUsuario.jsx";
+import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
 
 
 //Clases Online
@@ -314,6 +315,8 @@ function App() {
   path="/reserva-clase-suelta-continuidad"
   element={<ReservaClaseSueltaContinuidad />}
 />
+<Route path="/canjear-tarjeta" element={<CanjearTarjetaRegalo />} />
+
           
           <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
           <Route path="/talleres/crear-piezas" element={<TalleresCrearPiezas />} />
@@ -397,7 +400,7 @@ function App() {
           <Route path="/admin-solicitar-crear-clase" element={<AdminSolicitarCrearClase />} />
           <Route path="/admin-solicitar-editar-clase" element={<AdminSolicitarEditarClase />} />
           <Route path="/admin-cambiar-imagen-clase" element={<AdminCambiarImagenClase />} />
-          <Route path="/admin-ver-inscripciones" element={<AdminVerInscripciones />} />
+          
           <Route path="/admin-listado-clases" element={<AdminListadoClases />} />
           <Route path="/admin-listado-reservas" element={<AdminListadoReservas />} />
           <Route path="/admin-filtrar-reservas" element={<AdminFiltrarReservas />} />

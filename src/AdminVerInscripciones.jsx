@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
-
 const AdminVerInscripciones = () => {
-  const { id } = useParams(); // id de la clase, como "BásicoEsencial"
-  const navigate = useNavigate();
+  const { nombreClase } = useParams();
   const [inscripciones, setInscripciones] = useState([]);
-  const [nombreClase, setNombreClase] = useState(id || "...");
+  const [tituloClase, setTituloClase] = useState(nombreClase || "...");
 
   useEffect(() => {
     const cargarInscripciones = async () => {
       try {
-        const snapshot = await get(ref(dbRealtime, `reservas/${id}`));
+        const snapshot = await get(ref(dbRealtime, `reservas/${nombreClase}`));
         const resultados = [];
 
         if (snapshot.exists()) {
@@ -35,6 +33,7 @@ const AdminVerInscripciones = () => {
                     fecha: data.fecha || fecha,
                     turno: data.turno || turno,
                     tipo: data.metodo || tipo,
+                    plazas: Number(data.plazas || 1),
                   });
                 });
               });
@@ -49,13 +48,14 @@ const AdminVerInscripciones = () => {
     };
 
     cargarInscripciones();
-  }, [id]);
+  }, [nombreClase]);
 
   return (
     <div style={styles.body}>
       <BotonVolver />
 
-      <h2 style={styles.titulo}>👥 Inscripciones - {nombreClase}</h2>
+      <h2 style={styles.titulo}>👥 Inscripciones - {tituloClase}</h2>
+
       <table style={styles.table}>
         <thead>
           <tr>
@@ -64,6 +64,7 @@ const AdminVerInscripciones = () => {
             <th style={styles.th}>Fecha</th>
             <th style={styles.th}>Turno</th>
             <th style={styles.th}>Tipo</th>
+            <th style={styles.th}>Plazas</th>
           </tr>
         </thead>
         <tbody>
@@ -74,11 +75,12 @@ const AdminVerInscripciones = () => {
               <td style={styles.td}>{item.fecha}</td>
               <td style={styles.td}>{item.turno}</td>
               <td style={styles.td}>{item.tipo}</td>
+              <td style={styles.td}>{item.plazas}</td>
             </tr>
           ))}
           {inscripciones.length === 0 && (
             <tr>
-              <td colSpan="5" style={{ textAlign: "center", padding: 20 }}>
+              <td colSpan="6" style={{ textAlign: "center", padding: 20 }}>
                 No hay inscripciones registradas para esta clase.
               </td>
             </tr>
@@ -96,7 +98,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
     minHeight: "100vh",
   },
-  
+
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -104,7 +106,7 @@ const styles = {
   },
   table: {
     width: "100%",
-    maxWidth: 800,
+    maxWidth: 900,
     margin: "auto",
     borderCollapse: "collapse",
     backgroundColor: "white",
@@ -127,4 +129,3 @@ const styles = {
 };
 
 export default AdminVerInscripciones;
-
