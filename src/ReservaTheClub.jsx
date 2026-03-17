@@ -72,19 +72,24 @@ export default function ReservaTheClub() {
         : user.displayName || "Sin nombre";
 
     const reserva = {
-      uid: user.uid,
-      email: user.email || "",
-      nombre: nombreUsuario,
-      clase: "Pinta tu pieza - The Club",
-      fecha: fechaFormateada,
-      turno,
-      ubicacion: "The Club",
-      metodo: "general",
-      plazas,
-      reservaVia: "Normal",
-      precio,
-      timestamp: Date.now()
-    };
+  uid: user.uid,
+  email: user.email || "",
+  nombre: nombreUsuario,
+  clase: "Pinta tu pieza - The Club",
+  claseId: "pintatupieza_theclub",
+  ubicacion: "The Club",
+  fecha: fechaFormateada,
+  turno,
+  metodo: "general",
+  plazas,
+  desdeTarjeta: false,
+  precio,
+  precioTotal: precio,
+  estadoPago: "pendiente",
+  orderId,
+  tipoReserva: "normal",
+  timestamp: new Date().toISOString(),
+};
 
     try {
       const rutaReserva = ref(dbRealtime, `reservas/TheClub/${fechaFormateada}/${turno}`);

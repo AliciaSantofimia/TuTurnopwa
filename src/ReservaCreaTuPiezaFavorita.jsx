@@ -102,22 +102,23 @@ export default function ReservaCreaTuPiezaFavorita() {
       const nombreTipoPieza = getNombreTipoPieza();
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Crea tu pieza favorita desde cero",
-        tipoPieza,
-        nombreTipoPieza,
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+     const reserva = {
+  clase: "Crea tu pieza favorita desde cero",
+  claseId: "creatupiezafavorita",
+  tipoPieza,
+  nombreTipoPieza,
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const reservaRef = ref(
         dbRealtime,

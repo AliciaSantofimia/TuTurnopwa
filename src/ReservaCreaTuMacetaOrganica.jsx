@@ -96,28 +96,29 @@ export default function ReservaCreaTuMacetaOrganica() {
       const orderId = Date.now().toString().slice(-12);
       const fechaDisponibleSegundaSesion = sumar28Dias(fecha);
 
-      const reserva = {
-        clase: "Crea tu maceta orgánica",
-        tipoTaller: "dos_sesiones",
-        fecha,
-        fechaPrimeraSesion: fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        segundaSesion: {
-          habilitada: false,
-          fechaDisponible: fechaDisponibleSegundaSesion,
-          reservada: false,
-          fechaReserva: null,
-        },
-        timestamp: new Date().toISOString(),
-      };
+    const reserva = {
+  clase: "Crea tu maceta orgánica",
+  claseId: "macetaorganica",
+  tipoTaller: "dos_sesiones",
+  fecha,
+  fechaPrimeraSesion: fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  segundaSesion: {
+    habilitada: false,
+    fechaDisponible: fechaDisponibleSegundaSesion,
+    reservada: false,
+    fechaReserva: null,
+  },
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

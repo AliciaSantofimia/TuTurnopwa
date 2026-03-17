@@ -76,19 +76,24 @@ const totalEuros = PRECIO_UNITARIO * plazasNum;
     }
 
     const uid = user.uid;
-    const reserva = {
-      clase: "Pinta tu pieza de cerámica",
-      fecha,
-      turno,
-      metodo: "general",
-      precio: totalEuros,
-      plazas: plazasNum,
-      timestamp: new Date().toISOString(),
-      tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",
-      nombre: user.displayName || "",
-      email: user.email || "",
-      codigoTarjeta: codigoTarjeta || null,
-    };
+   const reserva = {
+  clase: "Pinta tu pieza de cerámica",
+  claseId: "pintatupieza",
+  fecha,
+  turno,
+  metodo: "general",
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: totalEuros,
+  precioTotal: totalEuros,
+  estadoPago: "pendiente",
+  orderId,
+  tipoReserva: desdeTarjeta ? "tarjetaRegalo" : "normal",
+  nombre: user.displayName || "",
+  email: user.email || "",
+  codigoTarjeta: codigoTarjeta || null,
+  timestamp: new Date().toISOString(),
+};
 
     try {
       const reservaRef = ref(dbRealtime, `reservas/Pinta tu pieza de cerámica/${fecha}/${turno}/general`);

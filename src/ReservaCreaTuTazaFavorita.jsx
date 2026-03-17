@@ -82,21 +82,21 @@ export default function ReservaCreaTuTazaFavorita() {
       const precioUnitario = 55;
       const precioTotal = precioUnitario * plazasNum;
       const orderId = Date.now().toString().slice(-12);
-
-      const reserva = {
-        clase: "Crea tu taza favorita",
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+const reserva = {
+  clase: "Crea tu taza favorita",
+  claseId: "creatutazafavorita",
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

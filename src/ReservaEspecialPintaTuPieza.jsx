@@ -59,21 +59,22 @@ export default function ReservaEspecialPintaTuPieza() {
     try {
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Especial pinta tu pieza de cerámica",
-        tipoTaller: "pinta_y_decora",
-        fecha,
-        turno,
-        plazas: plazasNum,
-        duracion: "2 horas y media",
-        desdeTarjeta,
-        precio: precioTotal,
-        precioBase,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+    const reserva = {
+  clase: "Especial pinta tu pieza de cerámica",
+  claseId: "pintatupieza",
+  tipoTaller: "pinta_y_decora",
+  fecha,
+  turno,
+  plazas: plazasNum,
+  duracion: "2 horas y media",
+  desdeTarjeta,
+  precio: precioTotal,
+  precioBase,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

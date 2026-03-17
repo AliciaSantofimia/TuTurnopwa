@@ -84,19 +84,20 @@ export default function ReservaCreaTuBandejaHogar() {
       const orderId = Date.now().toString().slice(-12);
 
       const reserva = {
-        clase: "Crea tu bandeja de hogar",
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: desdeTarjeta ? "pagado_con_tarjeta_regalo" : "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+  clase: "Crea tu bandeja de hogar",
+  claseId: "creatubandejahogar",
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: desdeTarjeta ? "pagado_con_tarjeta_regalo" : "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

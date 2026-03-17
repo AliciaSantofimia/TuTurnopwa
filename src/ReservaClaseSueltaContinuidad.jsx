@@ -118,22 +118,23 @@ export default function ReservaClaseSueltaContinuidad() {
       const nombreTipoClase = getNombreTipoClase();
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Clase suelta con continuidad",
-        tipoClase,
-        nombreTipoClase,
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+     const reserva = {
+  clase: "Clase suelta con continuidad",
+  claseId: "clasesueltacontinuidad",
+  tipoClase,
+  nombreTipoClase,
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const reservaRef = ref(
         dbRealtime,

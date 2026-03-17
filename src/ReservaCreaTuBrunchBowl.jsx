@@ -83,20 +83,21 @@ export default function ReservaCreaTuBrunchBowl() {
       const precioTotal = precioUnitario * plazasNum;
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Crea tu Brunch Bowl",
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+     const reserva = {
+  clase: "Crea tu Brunch Bowl",
+  claseId: "creatubrunchbowl",
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

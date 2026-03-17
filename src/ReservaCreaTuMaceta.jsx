@@ -101,23 +101,24 @@ export default function ReservaCreaTuMaceta() {
       const precioTotal = precioUnitario * plazasNum;
       const nombreTamano = getNombreTamano();
       const orderId = Date.now().toString().slice(-12);
-
-      const reserva = {
-        clase: "Crea tu maceta",
-        tamanoMaceta,
-        nombreTamano,
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+      
+const reserva = {
+  clase: "Crea tu maceta",
+  claseId: "creatumaceta",
+  tamanoMaceta,
+  nombreTamano,
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const reservaRef = ref(
         dbRealtime,

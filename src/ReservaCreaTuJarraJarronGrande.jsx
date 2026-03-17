@@ -82,21 +82,21 @@ export default function ReservaCreaTuJarraJarronGrande() {
       const precioUnitario = 75;
       const precioTotal = precioUnitario * plazasNum;
       const orderId = Date.now().toString().slice(-12);
-
-      const reserva = {
-        clase: "Crea tu jarra / jarrón grande",
-        fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+const reserva = {
+  clase: "Crea tu jarra / jarrón grande",
+  claseId: "creatujarrajarrongrande",
+  fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

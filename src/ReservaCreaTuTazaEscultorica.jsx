@@ -97,27 +97,28 @@ export default function ReservaCreaTuTazaEscultorica() {
       const fechaDisponibleSegundaSesion = sumar28Dias(fecha);
 
       const reserva = {
-        clase: "Crea tu taza escultórica",
-        tipoTaller: "dos_sesiones",
-        fecha,
-        fechaPrimeraSesion: fecha,
-        turno,
-        metodo,
-        plazas: plazasNum,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        segundaSesion: {
-          habilitada: false,
-          fechaDisponible: fechaDisponibleSegundaSesion,
-          reservada: false,
-          fechaReserva: null,
-        },
-        timestamp: new Date().toISOString(),
-      };
+  clase: "Crea tu taza escultórica",
+  claseId: "tazaescultorica",
+  tipoTaller: "dos_sesiones",
+  fecha,
+  fechaPrimeraSesion: fecha,
+  turno,
+  metodo,
+  plazas: plazasNum,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  segundaSesion: {
+    habilitada: false,
+    fechaDisponible: fechaDisponibleSegundaSesion,
+    reservada: false,
+    fechaReserva: null,
+  },
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

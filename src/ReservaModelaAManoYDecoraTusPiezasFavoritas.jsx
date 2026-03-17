@@ -71,29 +71,30 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     try {
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Modela a mano y decora tus piezas favoritas",
-        tipoTaller: "bono_mensual",
-        subtipo: "4_clases_3h_mes",
-        fechaInicio,
-        fechaFinMes: sumarUnMes(fechaInicio),
-        fechaCaducidadBono: sumarTresMeses(fechaInicio),
-        turno,
-        numeroClases: 4,
-        duracionClase: "3 horas",
-        modalidad: "modelado a mano",
-        incluyeCambioTorno: convertirTorno,
-        extraCambioTorno: extraTorno,
-        desdeTarjeta,
-        precio: precioTotal,
-        precioBase,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        clasesConsumidas: 0,
-        clasesRestantes: 4,
-        timestamp: new Date().toISOString(),
-      };
+     const reserva = {
+  clase: "Modela a mano y decora tus piezas favoritas",
+  claseId: "bono4clases3h",
+  tipoTaller: "bono_mensual",
+  subtipo: "4_clases_3h_mes",
+  fechaInicio,
+  fechaFinMes: sumarUnMes(fechaInicio),
+  fechaCaducidadBono: sumarTresMeses(fechaInicio),
+  turno,
+  numeroClases: 4,
+  duracionClase: "3 horas",
+  modalidad: "modelado a mano",
+  incluyeCambioTorno: convertirTorno,
+  extraCambioTorno: extraTorno,
+  desdeTarjeta,
+  precio: precioTotal,
+  precioBase,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  clasesConsumidas: 0,
+  clasesRestantes: 4,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,

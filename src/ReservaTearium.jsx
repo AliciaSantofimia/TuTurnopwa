@@ -74,20 +74,25 @@ export default function ReservaTearium() {
         ? userSnapshot.val().nombre
         : user.displayName || "Sin nombre";
 
-    const reserva = {
-      uid: user.uid,
-      email: user.email,
-      nombre: nombreUsuario,
-      clase: "Pinta tu pieza - Tearium",
-      fecha: fechaFormateada,
-      turno,
-      ubicacion: "Tearium",
-      metodo: "general",
-      plazas,
-      reservaVia: "Normal",
-      precio,
-      timestamp: Date.now()
-    };
+  const reserva = {
+  uid: user.uid,
+  email: user.email,
+  nombre: nombreUsuario,
+  clase: "Pinta tu pieza - Tearium",
+  claseId: "pintatupieza_tearium",
+  ubicacion: "Tearium",
+  fecha: fechaFormateada,
+  turno,
+  metodo: "general",
+  plazas,
+  desdeTarjeta: false,
+  precio,
+  precioTotal: precio,
+  estadoPago: "pendiente",
+  orderId,
+  tipoReserva: "normal",
+  timestamp: new Date().toISOString(),
+};
 
     try {
       const nuevaReservaRef = push(ref(dbRealtime, ruta));

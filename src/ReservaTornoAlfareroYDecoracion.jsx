@@ -69,28 +69,29 @@ export default function ReservaTornoAlfareroYDecoracion() {
     try {
       const orderId = Date.now().toString().slice(-12);
 
-      const reserva = {
-        clase: "Torno alfarero y decoración",
-        tipoTaller: "bono_mensual",
-        subtipo: "4_clases_3h_mes",
-        fechaInicio,
-        fechaFinMes: sumarUnMes(fechaInicio),
-        fechaCaducidadBono: sumarTresMeses(fechaInicio),
-        turno,
-        numeroClases: 4,
-        duracionClase: "3 horas",
-        modalidad: "torno y decoracion",
-        distribucionClases: "2 torno + 2 decoración",
-        desdeTarjeta,
-        precio: precioTotal,
-        precioBase,
-        precioTotal,
-        estadoPago: "pendiente",
-        orderId,
-        clasesConsumidas: 0,
-        clasesRestantes: 4,
-        timestamp: new Date().toISOString(),
-      };
+     const reserva = {
+  clase: "Torno alfarero y decoración",
+  claseId: "tornoDecoracion4clases",
+  tipoTaller: "bono_mensual",
+  subtipo: "4_clases_3h_mes",
+  fechaInicio,
+  fechaFinMes: sumarUnMes(fechaInicio),
+  fechaCaducidadBono: sumarTresMeses(fechaInicio),
+  turno,
+  numeroClases: 4,
+  duracionClase: "3 horas",
+  modalidad: "torno y decoracion",
+  distribucionClases: "2 torno + 2 decoración",
+  desdeTarjeta,
+  precio: precioTotal,
+  precioBase,
+  precioTotal,
+  estadoPago: "pendiente",
+  orderId,
+  clasesConsumidas: 0,
+  clasesRestantes: 4,
+  timestamp: new Date().toISOString(),
+};
 
       const generalRef = ref(
         dbRealtime,
