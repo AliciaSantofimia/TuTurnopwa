@@ -98,7 +98,7 @@ import DetalleTarjetaPintaTuPieza from "./DetalleTarjetaPintaTuPieza.jsx";
 
 
 //Reservas con las tarjetas regalo
-import Reserva2clases4hmesRegalo from "./Reserva2clases4hmesRegalo.jsx";
+
 import ReservaCreaTuCuencoRamen from "./ReservaCreaTuCuencoRamen.jsx";
 
 
@@ -349,7 +349,7 @@ function App() {
 
           {/* Reservas tarjetas regalo*/}
           
-          <Route path="/reserva-2clases4hmes-regalo" element={<Reserva2clases4hmesRegalo />} />
+        
 
 
           {/* Reservas normales */}
