@@ -348,14 +348,11 @@ export default function ReservaConTarjetaRegalo() {
       );
       await push(generalRef, { uid: user.uid, ...reserva });
 
-      const historialRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/historialReservas`
-      );
-      await push(historialRef, reserva);
-
-      const reservasRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-      await push(reservasRef, reserva);
+      const userListaReservasRef = ref(
+  dbRealtime,
+  `usuarios/${user.uid}/listaReservas`
+);
+await push(userListaReservasRef, reserva);
 
       if (tallerSeleccionado.tipo === "bono") {
         await crearBonoActivo({

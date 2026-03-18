@@ -71,6 +71,7 @@ export default function ReservaTheClub() {
         ? snapshot.val().nombre
         : user.displayName || "Sin nombre";
 
+        const orderId = Date.now().toString().slice(-12);
     const reserva = {
   uid: user.uid,
   email: user.email || "",
@@ -93,10 +94,10 @@ export default function ReservaTheClub() {
 
     try {
       const rutaReserva = ref(dbRealtime, `reservas/TheClub/${fechaFormateada}/${turno}`);
-      const rutaHistorial = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
+      const rutaListaReservas = ref(dbRealtime, `usuarios/${user.uid}/listaReservas`);
 
       await push(rutaReserva, reserva);
-      await push(rutaHistorial, reserva);
+      await push(rutaListaReservas, reserva);
 
       if (snapshot.exists()) {
         const actuales = snapshot.val().reservas || 0;

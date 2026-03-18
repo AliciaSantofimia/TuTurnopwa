@@ -44,19 +44,33 @@ export default function ReservaPintaTuPiezaRegalo() {
     }
 
     const nuevaReserva = {
-      uid,
-      clase: "Pinta tu pieza de cerámica",
-      fecha,
-      turno,
-      metodo,
-      esRegalo: true,
-      precio: 0,
-      estado: "activa",
-      timestamp: Date.now()
-    };
+  uid,
+  clase: "Pinta tu pieza de cerámica",
+  claseId: "pintatupieza",
+  fecha,
+  turno,
+  metodo,
+  esRegalo: true,
+  desdeTarjeta: true,
+  precio: 0,
+  precioTotal: 0,
+  estadoPago: "pagado_con_tarjeta_regalo",
+  tipoReserva: "regalo",
+  timestamp: new Date().toISOString()
+};
 
-    const reservasRef = ref(dbRealtime, "reservas");
-    await push(reservasRef, nuevaReserva);
+    const reservasRef = ref(
+  dbRealtime,
+  `reservas/PintaTuPieza/${fecha}/${turno}/${metodo}`
+);
+await push(reservasRef, nuevaReserva);
+
+
+const listaReservasRef = ref(
+  dbRealtime,
+  `usuarios/${uid}/listaReservas`
+);
+await push(listaReservasRef, nuevaReserva);
 
     navigate("/resumen-pago", { state: { ...nuevaReserva } });
   };

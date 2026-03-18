@@ -126,12 +126,11 @@ export default function ReservaCreaTuPiezaFavorita() {
       );
       await push(reservaRef, { uid: user.uid, ...reserva });
 
-      const historialRef = ref(dbRealtime, `usuarios/${user.uid}/historialReservas`);
-      await push(historialRef, reserva);
-
-      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-      await push(userReservaRef, reserva);
-
+     const userListaReservasRef = ref(
+  dbRealtime,
+  `usuarios/${user.uid}/listaReservas`
+);
+await push(userListaReservasRef, reserva);
       await actualizarContadorReservas(user.uid);
 
       navigate("/resumen-pago", {

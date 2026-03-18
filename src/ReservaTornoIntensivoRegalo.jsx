@@ -60,16 +60,17 @@ export default function ReservaTornoIntensivoRegalo() {
     if (!user) return;
 
     const reserva = {
-      clase: "Torno intensivo individual",
-      fecha,
-      turno,
-      metodo,
-      precio: 0,
-      plazas: 1,
-      timestamp: new Date().toISOString(),
-      tipoReserva: "regalo",
-      codigoUsado: codigoTarjeta
-    };
+  clase: "Torno intensivo individual",
+  claseId: "tornointensivoindividual",
+  fecha,
+  turno,
+  metodo,
+  precio: 0,
+  plazas: 1,
+  timestamp: new Date().toISOString(),
+  tipoReserva: "regalo",
+  codigoUsado: codigoTarjeta
+};
 
     try {
       const refGeneral = ref(dbRealtime, `reservas/TornoIntensivoRegalo/${fecha}/${turno}/${metodo}`);

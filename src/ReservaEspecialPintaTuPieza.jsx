@@ -82,17 +82,11 @@ export default function ReservaEspecialPintaTuPieza() {
       );
       await push(generalRef, { uid: currentUser.uid, ...reserva });
 
-      const userHistorialRef = ref(
-        dbRealtime,
-        `usuarios/${currentUser.uid}/historialReservas`
-      );
-      await push(userHistorialRef, reserva);
-
-      const userReservaRef = ref(
-        dbRealtime,
-        `usuarios/${currentUser.uid}/reservas`
-      );
-      await push(userReservaRef, reserva);
+     const userListaReservasRef = ref(
+  dbRealtime,
+  `usuarios/${currentUser.uid}/listaReservas`
+);
+await push(userListaReservasRef, reserva);
 
       await actualizarContadorReservas(currentUser.uid);
 

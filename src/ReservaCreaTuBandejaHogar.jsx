@@ -105,14 +105,11 @@ export default function ReservaCreaTuBandejaHogar() {
       );
       await push(generalRef, { uid: user.uid, ...reserva });
 
-      const userHistorialRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/historialReservas`
-      );
-      await push(userHistorialRef, reserva);
-
-      const userReservaRef = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-      await push(userReservaRef, reserva);
+     const userListaReservasRef = ref(
+  dbRealtime,
+  `usuarios/${user.uid}/listaReservas`
+);
+await push(userListaReservasRef, reserva);
 
       
 

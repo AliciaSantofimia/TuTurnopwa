@@ -74,6 +74,8 @@ export default function ReservaTearium() {
         ? userSnapshot.val().nombre
         : user.displayName || "Sin nombre";
 
+        const orderId = Date.now().toString().slice(-12);
+
   const reserva = {
   uid: user.uid,
   email: user.email,
@@ -98,8 +100,8 @@ export default function ReservaTearium() {
       const nuevaReservaRef = push(ref(dbRealtime, ruta));
       await set(nuevaReservaRef, reserva);
 
-      const userReservaRef = push(ref(dbRealtime, `usuarios/${user.uid}/reservas`));
-      await set(userReservaRef, reserva);
+     const userListaReservasRef = push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`));
+await set(userListaReservasRef, reserva);
 
       navigate("/resumenpagotearium", {
         state: {
