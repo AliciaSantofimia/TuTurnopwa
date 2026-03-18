@@ -23,16 +23,15 @@ import DondeReservar from "./DondeReservar.jsx";
 import Clases from "./Clases.jsx";
 import ClasesSoloVista from "./ClasesSoloVista.jsx";
 import EdicionPremium from "./EdicionPremium.jsx";
-i
+
 import CreaTuBrunchBowl from "./CreaTuBrunchBowl.jsx";
 import CreaTuPiezaFavorita from "./CreaTuPiezaFavorita";
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
 import PintarCeramica from "./PintarCeramica.jsx";
 import ReservaPintarCeramica from "./ReservaPintarCeramica.jsx";
-import MensualBono2Clases from "./MensualBono2Clases.jsx";
-import ReservaBono2Clases from "./ReservaBono2Clases.jsx";
-import MensualBono4Clases from "./MensualBono4Clases.jsx";
-import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
+
+
+
 import ExpresContinuo from "./ExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
 
@@ -83,8 +82,7 @@ import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
 import CreativoPlusSolo from "./CreativoPlusSolo.jsx";
 import BasicoEsencialSolo from "./BasicoEsencialSolo.jsx";
-import Bono2ClasesSolo from "./Bono2ClasesSolo.jsx";
-import Bono4ClasesSolo from "./Bono4ClasesSolo.jsx";
+
 import PintaTuPiezaDeCeramicaSolo from "./PintaTuPiezaDeCeramicaSolo.jsx";
 import ExpresContinuoSolo from "./ExpresContinuoSolo.jsx";
 
@@ -186,8 +184,8 @@ function App() {
           <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
           
-          <Route path="/bono-2-clases" element={<MensualBono2Clases />} />
-          <Route path="/bono-4-clases" element={<MensualBono4Clases />} />
+          
+          
           <Route path="/exprescontinuo" element={<ExpresContinuo />} />
           <Route
   path="/reserva-crea-tu-pieza-favorita"
@@ -328,8 +326,8 @@ function App() {
           <Route path="/edicion-premium-solo" element={<EdicionPremiumSolo />} />
           <Route path="/creativo-plus-solo" element={<CreativoPlusSolo />} />
           <Route path="/basico-esencial-solo" element={<BasicoEsencialSolo />} />
-          <Route path="/bono-2-clases-solo" element={<Bono2ClasesSolo />} />
-          <Route path="/bono-4-clases-solo" element={<Bono4ClasesSolo />} />
+          
+          
           
           <Route path="/exprescontinuo-solo" element={<ExpresContinuoSolo />} />
 
@@ -342,8 +340,8 @@ function App() {
           <Route path="/pintatupieza-solo" element={<PintaTuPiezaDeCeramicaSolo />} />
           <Route path="/tornointensivo-solo" element={<TornoIntensivoRegalo />} />
           <Route path="/tarjeta-regalo-solo/tornointensivo" element={<TornoIntensivoRegalo />} />
-          <Route path="/2clases-solo" element={<Bono2ClasesSolo />} />
-          <Route path="/4clases-solo" element={<Bono4ClasesSolo />} />
+          
+          
           <Route path="/creapiezafavorita-solo" element={<CreaTuPiezaFavoritaRegalo />} />
           <Route path="/tarjeta-regalo-solo/4clases" element={<Clase4ClasesRegalo />} />
 
