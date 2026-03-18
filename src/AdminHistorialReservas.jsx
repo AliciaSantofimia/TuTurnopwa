@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
-import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
 
 const AdminHistorialReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [fechaFiltro, setFechaFiltro] = useState("");
-  const navigate = useNavigate();
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarReservas = async () => {
@@ -39,7 +38,6 @@ const AdminHistorialReservas = () => {
                       turno: reserva.turno || turno,
                       metodo: reserva.metodo || reserva.modalidad || metodo || "—",
                       estado: reserva.estadoPago || reserva.estado || "Activa",
-                      tieneNotas: reserva.notasInternas?.length > 0 || false,
                     });
                   });
                 });
@@ -58,11 +56,17 @@ const AdminHistorialReservas = () => {
       } catch (error) {
         console.error("Error al cargar reservas:", error);
         alert("No se pudieron cargar las reservas.");
+      } finally {
+        setCargando(false);
       }
     };
 
     cargarReservas();
   }, []);
+
+  const reservasFiltradas = reservas.filter(
+    (r) => !fechaFiltro || r.fecha === fechaFiltro
+  );
 
   return (
     <div style={styles.body}>
@@ -82,41 +86,36 @@ const AdminHistorialReservas = () => {
         </button>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Clase</th>
-            <th style={styles.th}>Usuario</th>
-            <th style={styles.th}>Fecha</th>
-            <th style={styles.th}>Turno</th>
-            <th style={styles.th}>Método</th>
-            <th style={styles.th}>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reservas
-            .filter((r) => !fechaFiltro || r.fecha === fechaFiltro)
-            .map((r) => (
+      {cargando ? (
+        <p style={styles.mensaje}>Cargando reservas...</p>
+      ) : reservasFiltradas.length === 0 ? (
+        <p style={styles.mensaje}>No hay reservas para mostrar.</p>
+      ) : (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Clase</th>
+              <th style={styles.th}>Usuario</th>
+              <th style={styles.th}>Fecha</th>
+              <th style={styles.th}>Turno</th>
+              <th style={styles.th}>Método</th>
+              <th style={styles.th}>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reservasFiltradas.map((r) => (
               <tr key={`${r.fecha}-${r.turno}-${r.id}`}>
                 <td style={styles.td}>{r.clase}</td>
                 <td style={styles.td}>{r.usuario}</td>
                 <td style={styles.td}>{r.fecha}</td>
                 <td style={styles.td}>{r.turno}</td>
                 <td style={styles.td}>{r.metodo}</td>
-                <td style={styles.td}>
-                  {r.estado}
-                  <br />
-                  <button
-                    style={styles.btnNota}
-                    onClick={() => navigate(`/admin/reservas/nota/${r.id}`)}
-                  >
-                    📝 Nota {r.tieneNotas && "📌"}
-                  </button>
-                </td>
+                <td style={styles.td}>{r.estado}</td>
               </tr>
             ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
@@ -153,6 +152,11 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
+  mensaje: {
+    textAlign: "center",
+    color: "#666",
+    marginTop: 20,
+  },
   table: {
     width: "100%",
     maxWidth: 1000,
@@ -174,16 +178,6 @@ const styles = {
     borderBottom: "1px solid #eee",
     textAlign: "left",
     verticalAlign: "top",
-  },
-  btnNota: {
-    marginTop: 5,
-    backgroundColor: "#4a90e2",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    padding: "5px 10px",
-    cursor: "pointer",
-    fontSize: "0.9rem",
   },
 };
 

@@ -1,46 +1,61 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
-import DateInputReserva from "./components/DateInputReserva";
 
 const AdminHistorialBonos = () => {
   const [bonos, setBonos] = useState([]);
   const [fechaFiltro, setFechaFiltro] = useState("");
-  const navigate = useNavigate();
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarBonos = async () => {
       try {
-        const snapshot = await get(child(ref(dbRealtime), `bonos`));
+        const snapshot = await get(child(ref(dbRealtime), "bonos"));
         const datos = [];
+
+        if (!snapshot.exists()) {
+          setBonos([]);
+          return;
+        }
 
         snapshot.forEach((bonoSnap) => {
           const bono = bonoSnap.val();
+
           datos.push({
             id: bonoSnap.key,
-            usuario: bono.nombre || "Sin nombre",
+            usuario: bono.nombre || bono.email || "Sin nombre",
             tipo: bono.tipo || "Desconocido",
             fechaCompra: bono.fechaCompra || "Sin fecha",
             clasesIncluidas: bono.clasesIncluidas || 0,
           });
         });
 
+        datos.sort((a, b) => {
+          const fechaA = new Date(a.fechaCompra || 0);
+          const fechaB = new Date(b.fechaCompra || 0);
+          return fechaB - fechaA;
+        });
+
         setBonos(datos);
       } catch (error) {
         console.error("Error al cargar bonos:", error);
         alert("No se pudieron cargar los bonos.");
+      } finally {
+        setCargando(false);
       }
     };
 
     cargarBonos();
   }, []);
 
+  const bonosFiltrados = bonos.filter(
+    (b) => !fechaFiltro || b.fechaCompra === fechaFiltro
+  );
+
   return (
     <div style={styles.body}>
       <BotonVolver />
-
 
       <h2 style={styles.titulo}>🎟️ Historial de Bonos Comprados</h2>
 
@@ -56,19 +71,22 @@ const AdminHistorialBonos = () => {
         </button>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Usuario</th>
-            <th style={styles.th}>Tipo de bono</th>
-            <th style={styles.th}>Fecha de compra</th>
-            <th style={styles.th}>Clases incluidas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bonos
-            .filter(b => !fechaFiltro || b.fechaCompra === fechaFiltro)
-            .map((b) => (
+      {cargando ? (
+        <p style={styles.mensaje}>Cargando bonos...</p>
+      ) : bonosFiltrados.length === 0 ? (
+        <p style={styles.mensaje}>No hay bonos para mostrar.</p>
+      ) : (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Usuario</th>
+              <th style={styles.th}>Tipo de bono</th>
+              <th style={styles.th}>Fecha de compra</th>
+              <th style={styles.th}>Clases incluidas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bonosFiltrados.map((b) => (
               <tr key={b.id}>
                 <td style={styles.td}>{b.usuario}</td>
                 <td style={styles.td}>{b.tipo}</td>
@@ -76,8 +94,9 @@ const AdminHistorialBonos = () => {
                 <td style={styles.td}>{b.clasesIncluidas}</td>
               </tr>
             ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
@@ -113,6 +132,11 @@ const styles = {
     color: "#333",
     fontWeight: "bold",
     cursor: "pointer",
+  },
+  mensaje: {
+    textAlign: "center",
+    color: "#666",
+    marginTop: 20,
   },
   table: {
     width: "100%",

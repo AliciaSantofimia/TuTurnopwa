@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
-import DateInputReserva from "./components/DateInputReserva";
-
 
 const AdminFiltrarReservas = () => {
   const [fecha, setFecha] = useState("");
   const [resultados, setResultados] = useState([]);
-  const navigate = useNavigate();
+  const [busquedaRealizada, setBusquedaRealizada] = useState(false);
 
   const handleBuscar = async () => {
     if (!fecha) {
@@ -18,16 +15,24 @@ const AdminFiltrarReservas = () => {
     }
 
     try {
-      const snapshot = await get(child(ref(dbRealtime), `reservas`));
+      const snapshot = await get(child(ref(dbRealtime), "reservas"));
       const datos = [];
+
+      if (!snapshot.exists()) {
+        setResultados([]);
+        setBusquedaRealizada(true);
+        return;
+      }
 
       snapshot.forEach((claseSnap) => {
         const fechaSnap = claseSnap.child(fecha);
+
         if (fechaSnap.exists()) {
           fechaSnap.forEach((turnoSnap) => {
             turnoSnap.forEach((metodoSnap) => {
               metodoSnap.forEach((reservaSnap) => {
                 const reserva = reservaSnap.val();
+
                 datos.push({
                   id: reservaSnap.key,
                   clase: claseSnap.key,
@@ -42,6 +47,7 @@ const AdminFiltrarReservas = () => {
       });
 
       setResultados(datos);
+      setBusquedaRealizada(true);
     } catch (error) {
       console.error("Error al cargar las reservas:", error);
       alert("No se pudieron cargar las reservas.");
@@ -50,45 +56,54 @@ const AdminFiltrarReservas = () => {
 
   return (
     <div style={styles.body}>
-     <BotonVolver />
-
+      <BotonVolver />
 
       <h2 style={styles.titulo}>🔎 Filtrar reservas por fecha</h2>
+
       <input
         type="date"
         value={fecha}
         onChange={(e) => setFecha(e.target.value)}
         style={styles.input}
       />
+
       <button onClick={handleBuscar} style={styles.boton}>
         Buscar
       </button>
 
-      {resultados.length > 0 && (
-        <div style={styles.resultados}>
-          <h3>Resultados para {fecha}:</h3>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Clase</th>
-                <th style={styles.th}>Usuario</th>
-                <th style={styles.th}>Turno</th>
-                <th style={styles.th}>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resultados.map((r) => (
-                <tr key={r.id}>
-                  <td style={styles.td}>{r.clase}</td>
-                  <td style={styles.td}>{r.usuario}</td>
-                  <td style={styles.td}>{r.turno}</td>
-                  <td style={styles.td}>{r.estado}</td>
+      <div style={styles.resultados}>
+        {resultados.length > 0 && (
+          <>
+            <h3>Resultados para {fecha}:</h3>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Clase</th>
+                  <th style={styles.th}>Usuario</th>
+                  <th style={styles.th}>Turno</th>
+                  <th style={styles.th}>Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {resultados.map((r) => (
+                  <tr key={r.id}>
+                    <td style={styles.td}>{r.clase}</td>
+                    <td style={styles.td}>{r.usuario}</td>
+                    <td style={styles.td}>{r.turno}</td>
+                    <td style={styles.td}>{r.estado}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {busquedaRealizada && resultados.length === 0 && (
+          <p style={styles.sinResultados}>
+            No hay reservas registradas para la fecha seleccionada.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
@@ -124,6 +139,10 @@ const styles = {
   },
   resultados: {
     marginTop: 40,
+  },
+  sinResultados: {
+    color: "#666",
+    fontSize: "1rem",
   },
   table: {
     width: "100%",

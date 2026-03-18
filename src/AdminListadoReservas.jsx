@@ -1,19 +1,24 @@
+
 import React, { useEffect, useState } from "react";
 import { ref, get, child, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
-import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
-
 
 const AdminListadoReservas = () => {
   const [reservas, setReservas] = useState([]);
-  const navigate = useNavigate();
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const obtenerReservas = async () => {
       try {
         const snapshot = await get(child(ref(dbRealtime), "reservas"));
         const datos = [];
+
+        if (!snapshot.exists()) {
+          setReservas([]);
+          setCargando(false);
+          return;
+        }
 
         snapshot.forEach((claseSnap) => {
           const clase = claseSnap.key;
@@ -25,13 +30,17 @@ const AdminListadoReservas = () => {
               const turno = turnoSnap.key;
 
               turnoSnap.forEach((tipoSnap) => {
+                const tipo = tipoSnap.key;
+
                 tipoSnap.forEach((reservaSnap) => {
                   const reserva = reservaSnap.val();
+
                   datos.push({
                     id: reservaSnap.key,
                     clase,
                     fecha,
                     turno,
+                    tipo,
                     estado: reserva.estado || "Pendiente de pago",
                     usuario: reserva.nombre || "Sin nombre",
                     uid: reserva.uid || null,
@@ -41,11 +50,13 @@ const AdminListadoReservas = () => {
             });
           });
         });
-        datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
+        datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         setReservas(datos);
       } catch (error) {
         console.error("Error al obtener reservas:", error);
+      } finally {
+        setCargando(false);
       }
     };
 
@@ -59,28 +70,18 @@ const AdminListadoReservas = () => {
     try {
       const reservaRef = ref(
         dbRealtime,
-        `reservas/${reserva.clase}/${reserva.fecha}/${reserva.turno}`
+        `reservas/${reserva.clase}/${reserva.fecha}/${reserva.turno}/${reserva.tipo}/${reserva.id}`
       );
 
-      const snapshot = await get(reservaRef);
-      snapshot.forEach((tipoSnap) => {
-        tipoSnap.forEach((reservaSnap) => {
-          if (reservaSnap.key === reserva.id) {
-            update(reservaSnap.ref, { estado: "Cancelada" });
+      await update(reservaRef, { estado: "Cancelada" });
 
-            if (reserva.uid) {
-              const avisoRef = ref(dbRealtime, `usuarios/${reserva.uid}/avisos`);
-              const aviso = {
-                mensaje: `Tu reserva del ${reserva.fecha} a las ${reserva.turno} ha sido cancelada por el administrador.`,
-                fecha: new Date().toISOString(),
-              };
-              update(avisoRef, {
-                [Date.now()]: aviso,
-              });
-            }
-          }
+      if (reserva.uid) {
+        const avisoRef = ref(dbRealtime, `usuarios/${reserva.uid}/avisos/${Date.now()}`);
+        await update(avisoRef, {
+          mensaje: `Tu reserva del ${reserva.fecha} a las ${reserva.turno} ha sido cancelada por el administrador.`,
+          fecha: new Date().toISOString(),
         });
-      });
+      }
 
       setReservas((prev) =>
         prev.map((r) =>
@@ -96,65 +97,67 @@ const AdminListadoReservas = () => {
     <div style={styles.body}>
       <BotonVolver />
       <h2 style={styles.titulo}>📋 Listado de Reservas</h2>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Clase</th>
-            <th style={styles.th}>Usuario</th>
-            <th style={styles.th}>Fecha</th>
-            <th style={styles.th}>Turno</th>
-            <th style={styles.th}>Estado</th>
-            <th style={styles.th}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reservas.map((reserva) => (
-            <tr key={reserva.id}>
-              <td style={styles.td}>{reserva.clase}</td>
-              <td style={styles.td}>{reserva.usuario}</td>
-              <td style={styles.td}>{reserva.fecha}</td>
-              <td style={styles.td}>{reserva.turno}</td>
-              <td
-                style={{
-                  ...styles.td,
-                  backgroundColor:
-                    reserva.estado === "Confirmada"
-                      ? "#d4edda"
-                      : reserva.estado === "Cancelada"
-                      ? "#f8d7da"
-                      : "#e2e3e5",
-                  color:
-                    reserva.estado === "Confirmada"
-                      ? "#155724"
-                      : reserva.estado === "Cancelada"
-                      ? "#721c24"
-                      : "#383d41",
-                  fontWeight: "bold",
-                }}
-              >
-                {reserva.estado}
-              </td>
-              <td style={styles.td}>
-                {reserva.estado !== "Cancelada" && (
-                  <button
-                    onClick={() => cancelarReserva(reserva)}
-                    style={{
-                      padding: "6px 10px",
-                      backgroundColor: "#e74c3c",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                )}
-              </td>
+
+      {cargando ? (
+        <p style={styles.mensaje}>Cargando reservas...</p>
+      ) : reservas.length === 0 ? (
+        <p style={styles.mensaje}>No hay reservas registradas.</p>
+      ) : (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Clase</th>
+              <th style={styles.th}>Usuario</th>
+              <th style={styles.th}>Fecha</th>
+              <th style={styles.th}>Turno</th>
+              <th style={styles.th}>Tipo</th>
+              <th style={styles.th}>Estado</th>
+              <th style={styles.th}>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {reservas.map((reserva) => (
+              <tr key={reserva.id}>
+                <td style={styles.td}>{reserva.clase}</td>
+                <td style={styles.td}>{reserva.usuario}</td>
+                <td style={styles.td}>{reserva.fecha}</td>
+                <td style={styles.td}>{reserva.turno}</td>
+                <td style={styles.td}>{reserva.tipo}</td>
+                <td
+                  style={{
+                    ...styles.td,
+                    backgroundColor:
+                      reserva.estado === "Confirmada"
+                        ? "#d4edda"
+                        : reserva.estado === "Cancelada"
+                        ? "#f8d7da"
+                        : "#e2e3e5",
+                    color:
+                      reserva.estado === "Confirmada"
+                        ? "#155724"
+                        : reserva.estado === "Cancelada"
+                        ? "#721c24"
+                        : "#383d41",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {reserva.estado}
+                </td>
+                <td style={styles.td}>
+                  {reserva.estado !== "Cancelada" && (
+                    <button
+                      onClick={() => cancelarReserva(reserva)}
+                      style={styles.botonCancelar}
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
@@ -166,15 +169,19 @@ const styles = {
     padding: 30,
     minHeight: "100vh",
   },
-  
   titulo: {
     textAlign: "center",
     marginBottom: 20,
     color: "#333",
   },
+  mensaje: {
+    textAlign: "center",
+    color: "#666",
+    marginTop: 30,
+  },
   table: {
     width: "100%",
-    maxWidth: 900,
+    maxWidth: 1000,
     margin: "auto",
     borderCollapse: "collapse",
     backgroundColor: "#fff",
@@ -192,6 +199,14 @@ const styles = {
     padding: 12,
     borderBottom: "1px solid #eee",
     textAlign: "left",
+  },
+  botonCancelar: {
+    padding: "6px 10px",
+    backgroundColor: "#e74c3c",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
   },
 };
 
