@@ -22,7 +22,7 @@ import DondeReservar from "./DondeReservar.jsx";
 // Clases y reservas
 import Clases from "./Clases.jsx";
 import ClasesSoloVista from "./ClasesSoloVista.jsx";
-import EdicionPremium from "./EdicionPremium.jsx";
+
 
 import CreaTuBrunchBowl from "./CreaTuBrunchBowl.jsx";
 import CreaTuPiezaFavorita from "./CreaTuPiezaFavorita";
@@ -32,7 +32,6 @@ import ReservaPintarCeramica from "./ReservaPintarCeramica.jsx";
 
 
 
-import ExpresContinuo from "./ExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
 
 import TalleresCrearPiezas from "./TalleresCrearPiezas";
@@ -79,28 +78,26 @@ import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 
 
 // Clases solo vista
-import EdicionPremiumSolo from "./EdicionPremiumSolo.jsx";
-import CreativoPlusSolo from "./CreativoPlusSolo.jsx";
-import BasicoEsencialSolo from "./BasicoEsencialSolo.jsx";
 
-import PintaTuPiezaDeCeramicaSolo from "./PintaTuPiezaDeCeramicaSolo.jsx";
-import ExpresContinuoSolo from "./ExpresContinuoSolo.jsx";
+
+
+
+
+
 
 // Tarjetas regalo
-import TarjetaRegaloSolo from "./TarjetaRegaloSolo.jsx";
-import TornoIntensivoRegalo from "./TornoIntensivoRegalo.jsx";
-import Clase2ClasesRegalo from "./Clase2ClasesRegalo.jsx";
+
+
+
 import CreaTuPiezaFavoritaRegalo from "./CreaTuPiezaFavoritaRegalo.jsx";
-import Clase4ClasesRegalo from "./Clase4ClasesRegalo.jsx";
-import DetalleTarjeta2Clases from "./DetalleTarjeta2Clases.jsx";
+
+
 import DetalleTarjeta4Clases from "./DetalleTarjeta4Clases.jsx";
 import DetalleTarjetaCreaTuPiezaFavorita from "./DetalleTarjetaCreaTuPiezaFavorita.jsx";
 import DetalleTarjetaPintaTuPieza from "./DetalleTarjetaPintaTuPieza.jsx";
-import DetalleTarjetaTornoIntensivo from "./DetalleTarjetaTornoIntensivo.jsx";
-import ReservaPintaTuPiezaRegalo from "./ReservaPintaTuPiezaRegalo.jsx";
+
 
 //Reservas con las tarjetas regalo
-import ReservaTornoIntensivoRegalo from "./ReservaTornoIntensivoRegalo.jsx";
 import Reserva2clases4hmesRegalo from "./Reserva2clases4hmesRegalo.jsx";
 import ReservaCreaTuCuencoRamen from "./ReservaCreaTuCuencoRamen.jsx";
 
@@ -179,14 +176,14 @@ function App() {
           {/* Clases */}
           <Route path="/clases" element={<Clases />} />
           <Route path="/clases-solo" element={<ClasesSoloVista />} />
-          <Route path="/edicion-premium" element={<EdicionPremium />} />
+         
           <Route path="/crea-tu-brunch-bowl" element={<CreaTuBrunchBowl />} />
           <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
           
           
           
-          <Route path="/exprescontinuo" element={<ExpresContinuo />} />
+          
           <Route
   path="/reserva-crea-tu-pieza-favorita"
   element={<ReservaCreaTuPiezaFavorita />}
@@ -323,46 +320,46 @@ function App() {
            
 
           {/* Clases solo vista */}
-          <Route path="/edicion-premium-solo" element={<EdicionPremiumSolo />} />
-          <Route path="/creativo-plus-solo" element={<CreativoPlusSolo />} />
-          <Route path="/basico-esencial-solo" element={<BasicoEsencialSolo />} />
+         
           
           
           
-          <Route path="/exprescontinuo-solo" element={<ExpresContinuoSolo />} />
+          
+          
+        
 
           {/* Tarjetas regalo solo vista */}
-          <Route path="/tarjeta-regalo-solo" element={<TarjetaRegaloSolo />} />
-          <Route path="/pintar-ceramica-solo" element={<PintaTuPiezaDeCeramicaSolo />} />
-          <Route path="/tarjeta-regalo-solo/2clases" element={<Clase2ClasesRegalo />} />
+          
+          
+          
           <Route path="/tarjeta-regalo-solo/creapiezafavorita" element={<CreaTuPiezaFavoritaRegalo />} />
-          <Route path="/tarjeta-regalo-solo/pintatupieza" element={<PintaTuPiezaDeCeramicaSolo />} />
-          <Route path="/pintatupieza-solo" element={<PintaTuPiezaDeCeramicaSolo />} />
-          <Route path="/tornointensivo-solo" element={<TornoIntensivoRegalo />} />
-          <Route path="/tarjeta-regalo-solo/tornointensivo" element={<TornoIntensivoRegalo />} />
+        
+    
+          
+          
           
           
           <Route path="/creapiezafavorita-solo" element={<CreaTuPiezaFavoritaRegalo />} />
-          <Route path="/tarjeta-regalo-solo/4clases" element={<Clase4ClasesRegalo />} />
+          
 
           {/* Canjear y reserva regalo */}
           <Route path="/canjear-tarjeta-regalo" element={<CanjearTarjetaRegalo />} />
-          <Route path="/reserva-pinta-tu-pieza-regalo" element={<ReservaPintaTuPiezaRegalo />} />
+          
           
 
           {/* Reservas tarjetas regalo*/}
-          <Route path="/reserva-tornointensivo-regalo" element={<ReservaTornoIntensivoRegalo />}/>
+          
           <Route path="/reserva-2clases4hmes-regalo" element={<Reserva2clases4hmesRegalo />} />
 
 
           {/* Reservas normales */}
-          <Route path="/reserva-edicion-premium" element={<ReservaEdicionPremium />} />
+        
           
           
           <Route path="/reserva-pintar-ceramica" element={<ReservaPintarCeramica />} />
           
           
-          <Route path="/reserva-exprescontinuo" element={<ReservaExpresContinuo />} />
+          
 
           {/* Resumen de pago */}
           <Route path="/resumen-pago" element={<ResumenPago />} />
