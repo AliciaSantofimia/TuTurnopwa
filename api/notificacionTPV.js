@@ -1,6 +1,6 @@
 // api/notificacionTPV.js
 import crypto from "crypto";
-import { adminDb } from "./_firebaseAdmin";
+import { adminDb } from "./_firebaseAdmin.js";
 
 export const config = { runtime: "nodejs" };
 
