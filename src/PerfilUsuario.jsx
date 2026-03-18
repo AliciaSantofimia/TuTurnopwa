@@ -30,19 +30,21 @@ export default function PerfilUsuario() {
           setAvisos(data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)));
         }
 
-        const refReservas = ref(dbRealtime, `usuarios/${user.uid}/reservas`);
-        const snapReservas = await get(refReservas);
-        if (snapReservas.exists()) {
-          const todas = Object.values(snapReservas.val());
-          if (todas.length > 0) setReservaActiva(todas[0]);
-        }
+        const refListaReservas = ref(dbRealtime, `usuarios/${user.uid}/listaReservas`);
+const snapListaReservas = await get(refListaReservas);
 
-        const refHistorial = ref(dbRealtime, `usuarios/${user.uid}/historialReservas`);
-        const snapHistorial = await get(refHistorial);
-        if (snapHistorial.exists()) {
-          const historial = Object.values(snapHistorial.val());
-          setReservasPasadas(historial);
-        }
+if (snapListaReservas.exists()) {
+  const todas = Object.values(snapListaReservas.val()).sort((a, b) => {
+    const fechaA = new Date(a.timestamp || a.fecha || 0);
+    const fechaB = new Date(b.timestamp || b.fecha || 0);
+    return fechaB - fechaA;
+  });
+
+  if (todas.length > 0) {
+    setReservaActiva(todas[0]);
+    setReservasPasadas(todas.slice(1));
+  }
+}
       } else {
         navigate("/login");
       }
@@ -91,7 +93,9 @@ export default function PerfilUsuario() {
               <p><span className="font-semibold">Clase:</span> {reservaActiva.clase}</p>
               <p><span className="font-semibold">Fecha:</span> {reservaActiva.fecha}</p>
               <p><span className="font-semibold">Turno:</span> {reservaActiva.turno}</p>
-              <p><span className="font-semibold">Ubicación:</span> {reservaActiva.ubicacion}</p>
+              {reservaActiva.ubicacion && (
+  <p><span className="font-semibold">Ubicación:</span> {reservaActiva.ubicacion}</p>
+)}
             </div>
           ) : (
             <p className="text-sm text-[#7b6d62]">

@@ -23,7 +23,7 @@ import DondeReservar from "./DondeReservar.jsx";
 import Clases from "./Clases.jsx";
 import ClasesSoloVista from "./ClasesSoloVista.jsx";
 import EdicionPremium from "./EdicionPremium.jsx";
-import ReservaEdicionPremium from "./ReservaEdicionPremium.jsx";
+i
 import CreaTuBrunchBowl from "./CreaTuBrunchBowl.jsx";
 import CreaTuPiezaFavorita from "./CreaTuPiezaFavorita";
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
@@ -34,7 +34,6 @@ import ReservaBono2Clases from "./ReservaBono2Clases.jsx";
 import MensualBono4Clases from "./MensualBono4Clases.jsx";
 import ReservaBono4Clases from "./ReservaBono4Clases.jsx";
 import ExpresContinuo from "./ExpresContinuo.jsx";
-import ReservaExpresContinuo from "./ReservaExpresContinuo.jsx";
 import ResumenPago from "./ResumenPago.jsx";
 
 import TalleresCrearPiezas from "./TalleresCrearPiezas";
@@ -364,8 +363,7 @@ function App() {
           
           <Route path="/reserva-pintar-ceramica" element={<ReservaPintarCeramica />} />
           
-          <Route path="/reserva-bono-2-clases" element={<ReservaBono2Clases />} />
-          <Route path="/reserva-bono-4-clases" element={<ReservaBono4Clases />} />
+          
           <Route path="/reserva-exprescontinuo" element={<ReservaExpresContinuo />} />
 
           {/* Resumen de pago */}

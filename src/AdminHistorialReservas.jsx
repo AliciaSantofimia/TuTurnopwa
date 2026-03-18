@@ -3,8 +3,6 @@ import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
-import DateInputReserva from "./components/DateInputReserva";
-
 
 const AdminHistorialReservas = () => {
   const [reservas, setReservas] = useState([]);
@@ -18,30 +16,43 @@ const AdminHistorialReservas = () => {
         const datos = [];
 
         if (snapshot.exists()) {
-          snapshot.forEach((fechaSnap) => {
-            const fecha = fechaSnap.key;
+          snapshot.forEach((claseSnap) => {
+            const claseKey = claseSnap.key;
 
-            fechaSnap.forEach((turnoSnap) => {
-              const turno = turnoSnap.key;
+            claseSnap.forEach((fechaSnap) => {
+              const fecha = fechaSnap.key;
 
-              turnoSnap.forEach((tipoSnap) => {
-                tipoSnap.forEach((reservaSnap) => {
-                  const reserva = reservaSnap.val();
+              fechaSnap.forEach((turnoSnap) => {
+                const turno = turnoSnap.key;
 
-                  datos.push({
-                    id: reservaSnap.key,
-                    clase: reserva.clase || "—",
-                    usuario: reserva.usuario || "—",
-                    fecha,
-                    turno,
-                    estado: reserva.estado || "Activa",
-                    tieneNotas: reserva.notasInternas?.length > 0 || false,
+                turnoSnap.forEach((metodoSnap) => {
+                  const metodo = metodoSnap.key;
+
+                  metodoSnap.forEach((reservaSnap) => {
+                    const reserva = reservaSnap.val();
+
+                    datos.push({
+                      id: reservaSnap.key,
+                      clase: reserva.clase || claseKey || "—",
+                      usuario: reserva.nombre || reserva.email || reserva.uid || "—",
+                      fecha: reserva.fecha || reserva.fechaInicio || fecha,
+                      turno: reserva.turno || turno,
+                      metodo: reserva.metodo || reserva.modalidad || metodo || "—",
+                      estado: reserva.estadoPago || reserva.estado || "Activa",
+                      tieneNotas: reserva.notasInternas?.length > 0 || false,
+                    });
                   });
                 });
               });
             });
           });
         }
+
+        datos.sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0);
+          const fechaB = new Date(b.fecha || 0);
+          return fechaB - fechaA;
+        });
 
         setReservas(datos);
       } catch (error) {
@@ -56,7 +67,6 @@ const AdminHistorialReservas = () => {
   return (
     <div style={styles.body}>
       <BotonVolver />
-
 
       <h2 style={styles.titulo}>📜 Historial de Reservas</h2>
 
@@ -79,6 +89,7 @@ const AdminHistorialReservas = () => {
             <th style={styles.th}>Usuario</th>
             <th style={styles.th}>Fecha</th>
             <th style={styles.th}>Turno</th>
+            <th style={styles.th}>Método</th>
             <th style={styles.th}>Estado</th>
           </tr>
         </thead>
@@ -86,11 +97,12 @@ const AdminHistorialReservas = () => {
           {reservas
             .filter((r) => !fechaFiltro || r.fecha === fechaFiltro)
             .map((r) => (
-              <tr key={r.id}>
+              <tr key={`${r.fecha}-${r.turno}-${r.id}`}>
                 <td style={styles.td}>{r.clase}</td>
                 <td style={styles.td}>{r.usuario}</td>
                 <td style={styles.td}>{r.fecha}</td>
                 <td style={styles.td}>{r.turno}</td>
+                <td style={styles.td}>{r.metodo}</td>
                 <td style={styles.td}>
                   {r.estado}
                   <br />
@@ -143,7 +155,7 @@ const styles = {
   },
   table: {
     width: "100%",
-    maxWidth: 900,
+    maxWidth: 1000,
     margin: "auto",
     backgroundColor: "white",
     borderCollapse: "collapse",
@@ -161,6 +173,7 @@ const styles = {
     padding: 12,
     borderBottom: "1px solid #eee",
     textAlign: "left",
+    verticalAlign: "top",
   },
   btnNota: {
     marginTop: 5,
@@ -175,5 +188,3 @@ const styles = {
 };
 
 export default AdminHistorialReservas;
-
-
