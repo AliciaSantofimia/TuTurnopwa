@@ -13,6 +13,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.6.1",
+    "firebase-admin": "^13.7.0",
     "react": "^19.1.0",
     "react-datepicker": "^8.3.0",
     "react-dom": "^19.1.0",
@@ -32,6 +33,4 @@
     "tailwindcss": "^3.4.1",
     "vite": "^6.3.5"
   }
-  
-  
 }
