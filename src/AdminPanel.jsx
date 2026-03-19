@@ -39,7 +39,7 @@ const AdminPanel = () => {
         const manana = mananaDate.toISOString().slice(0, 10);
 
         const inicioSemana = new Date(hoyDate);
-        const dia = inicioSemana.getDay(); // 0 domingo
+        const dia = inicioSemana.getDay();
         const diferenciaLunes = dia === 0 ? -6 : 1 - dia;
         inicioSemana.setDate(inicioSemana.getDate() + diferenciaLunes);
         inicioSemana.setHours(0, 0, 0, 0);
@@ -48,11 +48,13 @@ const AdminPanel = () => {
         finSemana.setDate(finSemana.getDate() + 6);
         finSemana.setHours(23, 59, 59, 999);
 
+        const reservasRef = ref(dbRealtime, "reservas");
         const usersRef = ref(dbRealtime, "usuarios");
         const solicitudesCambioRef = ref(dbRealtime, "solicitudesCambioClases");
         const solicitudesEliminacionRef = ref(dbRealtime, "solicitudesEliminacion");
 
-        const [usersSnap, cambioSnap, eliminacionSnap] = await Promise.all([
+        const [reservasSnap, usersSnap, cambioSnap, eliminacionSnap] = await Promise.all([
+          get(reservasRef),
           get(usersRef),
           get(solicitudesCambioRef),
           get(solicitudesEliminacionRef),
@@ -68,60 +70,78 @@ const AdminPanel = () => {
         const proximas = [];
         const ocupacionMap = {};
 
+        if (reservasSnap.exists()) {
+          reservasSnap.forEach((claseSnap) => {
+            const clase = claseSnap.key;
+
+            claseSnap.forEach((fechaSnap) => {
+              const fecha = fechaSnap.key;
+
+              fechaSnap.forEach((turnoSnap) => {
+                const turno = turnoSnap.key;
+
+                turnoSnap.forEach((metodoSnap) => {
+                  metodoSnap.forEach((reservaSnap) => {
+                    const reserva = reservaSnap.val();
+
+                    if (!reserva || typeof reserva !== "object") return;
+
+                    const estado = reserva.estado || "";
+                    if (estado !== "Confirmada") return;
+
+                    const fechaReserva = reserva.fecha || reserva.fechaInicio || fecha;
+                    if (!fechaReserva) return;
+
+                    const plazasReserva = Number(reserva.plazas || 1);
+                    const claseReserva = reserva.clase || clase || "Clase sin nombre";
+                    const turnoReserva = reserva.turno || turno || "Sin turno";
+
+                    const fechaObj = new Date(`${fechaReserva}T00:00:00`);
+
+                    if (fechaReserva === hoy) {
+                      reservasHoy += 1;
+                      plazasHoy += plazasReserva;
+                    }
+
+                    if (fechaReserva === manana) {
+                      reservasManana += 1;
+                    }
+
+                    if (fechaObj >= inicioSemana && fechaObj <= finSemana) {
+                      reservasSemana += 1;
+                      plazasSemana += plazasReserva;
+
+                      if (!ocupacionMap[claseReserva]) {
+                        ocupacionMap[claseReserva] = {
+                          clase: claseReserva,
+                          reservas: 0,
+                          plazas: 0,
+                        };
+                      }
+
+                      ocupacionMap[claseReserva].reservas += 1;
+                      ocupacionMap[claseReserva].plazas += plazasReserva;
+                    }
+
+                    if (fechaReserva >= hoy) {
+                      proximas.push({
+                        clase: claseReserva,
+                        fecha: fechaReserva,
+                        turno: turnoReserva,
+                        plazas: plazasReserva,
+                      });
+                    }
+                  });
+                });
+              });
+            });
+          });
+        }
+
         if (usersSnap.exists()) {
           const usuarios = usersSnap.val();
 
           Object.values(usuarios).forEach((usuario) => {
-            if (usuario?.reservas && typeof usuario.reservas === "object") {
-              Object.values(usuario.reservas).forEach((reserva) => {
-                if (!reserva || typeof reserva !== "object") return;
-
-                const fechaReserva = reserva.fecha || reserva.fechaInicio || null;
-                const plazasReserva = Number(reserva.plazas || 1);
-                const claseReserva = reserva.clase || "Clase sin nombre";
-                const estado = reserva.estado || "activa";
-
-                if (!fechaReserva) return;
-                if (estado === "cancelada") return;
-
-                const fechaObj = new Date(`${fechaReserva}T00:00:00`);
-
-                if (fechaReserva === hoy) {
-                  reservasHoy += 1;
-                  plazasHoy += plazasReserva;
-                }
-
-                if (fechaReserva === manana) {
-                  reservasManana += 1;
-                }
-
-                if (fechaObj >= inicioSemana && fechaObj <= finSemana) {
-                  reservasSemana += 1;
-                  plazasSemana += plazasReserva;
-
-                  if (!ocupacionMap[claseReserva]) {
-                    ocupacionMap[claseReserva] = {
-                      clase: claseReserva,
-                      reservas: 0,
-                      plazas: 0,
-                    };
-                  }
-
-                  ocupacionMap[claseReserva].reservas += 1;
-                  ocupacionMap[claseReserva].plazas += plazasReserva;
-                }
-
-                if (fechaReserva >= hoy) {
-                  proximas.push({
-                    clase: claseReserva,
-                    fecha: fechaReserva,
-                    turno: reserva.turno || "Sin turno",
-                    plazas: plazasReserva,
-                  });
-                }
-              });
-            }
-
             if (usuario?.bonosActivos && typeof usuario.bonosActivos === "object") {
               Object.values(usuario.bonosActivos).forEach((bono) => {
                 if (!bono || typeof bono !== "object") return;
@@ -195,19 +215,12 @@ const AdminPanel = () => {
 
   const seccionesAdmin = [
     {
-  titulo: "Clases",
-  acciones: [
-    { texto: "Inscritos por clase", ruta: "/admin-listado-clases" },
-  ],
-},
+      titulo: "Clases",
+      acciones: [{ texto: "Inscritos por clase", ruta: "/admin-listado-clases" }],
+    },
     {
       titulo: "Reservas",
-      acciones: [
-        { texto: "Ver todas las reservas", ruta: "/admin-listado-reservas" },
-        { texto: "Filtrar por fecha", ruta: "/admin-filtrar-reservas" },
-        { texto: "Completar reserva", ruta: "/admin-completar-reserva" },
-        { texto: "Cancelar reserva", ruta: "/admin-cancelar-reserva" },
-      ],
+      acciones: [{ texto: "Ver todas las reservas", ruta: "/admin-listado-reservas" }],
     },
     {
       titulo: "Usuarios",
@@ -218,9 +231,7 @@ const AdminPanel = () => {
     },
     {
       titulo: "Bonos",
-      acciones: [
-        { texto: "Ver bonos activos / uso de bonos", ruta: "/admin-uso-bonos" },
-      ],
+      acciones: [{ texto: "Ver bonos activos / uso de bonos", ruta: "/admin-uso-bonos" }],
     },
     {
       titulo: "Historial",
@@ -231,10 +242,7 @@ const AdminPanel = () => {
     },
     {
       titulo: "Notificaciones",
-      acciones: [
-        { texto: "Enviar aviso", ruta: "/admin-enviar-aviso" },
-        { texto: "Ver avisos enviados", ruta: "/admin-notificaciones" },
-      ],
+      acciones: [{ texto: "Ver avisos enviados", ruta: "/admin-notificaciones" }],
     },
   ];
 
