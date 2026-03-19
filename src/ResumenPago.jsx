@@ -98,27 +98,28 @@ export default function ResumenPago() {
   const { state = {} } = useLocation();
   const navigate = useNavigate();
 
-  const {
-    desdeTarjeta,
-    tipo,
-    clase,
-    precio,
-    fecha,
-    fechaInicio,
-    fechaFinMes,
-    fechaCaducidadBono,
-    turno,
-    metodo,
-    modalidad,
-    plazas,
-    numeroClases,
-    duracionClase,
-    incluyeDecoracion,
-    subtipo,
-    tipoTaller,
-    claseId,
-    payMethod: payMethodFromState,
-  } = state;
+ const {
+  desdeTarjeta,
+  tipo,
+  clase,
+  precio,
+  fecha,
+  fechaInicio,
+  fechaFinMes,
+  fechaCaducidadBono,
+  turno,
+  metodo,
+  modalidad,
+  plazas,
+  numeroClases,
+  duracionClase,
+  incluyeDecoracion,
+  subtipo,
+  tipoTaller,
+  claseId,
+  orderId: orderIdFromState,
+  payMethod: payMethodFromState,
+} = state;
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
@@ -237,7 +238,7 @@ export default function ResumenPago() {
     try {
       setCargando(true);
 
-      const orderId = makeOrderId(Date.now());
+      const orderId = orderIdFromState || makeOrderId(Date.now());
 
       await crearPedidoPendiente({
         orderId,
