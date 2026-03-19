@@ -1,4 +1,4 @@
-// ResumenPago.jsx
+// RResumenPago.jsx
 import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
@@ -21,13 +21,6 @@ function parseEuro(n) {
   return Number.isFinite(v) ? v : 0;
 }
 
-/**
- * Precios unitarios por clase.
- * - SOLO Bono 4 Clases aplica +5€ si metodo === "torno".
- * - Exprés Continuo: torno 32€, general/modelado 27€.
- * - Pinta tu pieza de cerámica: 25€ siempre (sin recargo).
- * - Tearium / The Club: 25€.
- */
 function getUnitPrice(clase = "", metodo = "") {
   const c = normalize(clase);
   const m = normalize(metodo);
@@ -98,28 +91,28 @@ export default function ResumenPago() {
   const { state = {} } = useLocation();
   const navigate = useNavigate();
 
- const {
-  desdeTarjeta,
-  tipo,
-  clase,
-  precio,
-  fecha,
-  fechaInicio,
-  fechaFinMes,
-  fechaCaducidadBono,
-  turno,
-  metodo,
-  modalidad,
-  plazas,
-  numeroClases,
-  duracionClase,
-  incluyeDecoracion,
-  subtipo,
-  tipoTaller,
-  claseId,
-  orderId: orderIdFromState,
-  payMethod: payMethodFromState,
-} = state;
+  const {
+    desdeTarjeta,
+    tipo,
+    clase,
+    precio,
+    fecha,
+    fechaInicio,
+    fechaFinMes,
+    fechaCaducidadBono,
+    turno,
+    metodo,
+    modalidad,
+    plazas,
+    numeroClases,
+    duracionClase,
+    incluyeDecoracion,
+    subtipo,
+    tipoTaller,
+    claseId,
+    orderId: orderIdFromState,
+    payMethod: payMethodFromState,
+  } = state;
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
@@ -171,28 +164,33 @@ export default function ResumenPago() {
   }
 
   async function crearPedidoPendiente({ orderId, uid }) {
-  const {
-  desdeTarjeta,
-  tipo,
-  clase,
-  precio,
-  fecha,
-  fechaInicio,
-  fechaFinMes,
-  fechaCaducidadBono,
-  turno,
-  metodo,
-  modalidad,
-  plazas,
-  numeroClases,
-  duracionClase,
-  incluyeDecoracion,
-  subtipo,
-  tipoTaller,
-  claseId,
-  orderId: orderIdFromState,
-  payMethod: payMethodFromState,
-} = state;
+    const pedido = {
+      orderId,
+      uid,
+      desdeTarjeta: !!desdeTarjeta,
+      tipo: tipo || "reserva",
+      clase: clase || "",
+      claseId: claseId || "",
+      tipoTaller: tipoTaller || "",
+      subtipo: subtipo || "",
+      precioTotal: totalEuros,
+      precioOriginal: precio || "",
+      fecha: fecha || "",
+      fechaInicio: fechaInicio || "",
+      fechaFinMes: fechaFinMes || "",
+      fechaCaducidadBono: fechaCaducidadBono || "",
+      turno: turno || "",
+      metodo: metodo || "",
+      modalidad: modalidad || "",
+      plazas: plazasNum,
+      numeroClases: numeroClases || 0,
+      duracionClase: duracionClase || "",
+      incluyeDecoracion: !!incluyeDecoracion,
+      payMethod: payMethodFromState || "card",
+      estadoPago: "pendiente",
+      procesado: false,
+      creadoEn: new Date().toISOString(),
+    };
 
     await set(ref(dbRealtime, `pedidosPendientes/${orderId}`), pedido);
   }
