@@ -48,24 +48,13 @@ const AdminPanel = () => {
         finSemana.setDate(finSemana.getDate() + 6);
         finSemana.setHours(23, 59, 59, 999);
 
-        const reservasRef = ref(dbRealtime, "reservas");
-        const usersRef = ref(dbRealtime, "usuarios");
-        const solicitudesCambioRef = ref(dbRealtime, "solicitudesCambioClases");
-        const solicitudesEliminacionRef = ref(dbRealtime, "solicitudesEliminacion");
-
-        const [reservasSnap, usersSnap, cambioSnap, eliminacionSnap] = await Promise.all([
-          get(reservasRef),
-          get(usersRef),
-          get(solicitudesCambioRef),
-          get(solicitudesEliminacionRef),
-        ]);
+        const reservasSnap = await get(ref(dbRealtime, "reservas"));
 
         let reservasHoy = 0;
         let reservasManana = 0;
         let reservasSemana = 0;
         let plazasHoy = 0;
         let plazasSemana = 0;
-        let bonosActivos = 0;
 
         const proximas = [];
         const ocupacionMap = {};
@@ -80,21 +69,33 @@ const AdminPanel = () => {
               fechaSnap.forEach((turnoSnap) => {
                 const turno = turnoSnap.key;
 
-                turnoSnap.forEach((metodoSnap) => {
-                  metodoSnap.forEach((reservaSnap) => {
-                    const reserva = reservaSnap.val();
+                turnoSnap.forEach((nivelSnap) => {
+                  const nivelKey = nivelSnap.key;
+                  const nivelVal = nivelSnap.val();
 
+                  if (!nivelVal || typeof nivelVal !== "object") return;
+
+                  const valoresNivel = Object.values(nivelVal);
+
+                  const pareceReservaDirecta =
+                    "estado" in nivelVal ||
+                    "estadoPago" in nivelVal ||
+                    "nombre" in nivelVal ||
+                    "email" in nivelVal ||
+                    "uid" in nivelVal ||
+                    "metodo" in nivelVal ||
+                    "modalidad" in nivelVal;
+
+                  const procesarReserva = (reserva, metodoPorDefecto = "—") => {
                     if (!reserva || typeof reserva !== "object") return;
-
-                    const estado = reserva.estado || "";
-                    if (estado !== "Confirmada") return;
+                    if ((reserva.estado || "") !== "Confirmada") return;
 
                     const fechaReserva = reserva.fecha || reserva.fechaInicio || fecha;
-                    if (!fechaReserva) return;
-
-                    const plazasReserva = Number(reserva.plazas || 1);
-                    const claseReserva = reserva.clase || clase || "Clase sin nombre";
                     const turnoReserva = reserva.turno || turno || "Sin turno";
+                    const claseReserva = reserva.clase || clase || "Clase sin nombre";
+                    const plazasReserva = Number(reserva.plazas || 1);
+
+                    if (!fechaReserva) return;
 
                     const fechaObj = new Date(`${fechaReserva}T00:00:00`);
 
@@ -129,27 +130,30 @@ const AdminPanel = () => {
                         fecha: fechaReserva,
                         turno: turnoReserva,
                         plazas: plazasReserva,
+                        metodo: reserva.metodo || reserva.modalidad || metodoPorDefecto,
                       });
                     }
-                  });
+                  };
+
+                  if (pareceReservaDirecta) {
+                    procesarReserva(nivelVal);
+                    return;
+                  }
+
+                  const esMapaDeReservas =
+                    valoresNivel.length > 0 &&
+                    valoresNivel.every((item) => item && typeof item === "object");
+
+                  if (esMapaDeReservas) {
+                    const metodo = nivelKey;
+
+                    nivelSnap.forEach((reservaSnap) => {
+                      procesarReserva(reservaSnap.val(), metodo);
+                    });
+                  }
                 });
               });
             });
-          });
-        }
-
-        if (usersSnap.exists()) {
-          const usuarios = usersSnap.val();
-
-          Object.values(usuarios).forEach((usuario) => {
-            if (usuario?.bonosActivos && typeof usuario.bonosActivos === "object") {
-              Object.values(usuario.bonosActivos).forEach((bono) => {
-                if (!bono || typeof bono !== "object") return;
-                if (bono.estado === "activo") {
-                  bonosActivos += 1;
-                }
-              });
-            }
           });
         }
 
@@ -163,22 +167,14 @@ const AdminPanel = () => {
           (a, b) => b.plazas - a.plazas
         );
 
-        const solicitudesCambio = cambioSnap.exists()
-          ? Object.keys(cambioSnap.val()).length
-          : 0;
-
-        const solicitudesEliminacion = eliminacionSnap.exists()
-          ? Object.keys(eliminacionSnap.val()).length
-          : 0;
-
         setDashboard({
           reservasHoy,
           reservasManana,
           reservasSemana,
           plazasHoy,
           plazasSemana,
-          bonosActivos,
-          solicitudesPendientes: solicitudesCambio + solicitudesEliminacion,
+          bonosActivos: 0,
+          solicitudesPendientes: 0,
           proximasClases: proximas.slice(0, 12),
           ocupacionPorClase,
         });
@@ -608,4 +604,4 @@ const styles = {
   }),
 };
 
-export default AdminPanel;
+export default AdminPanel; 
