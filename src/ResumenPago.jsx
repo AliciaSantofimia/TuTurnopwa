@@ -171,33 +171,28 @@ export default function ResumenPago() {
   }
 
   async function crearPedidoPendiente({ orderId, uid }) {
-    const pedido = {
-      orderId,
-      uid,
-      desdeTarjeta: !!desdeTarjeta,
-      tipo: tipo || "reserva",
-      clase: clase || "",
-      claseId: claseId || "",
-      tipoTaller: tipoTaller || "",
-      subtipo: subtipo || "",
-      precioTotal: totalEuros,
-      precioOriginal: precio || "",
-      fecha: fecha || "",
-      fechaInicio: fechaInicio || "",
-      fechaFinMes: fechaFinMes || "",
-      fechaCaducidadBono: fechaCaducidadBono || "",
-      turno: turno || "",
-      metodo: metodo || "",
-      modalidad: modalidad || "",
-      plazas: plazasNum,
-      numeroClases: numeroClases || 0,
-      duracionClase: duracionClase || "",
-      incluyeDecoracion: !!incluyeDecoracion,
-      payMethod: payMethodFromState || "card",
-      estadoPago: "pendiente",
-      procesado: false,
-      creadoEn: new Date().toISOString(),
-    };
+  const {
+  desdeTarjeta,
+  tipo,
+  clase,
+  precio,
+  fecha,
+  fechaInicio,
+  fechaFinMes,
+  fechaCaducidadBono,
+  turno,
+  metodo,
+  modalidad,
+  plazas,
+  numeroClases,
+  duracionClase,
+  incluyeDecoracion,
+  subtipo,
+  tipoTaller,
+  claseId,
+  orderId: orderIdFromState,
+  payMethod: payMethodFromState,
+} = state;
 
     await set(ref(dbRealtime, `pedidosPendientes/${orderId}`), pedido);
   }
