@@ -34,6 +34,12 @@ function isPaidResponse(data) {
   return Number.isFinite(code) && code >= 0 && code <= 99;
 }
 
+function getAmountCents(data) {
+  const raw = data.Ds_Amount ?? data.DS_AMOUNT ?? data.ds_amount;
+  const cents = Number(raw);
+  return Number.isFinite(cents) ? cents : null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -54,19 +60,24 @@ export default async function handler(req, res) {
       decoded.DS_ORDER ||
       decoded.DS_MERCHANT_ORDER;
 
+    if (!order) {
+      console.warn("TPV notify: falta order");
+      return res.status(200).send("BAD");
+    }
+
     const expected = computeSignatureHmacSha256V1(Ds_MerchantParameters);
     const signOk = signaturesEqual(expected, Ds_Signature);
 
     const paidOk = isPaidResponse(decoded);
+    const amountCentsRedsys = getAmountCents(decoded);
 
     console.log("TPV notify:", {
       signOk,
       paidOk,
       order,
       responseCode: decoded.Ds_Response ?? decoded.DS_RESPONSE,
+      amountCentsRedsys,
     });
-
-    if (!signOk) return res.status(200).send("BAD SIGN");
 
     const ref = adminDb.ref(`pedidosPendientes/${order}`);
     const snap = await ref.get();
@@ -76,16 +87,55 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
 
+    const pedido = snap.val();
+
+    // Idempotencia: si ya estaba procesado, no hacemos nada más
+    if (pedido?.procesado === true) {
+      console.log("Pedido ya procesado:", order);
+      return res.status(200).send("OK");
+    }
+
+    const precioTotal = Number(pedido?.precioTotal ?? 0);
+    const amountCentsPedido = Math.round(precioTotal * 100);
+    const amountMatches =
+      amountCentsRedsys !== null && amountCentsPedido === amountCentsRedsys;
+
+    // Solo aceptamos como pagado si:
+    // 1) Redsys dice pago OK
+    // 2) El pedido existe
+    // 3) El importe coincide
+    if (paidOk && amountMatches) {
+      await ref.update({
+        estadoPago: "pagado",
+        procesado: true,
+        firmaValida: signOk,
+        firmaError: signOk ? "" : "Firma Redsys no validada",
+        responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
+        amountCentsRedsys,
+        amountCentsPedido,
+        webhookRecibidoEn: new Date().toISOString(),
+        actualizadoEn: new Date().toISOString(),
+      });
+
+      return res.status(200).send("OK");
+    }
+
+    // Si no cuadra el pago o el importe, lo dejamos rechazado
     await ref.update({
-      estadoPago: paidOk ? "pagado" : "rechazado",
-      procesado: paidOk,
-      firmaValida: true,
+      estadoPago: "rechazado",
+      procesado: false,
+      firmaValida: signOk,
+      firmaError: signOk ? "" : "Firma Redsys no validada",
+      responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
+      amountCentsRedsys,
+      amountCentsPedido,
+      webhookRecibidoEn: new Date().toISOString(),
       actualizadoEn: new Date().toISOString(),
     });
 
     return res.status(200).send("OK");
   } catch (err) {
-    console.error(err);
+    console.error("Error en notificacionTPV:", err);
     return res.status(200).send("BAD");
   }
 }
