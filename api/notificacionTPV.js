@@ -10,29 +10,28 @@ function getSecretKey() {
   return Buffer.from(secret, "base64");
 }
 
-function normalize3DESKey24(key) {
-  if (key.length === 16) return Buffer.concat([key, key.slice(0, 8)]);
-  if (key.length === 24) return key;
-  if (key.length > 24) return key.slice(0, 24);
-  return Buffer.concat([key, Buffer.alloc(24 - key.length, 0)]);
+/** Firma Redsys HMAC_SHA256_V1: HMAC-SHA256(clave Base64 decodificada, Ds_MerchantParameters literal) */
+function computeSignatureHmacSha256V1(dsMerchantParameters) {
+  const key = getSecretKey();
+  return crypto
+    .createHmac("sha256", key)
+    .update(dsMerchantParameters, "utf8")
+    .digest("base64");
 }
 
-function deriveKey(order) {
-  const key = normalize3DESKey24(getSecretKey());
-  const iv = Buffer.alloc(8, 0);
-
-  const cipher = crypto.createCipheriv("des-ede3-cbc", key, iv);
-  cipher.setAutoPadding(true);
-
-  return Buffer.concat([
-    cipher.update(order, "utf8"),
-    cipher.final(),
-  ]);
+function signaturesEqual(a, b) {
+  if (a == null || b == null || a.length !== b.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(a, "utf8"), Buffer.from(b, "utf8"));
+  } catch {
+    return false;
+  }
 }
 
 function isPaidResponse(data) {
-  const code = Number(data.Ds_Response || data.DS_RESPONSE || -1);
-  return code >= 0 && code <= 99;
+  const raw = data.Ds_Response ?? data.DS_RESPONSE;
+  const code = Number(raw);
+  return Number.isFinite(code) && code >= 0 && code <= 99;
 }
 
 export default async function handler(req, res) {
@@ -40,6 +39,11 @@ export default async function handler(req, res) {
 
   try {
     const { Ds_MerchantParameters, Ds_Signature } = req.body || {};
+
+    if (!Ds_MerchantParameters || !Ds_Signature) {
+      console.warn("TPV notify: faltan parámetros");
+      return res.status(200).send("BAD");
+    }
 
     const decoded = JSON.parse(
       Buffer.from(Ds_MerchantParameters, "base64").toString("utf8")
@@ -50,14 +54,8 @@ export default async function handler(req, res) {
       decoded.DS_ORDER ||
       decoded.DS_MERCHANT_ORDER;
 
-    const key = deriveKey(order);
-
-    const expected = crypto
-      .createHmac("sha256", key)
-      .update(Ds_MerchantParameters, "utf8")
-      .digest("base64");
-
-    const signOk = expected === Ds_Signature;
+    const expected = computeSignatureHmacSha256V1(Ds_MerchantParameters);
+    const signOk = signaturesEqual(expected, Ds_Signature);
 
     const paidOk = isPaidResponse(decoded);
 
@@ -65,7 +63,7 @@ export default async function handler(req, res) {
       signOk,
       paidOk,
       order,
-      responseCode: decoded.Ds_Response,
+      responseCode: decoded.Ds_Response ?? decoded.DS_RESPONSE,
     });
 
     if (!signOk) return res.status(200).send("BAD SIGN");
