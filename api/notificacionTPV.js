@@ -40,6 +40,54 @@ function getAmountCents(data) {
   return Number.isFinite(cents) ? cents : null;
 }
 
+async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
+  const reservasRef = adminDb.ref("reservas");
+  const snapshot = await reservasRef.get();
+
+  if (!snapshot.exists()) return false;
+
+  let actualizada = false;
+  const updates = {};
+
+  snapshot.forEach((claseSnap) => {
+    const clase = claseSnap.key;
+
+    claseSnap.forEach((fechaSnap) => {
+      const fecha = fechaSnap.key;
+
+      fechaSnap.forEach((turnoSnap) => {
+        const turno = turnoSnap.key;
+
+        turnoSnap.forEach((tipoSnap) => {
+          const tipo = tipoSnap.key;
+
+          tipoSnap.forEach((reservaSnap) => {
+            const reserva = reservaSnap.val();
+
+            if (reserva?.orderId === orderId) {
+              const rutaBase = `reservas/${clase}/${fecha}/${turno}/${tipo}/${reservaSnap.key}`;
+
+              updates[`${rutaBase}/estadoPago`] = "pagado";
+              updates[`${rutaBase}/estado`] = "Confirmada";
+              updates[`${rutaBase}/procesado`] = true;
+              updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
+              updates[`${rutaBase}/actualizadoEn`] = timestamp;
+
+              actualizada = true;
+            }
+          });
+        });
+      });
+    });
+  });
+
+  if (actualizada) {
+    await adminDb.ref().update(updates);
+  }
+
+  return actualizada;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -50,6 +98,8 @@ export default async function handler(req, res) {
       console.warn("TPV notify: faltan parámetros");
       return res.status(200).send("BAD");
     }
+
+    const timestamp = new Date().toISOString();
 
     const decoded = JSON.parse(
       Buffer.from(Ds_MerchantParameters, "base64").toString("utf8")
@@ -113,8 +163,15 @@ export default async function handler(req, res) {
         responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
         amountCentsRedsys,
         amountCentsPedido,
-        webhookRecibidoEn: new Date().toISOString(),
-        actualizadoEn: new Date().toISOString(),
+        webhookRecibidoEn: timestamp,
+        actualizadoEn: timestamp,
+      });
+
+      const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
+
+      console.log("Reserva actualizada en /reservas:", {
+        order,
+        reservaActualizada,
       });
 
       return res.status(200).send("OK");
@@ -129,8 +186,8 @@ export default async function handler(req, res) {
       responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
       amountCentsRedsys,
       amountCentsPedido,
-      webhookRecibidoEn: new Date().toISOString(),
-      actualizadoEn: new Date().toISOString(),
+      webhookRecibidoEn: timestamp,
+      actualizadoEn: timestamp,
     });
 
     return res.status(200).send("OK");
