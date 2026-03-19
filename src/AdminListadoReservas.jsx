@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { ref, get, child, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
@@ -29,29 +28,71 @@ const AdminListadoReservas = () => {
             fechaSnap.forEach((turnoSnap) => {
               const turno = turnoSnap.key;
 
-              turnoSnap.forEach((tipoSnap) => {
-                const tipo = tipoSnap.key;
+              turnoSnap.forEach((nivelSnap) => {
+                const nivelKey = nivelSnap.key;
+                const nivelVal = nivelSnap.val();
 
-                tipoSnap.forEach((reservaSnap) => {
-                  const reserva = reservaSnap.val();
+                if (!nivelVal || typeof nivelVal !== "object") return;
+
+                // CASO A:
+                // reservas/clase/fecha/turno/metodo/idReserva
+                const esNivelMetodo =
+                  Object.values(nivelVal).length > 0 &&
+                  Object.values(nivelVal).every(
+                    (item) => item && typeof item === "object"
+                  ) &&
+                  !("estado" in nivelVal) &&
+                  !("uid" in nivelVal);
+
+                if (esNivelMetodo) {
+                  const metodo = nivelKey;
+
+                  nivelSnap.forEach((reservaSnap) => {
+                    const reserva = reservaSnap.val();
+                    if (!reserva || typeof reserva !== "object") return;
+
+                    datos.push({
+                      id: reservaSnap.key,
+                      clase: reserva.clase || clase,
+                      fecha: reserva.fecha || reserva.fechaInicio || fecha,
+                      turno: reserva.turno || turno,
+                      tipo: reserva.metodo || reserva.modalidad || metodo || "—",
+                      estado: reserva.estado || "Pendiente de pago",
+                      estadoPago: reserva.estadoPago || "—",
+                      usuario: reserva.nombre || reserva.email || "Sin nombre",
+                      uid: reserva.uid || null,
+                      ruta: `reservas/${clase}/${fecha}/${turno}/${metodo}/${reservaSnap.key}`,
+                    });
+                  });
+                } else {
+                  // CASO B:
+                  // reservas/clase/fecha/turno/idReserva
+                  const reserva = nivelVal;
 
                   datos.push({
-                    id: reservaSnap.key,
-                    clase,
-                    fecha,
-                    turno,
-                    tipo,
+                    id: nivelKey,
+                    clase: reserva.clase || clase,
+                    fecha: reserva.fecha || reserva.fechaInicio || fecha,
+                    turno: reserva.turno || turno,
+                    tipo: reserva.metodo || reserva.modalidad || "—",
                     estado: reserva.estado || "Pendiente de pago",
-                    usuario: reserva.nombre || "Sin nombre",
+                    estadoPago: reserva.estadoPago || "—",
+                    usuario: reserva.nombre || reserva.email || "Sin nombre",
                     uid: reserva.uid || null,
+                    ruta: `reservas/${clase}/${fecha}/${turno}/${nivelKey}`,
                   });
-                });
+                }
               });
             });
           });
         });
 
-        datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        datos.sort((a, b) => {
+          const fechaA = new Date(`${a.fecha}T00:00:00`);
+          const fechaB = new Date(`${b.fecha}T00:00:00`);
+          return fechaA - fechaB;
+        });
+
         setReservas(datos);
       } catch (error) {
         console.error("Error al obtener reservas:", error);
@@ -68,10 +109,7 @@ const AdminListadoReservas = () => {
     if (!confirmar) return;
 
     try {
-      const reservaRef = ref(
-        dbRealtime,
-        `reservas/${reserva.clase}/${reserva.fecha}/${reserva.turno}/${reserva.tipo}/${reserva.id}`
-      );
+      const reservaRef = ref(dbRealtime, reserva.ruta);
 
       await update(reservaRef, { estado: "Cancelada" });
 
@@ -85,7 +123,7 @@ const AdminListadoReservas = () => {
 
       setReservas((prev) =>
         prev.map((r) =>
-          r.id === reserva.id ? { ...r, estado: "Cancelada" } : r
+          r.ruta === reserva.ruta ? { ...r, estado: "Cancelada" } : r
         )
       );
     } catch (error) {
@@ -111,18 +149,20 @@ const AdminListadoReservas = () => {
               <th style={styles.th}>Fecha</th>
               <th style={styles.th}>Turno</th>
               <th style={styles.th}>Tipo</th>
-              <th style={styles.th}>Estado</th>
+              <th style={styles.th}>Estado reserva</th>
+              <th style={styles.th}>Estado pago</th>
               <th style={styles.th}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {reservas.map((reserva) => (
-              <tr key={reserva.id}>
+              <tr key={reserva.ruta}>
                 <td style={styles.td}>{reserva.clase}</td>
                 <td style={styles.td}>{reserva.usuario}</td>
                 <td style={styles.td}>{reserva.fecha}</td>
                 <td style={styles.td}>{reserva.turno}</td>
                 <td style={styles.td}>{reserva.tipo}</td>
+
                 <td
                   style={{
                     ...styles.td,
@@ -143,6 +183,9 @@ const AdminListadoReservas = () => {
                 >
                   {reserva.estado}
                 </td>
+
+                <td style={styles.td}>{reserva.estadoPago}</td>
+
                 <td style={styles.td}>
                   {reserva.estado !== "Cancelada" && (
                     <button
@@ -181,7 +224,7 @@ const styles = {
   },
   table: {
     width: "100%",
-    maxWidth: 1000,
+    maxWidth: 1200,
     margin: "auto",
     borderCollapse: "collapse",
     backgroundColor: "#fff",
