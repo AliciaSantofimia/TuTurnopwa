@@ -140,7 +140,28 @@ export default function DondeReservar() {
   </div>
 )}
 
+<div className="mt-8 text-center">
+  <p className="text-sm text-gray-500 mb-1">
+    Descubre el ambiente del taller
+  </p>
 
+  <h3 className="text-lg font-semibold text-[#333] mb-3">
+    La Purísima Conchi
+  </h3>
+
+  <a
+    href="https://www.instagram.com/lapurisimaconchi/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-pink-200 bg-white text-sm font-medium text-[#E1306C] hover:shadow-sm transition"
+  >
+    📸 @lapurisimaconchi
+  </a>
+
+  <p className="text-xs text-gray-400 mt-2">
+    Más de 5.000 seguidores
+  </p>
+</div>
 
       <Footer />
     </div>
