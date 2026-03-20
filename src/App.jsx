@@ -109,6 +109,7 @@ import AdminHistorialNuevo from "./AdminHistorialNuevo";
 import AdminDetalleReservaNuevo from "./AdminDetalleReservaNuevo";
 import AdminDetalleUsuarioNuevo from "./AdminDetalleUsuarioNuevo";
 import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
+import RutaAdmin from "./RutaAdmin";
 
 
 function App() {
@@ -298,7 +299,7 @@ function App() {
 
           <Route path="/admin-nuevo" element={<AdminNuevo />} />
           <Route path="/admin-reservas-nuevo" element={<AdminReservasNuevo />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-dashboard" element={<RutaAdmin> <AdminDashboard /></RutaAdmin> }/>
           <Route path="/admin-clases-nuevo" element={<AdminClasesNuevo />} />
           <Route path="/admin-usuarios-nuevo" element={<AdminUsuariosNuevo />} />
           <Route path="/admin-calendario-reservas-nuevo" element={<AdminCalendarioReservasNuevo />} />
