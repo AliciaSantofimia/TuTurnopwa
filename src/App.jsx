@@ -295,18 +295,89 @@ function App() {
           <Route path="/clases-online" element={<ClasesOnlineInfo />} />
           <Route path="/reserva-online" element={<ReservaClasesOnline />} />
 
-          {/* Nuevo Admin */}
+          
 
-          <Route path="/admin-nuevo" element={<AdminNuevo />} />
-          <Route path="/admin-reservas-nuevo" element={<AdminReservasNuevo />} />
-          <Route path="/admin-dashboard" element={<RutaAdmin> <AdminDashboard /></RutaAdmin> }/>
-          <Route path="/admin-clases-nuevo" element={<AdminClasesNuevo />} />
-          <Route path="/admin-usuarios-nuevo" element={<AdminUsuariosNuevo />} />
-          <Route path="/admin-calendario-reservas-nuevo" element={<AdminCalendarioReservasNuevo />} />
-          <Route path="/admin-historial-nuevo" element={<AdminHistorialNuevo />} />
-          <Route path="/admin-detalle-reserva" element={<AdminDetalleReservaNuevo />} />
-          <Route path="/admin-detalle-usuario" element={<AdminDetalleUsuarioNuevo />} />
-          <Route path="/admin-detalle-clase" element={<AdminDetalleClaseNuevo />} />
+        {/* Nuevo Admin */}
+<Route
+  path="/admin-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-reservas-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminReservasNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-dashboard"
+  element={
+    <RutaAdmin>
+      <AdminDashboard />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-clases-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminClasesNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-usuarios-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminUsuariosNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-calendario-reservas-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminCalendarioReservasNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-historial-nuevo"
+  element={
+    <RutaAdmin>
+      <AdminHistorialNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-detalle-reserva"
+  element={
+    <RutaAdmin>
+      <AdminDetalleReservaNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-detalle-usuario"
+  element={
+    <RutaAdmin>
+      <AdminDetalleUsuarioNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-detalle-clase"
+  element={
+    <RutaAdmin>
+      <AdminDetalleClaseNuevo />
+    </RutaAdmin>
+  }
+/>
           
 
           
