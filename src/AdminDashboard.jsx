@@ -159,7 +159,7 @@ const AdminDashboard = () => {
           <div style={styles.botonesGrid}>
             <button
               style={styles.boton}
-              onClick={() => navigate("/admin-nuevo")}
+              onClick={() => navigate("/admin-dashboard")}
             >
               Ver panel de control
             </button>
@@ -173,14 +173,14 @@ const AdminDashboard = () => {
 
             <button
               style={styles.boton}
-              onClick={() => navigate("/admin-listado-clases")}
+              onClick={() => navigate("/admin-clases-nuevo")}
             >
               Ver clases
             </button>
 
             <button
               style={styles.boton}
-              onClick={() => navigate("/admin-listado-usuarios")}
+              onClick={() => navigate("/admin-usuarios-nuevo")}
             >
               Ver usuarios
             </button>
