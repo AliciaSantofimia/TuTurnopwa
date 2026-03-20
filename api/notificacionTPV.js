@@ -50,22 +50,14 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
   const updates = {};
 
   snapshot.forEach((claseSnap) => {
-    const clase = claseSnap.key;
-
     claseSnap.forEach((fechaSnap) => {
-      const fecha = fechaSnap.key;
-
       fechaSnap.forEach((turnoSnap) => {
-        const turno = turnoSnap.key;
-
         turnoSnap.forEach((tipoSnap) => {
-          const tipo = tipoSnap.key;
-
           tipoSnap.forEach((reservaSnap) => {
             const reserva = reservaSnap.val();
 
             if (reserva?.orderId === orderId) {
-              const rutaBase = `reservas/${clase}/${fecha}/${turno}/${tipo}/${reservaSnap.key}`;
+              const rutaBase = `reservas/${claseSnap.key}/${fechaSnap.key}/${turnoSnap.key}/${tipoSnap.key}/${reservaSnap.key}`;
 
               updates[`${rutaBase}/estadoPago`] = "pagado";
               updates[`${rutaBase}/estado`] = "Confirmada";
@@ -86,6 +78,49 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
   }
 
   return actualizada;
+}
+
+function generarCodigoTarjetaRegalo() {
+  const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let codigo = "REGALO-";
+
+  for (let i = 0; i < 6; i++) {
+    codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+
+  return codigo;
+}
+
+async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
+  const codigo = generarCodigoTarjetaRegalo();
+
+  const tarjetaData = {
+    orderId,
+    codigo,
+    uidComprador: pedido.uid || "",
+    tipo: "tarjeta_regalo",
+    clase: pedido.clase || "Tarjeta regalo",
+    claseId: pedido.claseId || "",
+    subtipo: pedido.subtipo || "",
+    precioTotal: Number(pedido.precioTotal ?? 0),
+    precioOriginal: Number(pedido.precioOriginal ?? 0),
+    plazas: Number(pedido.plazas ?? 1),
+    numeroClases: Number(pedido.numeroClases ?? 0),
+    estadoPago: "pagado",
+    estadoCanje: "pendiente",
+    procesado: true,
+    fechaCompra: timestamp,
+    creadoEn: pedido.creadoEn || timestamp,
+    actualizadoEn: timestamp,
+    desdeTarjeta: false,
+    emailDestinatario: pedido.emailDestinatario || "",
+    nombreDestinatario: pedido.nombreDestinatario || "",
+    mensajePersonalizado: pedido.mensajePersonalizado || "",
+  };
+
+  await adminDb.ref(`tarjetasRegalo/${orderId}`).set(tarjetaData);
+
+  return tarjetaData;
 }
 
 export default async function handler(req, res) {
@@ -139,7 +174,6 @@ export default async function handler(req, res) {
 
     const pedido = snap.val();
 
-    // Idempotencia: si ya estaba procesado, no hacemos nada más
     if (pedido?.procesado === true) {
       console.log("Pedido ya procesado:", order);
       return res.status(200).send("OK");
@@ -150,10 +184,6 @@ export default async function handler(req, res) {
     const amountMatches =
       amountCentsRedsys !== null && amountCentsPedido === amountCentsRedsys;
 
-    // Solo aceptamos como pagado si:
-    // 1) Redsys dice pago OK
-    // 2) El pedido existe
-    // 3) El importe coincide
     if (paidOk && amountMatches) {
       await ref.update({
         estadoPago: "pagado",
@@ -167,6 +197,15 @@ export default async function handler(req, res) {
         actualizadoEn: timestamp,
       });
 
+      if (pedido?.tipo === "tarjeta_regalo") {
+        const tarjetaGuardada = await guardarTarjetaRegaloPagada(order, pedido, timestamp);
+
+        console.log("Tarjeta regalo guardada en /tarjetasRegalo:", {
+          order,
+          codigo: tarjetaGuardada.codigo,
+        });
+      }
+
       const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
 
       console.log("Reserva actualizada en /reservas:", {
@@ -177,7 +216,6 @@ export default async function handler(req, res) {
       return res.status(200).send("OK");
     }
 
-    // Si no cuadra el pago o el importe, lo dejamos rechazado
     await ref.update({
       estadoPago: "rechazado",
       procesado: false,
