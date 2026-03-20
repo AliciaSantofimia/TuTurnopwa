@@ -121,6 +121,17 @@ import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
 import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
 import UsarBono from "./UsarBono";
 
+// Nuevo Admin
+import AdminNuevo from "./AdminNuevo";
+import AdminReservasNuevo from "./AdminReservasNuevo";
+import AdminDashboard from "./AdminDashboard";
+import AdminClasesNuevo from "./AdminClasesNuevo";
+import AdminUsuariosNuevo from "./AdminUsuariosNuevo";
+import AdminCalendarioReservasNuevo from "./AdminCalendarioReservasNuevo";
+import AdminHistorialNuevo from "./AdminHistorialNuevo";
+import AdminDetalleReservaNuevo from "./AdminDetalleReservaNuevo";
+import AdminDetalleUsuarioNuevo from "./AdminDetalleUsuarioNuevo";
+import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
 
 function App() {
   return (
@@ -305,6 +316,19 @@ function App() {
           <Route path="/clases-online" element={<ClasesOnlineInfo />} />
           <Route path="/reserva-online" element={<ReservaClasesOnline />} />
 
+          {/* Nuevo Admin */}
+
+          <Route path="/admin-nuevo" element={<AdminNuevo />} />
+          <Route path="/admin-reservas-nuevo" element={<AdminReservasNuevo />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-clases-nuevo" element={<AdminClasesNuevo />} />
+          <Route path="/admin-usuarios-nuevo" element={<AdminUsuariosNuevo />} />
+          <Route path="/admin-calendario-reservas-nuevo" element={<AdminCalendarioReservasNuevo />} />
+          <Route path="/admin-historial-nuevo" element={<AdminHistorialNuevo />} />
+          <Route path="/admin-detalle-reserva" element={<AdminDetalleReservaNuevo />} />
+          <Route path="/admin-detalle-usuario" element={<AdminDetalleUsuarioNuevo />} />
+          <Route path="/admin-detalle-clase" element={<AdminDetalleClaseNuevo />} />
+
           {/* Admin */}
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/admin-notificaciones" element={<AdminNotificaciones />} />
@@ -338,6 +362,7 @@ function App() {
             element={<AdminEnviarAviso />}
           />
           <Route path="/admin-uso-bonos" element={<AdminUsoBonos />} />
+          
           <Route
             path="/admin-listado-usuarios"
             element={<AdminListadoUsuarios />}
