@@ -17,11 +17,22 @@ const ConfirmacionPago = () => {
         <p style={styles.text}>
           Gracias por tu reserva. Te esperamos en el taller con muchas ganas.
         </p>
-        <button onClick={handleVolverInicio} style={styles.btn}>
-          Volver al inicio
-        </button>
+        <button
+  onClick={() => navigate("/dondereservar")}
+  className="..."
+>
+  Seguir reservando
+</button>
+
+<button
+  onClick={() => navigate("/perfil")}
+  className="mt-3 px-4 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-100 transition"
+>
+  Ver mi reserva
+</button>
+
         <img
-          src="/logoPCsin.png"
+          src="/logoPC.png"
           alt="Logo TuTurno"
           style={styles.logo}
         />

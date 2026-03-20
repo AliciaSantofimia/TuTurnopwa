@@ -79,14 +79,14 @@ export default function PerfilUsuario() {
             className="bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-bold py-3 rounded-2xl text-sm shadow-md transition"
             onClick={() => navigate("/dondereservar")}
           >
-            🗓️ Reservar
+             Reservar
           </button>
 
           <button
             className="bg-white border border-[#e6a6cf] text-[#b84c85] font-bold py-3 rounded-2xl text-sm shadow-sm transition hover:bg-[#fdf2f8]"
             onClick={() => navigate("/canjear-tarjeta")}
           >
-            🎁 Canjear tarjeta
+             Canjear tarjeta regalo
           </button>
         </div>
 
@@ -115,7 +115,7 @@ export default function PerfilUsuario() {
         {/* Historial */}
         <details className="mb-5 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
           <summary className="cursor-pointer font-semibold">
-            📚 Historial de reservas
+             Historial de reservas
           </summary>
 
           <div className="mt-3">
@@ -139,7 +139,7 @@ export default function PerfilUsuario() {
         {/* Recoger pieza */}
         <details className="mb-5 bg-[#fbf4d8] border border-[#ead66d] rounded-2xl p-4 shadow-sm">
           <summary className="cursor-pointer font-semibold">
-            🏺 Recoger mi pieza
+             Recoger mi pieza
           </summary>
 
           <p className="text-sm mt-3">
