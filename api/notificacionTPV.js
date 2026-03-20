@@ -119,6 +119,11 @@ async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
   };
 
   await adminDb.ref(`tarjetasRegalo/${orderId}`).set(tarjetaData);
+  if (pedido.uid) {
+  await adminDb
+    .ref(`usuarios/${pedido.uid}/tarjetasRegalo/${orderId}`)
+    .set(tarjetaData);
+}
 
   return tarjetaData;
 }
