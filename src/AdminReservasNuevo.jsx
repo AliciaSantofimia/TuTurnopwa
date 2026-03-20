@@ -10,6 +10,7 @@ const AdminReservasNuevo = () => {
   const claseInicial = searchParams.get("clase") || "";
 
   const [reservas, setReservas] = useState([]);
+  const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [clasesValidas, setClasesValidas] = useState([]);
   const [cargando, setCargando] = useState(true);
 
@@ -27,9 +28,10 @@ const AdminReservasNuevo = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [clasesSnap, reservasSnap] = await Promise.all([
+        const [clasesSnap, reservasSnap, tarjetasSnap] = await Promise.all([
           get(ref(dbRealtime, "clases")),
           get(ref(dbRealtime, "reservas")),
+          get(ref(dbRealtime, "tarjetasRegalo")),
         ]);
 
         const mapaClases = {};
@@ -55,7 +57,14 @@ const AdminReservasNuevo = () => {
           });
         }
 
-        const datos = [];
+        // Añadimos Tarjeta regalo como opción fija de admin
+        listaClases.push({
+          id: "tarjeta_regalo",
+          nombre: "Tarjeta regalo",
+          orden: 9998,
+        });
+
+        const datosReservas = [];
 
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
@@ -80,7 +89,11 @@ const AdminReservasNuevo = () => {
                     "uid" in nivelVal ||
                     "orderId" in nivelVal;
 
-                  const construirReserva = (reserva, idReserva, metodoFallback = "—") => {
+                  const construirReserva = (
+                    reserva,
+                    idReserva,
+                    metodoFallback = "—"
+                  ) => {
                     const claseIdReal = reserva.claseId || claseKey;
                     const claseInfo = mapaClases[claseIdReal];
 
@@ -88,6 +101,7 @@ const AdminReservasNuevo = () => {
 
                     return {
                       id: idReserva,
+                      tipoRegistro: "reserva",
                       claseId: claseIdReal,
                       clase: reserva.clase || claseInfo.nombre || claseIdReal,
                       fecha: reserva.fecha || fechaKey,
@@ -115,7 +129,7 @@ const AdminReservasNuevo = () => {
                       nivelKey
                     );
                     if (reservaConstruida) {
-                      datos.push(reservaConstruida);
+                      datosReservas.push(reservaConstruida);
                     }
                     return;
                   }
@@ -131,7 +145,7 @@ const AdminReservasNuevo = () => {
                     );
 
                     if (reservaConstruida) {
-                      datos.push(reservaConstruida);
+                      datosReservas.push(reservaConstruida);
                     }
                   });
                 });
@@ -140,11 +154,47 @@ const AdminReservasNuevo = () => {
           });
         }
 
-        datos.sort((a, b) => {
+        const datosTarjetas = [];
+
+        if (tarjetasSnap.exists()) {
+          tarjetasSnap.forEach((tarjetaSnap) => {
+            const tarjeta = tarjetaSnap.val() || {};
+
+            datosTarjetas.push({
+              id: tarjetaSnap.key,
+              tipoRegistro: "tarjeta_regalo",
+              claseId: "tarjeta_regalo",
+              clase: tarjeta.clase || "Tarjeta regalo",
+              fecha: tarjeta.fechaCompra
+                ? tarjeta.fechaCompra.slice(0, 10)
+                : "—",
+              turno: "—",
+              metodo: tarjeta.codigo || "—",
+              plazas: Number(tarjeta.plazas || 1),
+              estado: tarjeta.estadoCanje || "pendiente",
+              estadoPago: tarjeta.estadoPago || "—",
+              precioTotal: Number(tarjeta.precioTotal || 0),
+              uid: tarjeta.uidComprador || "",
+              orderId: tarjeta.orderId || tarjetaSnap.key,
+              procesado: tarjeta.procesado ?? false,
+              codigo: tarjeta.codigo || "",
+              nombreDestinatario: tarjeta.nombreDestinatario || "",
+              emailDestinatario: tarjeta.emailDestinatario || "",
+            });
+          });
+        }
+
+        datosReservas.sort((a, b) => {
           const fechaA = new Date(`${a.fecha}T00:00:00`);
           const fechaB = new Date(`${b.fecha}T00:00:00`);
           if (fechaA - fechaB !== 0) return fechaA - fechaB;
           return (a.turno || "").localeCompare(b.turno || "", "es");
+        });
+
+        datosTarjetas.sort((a, b) => {
+          const fechaA = new Date(a.fecha === "—" ? 0 : `${a.fecha}T00:00:00`);
+          const fechaB = new Date(b.fecha === "—" ? 0 : `${b.fecha}T00:00:00`);
+          return fechaB - fechaA;
         });
 
         setClasesValidas(
@@ -154,10 +204,12 @@ const AdminReservasNuevo = () => {
           })
         );
 
-        setReservas(datos);
+        setReservas(datosReservas);
+        setTarjetasRegalo(datosTarjetas);
       } catch (error) {
         console.error("Error al cargar reservas:", error);
         setReservas([]);
+        setTarjetasRegalo([]);
         setClasesValidas([]);
       } finally {
         setCargando(false);
@@ -167,8 +219,15 @@ const AdminReservasNuevo = () => {
     cargarDatos();
   }, []);
 
+  const datosActivos = useMemo(() => {
+    if (filtroClase === "tarjeta_regalo") {
+      return tarjetasRegalo;
+    }
+    return reservas;
+  }, [filtroClase, reservas, tarjetasRegalo]);
+
   const reservasFiltradas = useMemo(() => {
-    return reservas.filter((r) => {
+    return datosActivos.filter((r) => {
       const cumpleFecha = !filtroFecha || r.fecha === filtroFecha;
       const cumpleClase = !filtroClase || r.claseId === filtroClase;
       const cumpleEstado = !filtroEstado || r.estado === filtroEstado;
@@ -177,7 +236,7 @@ const AdminReservasNuevo = () => {
 
       return cumpleFecha && cumpleClase && cumpleEstado && cumpleEstadoPago;
     });
-  }, [reservas, filtroFecha, filtroClase, filtroEstado, filtroEstadoPago]);
+  }, [datosActivos, filtroFecha, filtroClase, filtroEstado, filtroEstadoPago]);
 
   const limpiarFiltros = () => {
     setFiltroFecha("");
@@ -185,6 +244,8 @@ const AdminReservasNuevo = () => {
     setFiltroEstado("");
     setFiltroEstadoPago("");
   };
+
+  const mostrandoTarjetas = filtroClase === "tarjeta_regalo";
 
   return (
     <div style={styles.body}>
@@ -225,15 +286,27 @@ const AdminReservasNuevo = () => {
             </div>
 
             <div style={styles.campo}>
-              <label style={styles.label}>Estado reserva</label>
+              <label style={styles.label}>
+                {mostrandoTarjetas ? "Estado canje" : "Estado reserva"}
+              </label>
               <select
                 value={filtroEstado}
                 onChange={(e) => setFiltroEstado(e.target.value)}
                 style={styles.input}
               >
                 <option value="">Todos</option>
-                <option value="Confirmada">Confirmada</option>
-                <option value="Cancelada">Cancelada</option>
+                {mostrandoTarjetas ? (
+                  <>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="canjeada">Canjeada</option>
+                    <option value="caducada">Caducada</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Confirmada">Confirmada</option>
+                    <option value="Cancelada">Cancelada</option>
+                  </>
+                )}
               </select>
             </div>
 
@@ -248,6 +321,7 @@ const AdminReservasNuevo = () => {
                 <option value="pagado">Pagado</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="fallido">Fallido</option>
+                <option value="rechazado">Rechazado</option>
               </select>
             </div>
           </div>
@@ -273,11 +347,15 @@ const AdminReservasNuevo = () => {
               <thead>
                 <tr>
                   <th style={styles.th}>Fecha</th>
-                  <th style={styles.th}>Turno</th>
+                  <th style={styles.th}>{mostrandoTarjetas ? "Código" : "Turno"}</th>
                   <th style={styles.th}>Clase</th>
-                  <th style={styles.th}>Método</th>
+                  <th style={styles.th}>
+                    {mostrandoTarjetas ? "Destinatario / Info" : "Método"}
+                  </th>
                   <th style={styles.th}>Plazas</th>
-                  <th style={styles.th}>Estado</th>
+                  <th style={styles.th}>
+                    {mostrandoTarjetas ? "Estado canje" : "Estado"}
+                  </th>
                   <th style={styles.th}>Pago</th>
                   <th style={styles.th}>Precio</th>
                 </tr>
@@ -285,14 +363,20 @@ const AdminReservasNuevo = () => {
               <tbody>
                 {reservasFiltradas.map((r) => (
                   <tr
-                    key={`${r.claseId}-${r.fecha}-${r.turno}-${r.id}`}
+                    key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
                     onClick={() => navigate(`/admin-detalle-reserva?id=${r.orderId}`)}
                     style={styles.trClickable}
                   >
                     <td style={styles.td}>{r.fecha}</td>
-                    <td style={styles.td}>{r.turno}</td>
+                    <td style={styles.td}>
+                      {mostrandoTarjetas ? r.codigo || "—" : r.turno}
+                    </td>
                     <td style={styles.td}>{r.clase}</td>
-                    <td style={styles.td}>{r.metodo}</td>
+                    <td style={styles.td}>
+                      {mostrandoTarjetas
+                        ? r.nombreDestinatario || r.emailDestinatario || "—"
+                        : r.metodo}
+                    </td>
                     <td style={styles.td}>{r.plazas}</td>
                     <td style={styles.td}>{r.estado}</td>
                     <td style={styles.td}>{r.estadoPago}</td>
