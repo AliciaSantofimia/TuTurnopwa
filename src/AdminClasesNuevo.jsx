@@ -55,8 +55,6 @@ const AdminClasesNuevo = () => {
           reservasSnap.forEach((claseSnap) => {
             const claseKey = claseSnap.key;
 
-            if (!mapaResumen[claseKey]) return;
-
             claseSnap.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
 
@@ -70,22 +68,25 @@ const AdminClasesNuevo = () => {
                     if (!reserva || typeof reserva !== "object") return;
                     if (reserva.estado !== "Confirmada") return;
 
+                    const claseIdReal = reserva.claseId || claseKey;
+                    if (!mapaResumen[claseIdReal]) return;
+
                     const plazas = Number(reserva.plazas || 1);
                     const fecha = reserva.fecha || fechaKey;
                     const fechaObj = new Date(`${fecha}T00:00:00`);
 
-                    mapaResumen[claseKey].reservasTotales += 1;
-                    mapaResumen[claseKey].plazasTotales += plazas;
+                    mapaResumen[claseIdReal].reservasTotales += 1;
+                    mapaResumen[claseIdReal].plazasTotales += plazas;
 
                     if (fechaObj >= hoy) {
-                      mapaResumen[claseKey].reservasFuturas += 1;
-                      mapaResumen[claseKey].plazasFuturas += plazas;
+                      mapaResumen[claseIdReal].reservasFuturas += 1;
+                      mapaResumen[claseIdReal].plazasFuturas += plazas;
 
                       if (
-                        !mapaResumen[claseKey].proximaFecha ||
-                        fecha < mapaResumen[claseKey].proximaFecha
+                        !mapaResumen[claseIdReal].proximaFecha ||
+                        fecha < mapaResumen[claseIdReal].proximaFecha
                       ) {
-                        mapaResumen[claseKey].proximaFecha = fecha;
+                        mapaResumen[claseIdReal].proximaFecha = fecha;
                       }
                     }
                   };
@@ -159,7 +160,13 @@ const AdminClasesNuevo = () => {
         ) : (
           <div style={styles.grid}>
             {clasesConResumen.map((clase) => (
-              <div key={clase.id} style={styles.card}>
+              <div
+                key={clase.id}
+                style={styles.card}
+                onClick={() =>
+                  navigate(`/admin-detalle-clase?clase=${clase.id}`)
+                }
+              >
                 <div style={styles.cardTop}>
                   <div>
                     <h2 style={styles.nombre}>{clase.nombre}</h2>
@@ -198,9 +205,10 @@ const AdminClasesNuevo = () => {
                 <div style={styles.acciones}>
                   <button
                     style={styles.boton}
-                    onClick={() =>
-                      navigate(`/admin-reservas-nuevo?clase=${clase.id}`)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/admin-reservas-nuevo?clase=${clase.id}`);
+                    }}
                   >
                     Ver reservas
                   </button>
@@ -258,6 +266,8 @@ const styles = {
     borderRadius: 22,
     padding: 20,
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+    cursor: "pointer",
+    transition: "0.2s",
   },
   cardTop: {
     display: "flex",

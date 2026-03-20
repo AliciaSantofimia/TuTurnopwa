@@ -97,29 +97,6 @@ import ReservaTearium from "./ReservaTearium.jsx";
 import ClasesOnlineInfo from "./ClasesOnlineInfo.jsx";
 import ReservaClasesOnline from "./ReservaClasesOnline.jsx";
 
-// Admin
-import AdminPanel from "./AdminPanel.jsx";
-import AdminNotificaciones from "./AdminNotificaciones.jsx";
-import AdminEnviarAviso from "./AdminEnviarAviso.jsx";
-
-
-import AdminHistoriales from "./AdminHistoriales.jsx";
-import AdminHistorialReservas from "./AdminHistorialReservas.jsx";
-import AdminHistorialBonos from "./AdminHistorialBonos.jsx";
-
-
-import AdminListadoClases from "./AdminListadoClases.jsx";
-import AdminListadoReservas from "./AdminListadoReservas.jsx";
-import AdminFiltrarReservas from "./AdminFiltrarReservas.jsx";
-
-
-import AdminUsoBonos from "./AdminUsoBonos.jsx";
-import AdminListadoUsuarios from "./AdminListadoUsuarios.jsx";
-import AdminPerfilUsuario from "./AdminPerfilUsuario.jsx";
-import AdminBuscarUsuario from "./AdminBuscarUsuario.jsx";
-
-import AdminVerInscripciones from "./AdminVerInscripciones.jsx";
-import UsarBono from "./UsarBono";
 
 // Nuevo Admin
 import AdminNuevo from "./AdminNuevo";
@@ -132,6 +109,7 @@ import AdminHistorialNuevo from "./AdminHistorialNuevo";
 import AdminDetalleReservaNuevo from "./AdminDetalleReservaNuevo";
 import AdminDetalleUsuarioNuevo from "./AdminDetalleUsuarioNuevo";
 import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
+
 
 function App() {
   return (
@@ -328,56 +306,9 @@ function App() {
           <Route path="/admin-detalle-reserva" element={<AdminDetalleReservaNuevo />} />
           <Route path="/admin-detalle-usuario" element={<AdminDetalleUsuarioNuevo />} />
           <Route path="/admin-detalle-clase" element={<AdminDetalleClaseNuevo />} />
+          
 
-          {/* Admin */}
-          <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/admin-notificaciones" element={<AdminNotificaciones />} />
-          <Route path="/admin-enviar-aviso" element={<AdminEnviarAviso />} />
           
-          
-          <Route path="/admin-historiales" element={<AdminHistoriales />} />
-          <Route
-            path="/admin-historial-reservas"
-            element={<AdminHistorialReservas />}
-          />
-          <Route path="/admin-historial-bonos" element={<AdminHistorialBonos />} />
-          
-          
-          
-          <Route path="/admin-listado-clases" element={<AdminListadoClases />} />
-          <Route
-            path="/admin-listado-reservas"
-            element={<AdminListadoReservas />}
-          />
-          <Route
-            path="/admin-filtrar-reservas"
-            element={<AdminFiltrarReservas />}
-          />
-         
-       
-          
-          
-          <Route
-            path="/admin/usuarios/aviso/:id"
-            element={<AdminEnviarAviso />}
-          />
-          <Route path="/admin-uso-bonos" element={<AdminUsoBonos />} />
-          
-          <Route
-            path="/admin-listado-usuarios"
-            element={<AdminListadoUsuarios />}
-          />
-          <Route
-            path="/admin-perfil-usuario/:uid"
-            element={<AdminPerfilUsuario />}
-          />
-          <Route path="/admin-buscar-usuario" element={<AdminBuscarUsuario />} />
-          
-          <Route
-            path="/admin/clases/inscripciones/:nombreClase"
-            element={<AdminVerInscripciones />}
-          />
-          <Route path="/usar-bono" element={<UsarBono />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/portada" replace />} />

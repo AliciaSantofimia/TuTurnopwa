@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ref, get } from "firebase/database";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleReservaNuevo = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const orderId = searchParams.get("id");
 
   const [reserva, setReserva] = useState(null);
@@ -77,7 +78,15 @@ const AdminDetalleReservaNuevo = () => {
         <h1 style={styles.titulo}>Detalle de reserva</h1>
 
         <div style={styles.card}>
-          <p><strong>Clase:</strong> {reserva.clase}</p>
+          <p>
+  <strong>Clase:</strong>{" "}
+  <span
+    style={styles.linkClase}
+    onClick={() => navigate(`/admin-detalle-clase?clase=${reserva.claseId}`)}
+  >
+    {reserva.clase}
+  </span>
+</p>
           <p><strong>Fecha:</strong> {reserva.fecha}</p>
           <p><strong>Turno:</strong> {reserva.turno}</p>
           <p><strong>Método:</strong> {reserva.metodo}</p>
@@ -95,7 +104,15 @@ const AdminDetalleReservaNuevo = () => {
 
           <hr style={styles.hr} />
 
-          <p><strong>UID:</strong> {reserva.uid}</p>
+          <p>
+  <strong>UID:</strong>{" "}
+  <span
+    style={styles.uidLink}
+    onClick={() => navigate(`/admin-detalle-usuario?uid=${reserva.uid}`)}
+  >
+    {reserva.uid}
+  </span>
+</p>
           <p><strong>Order ID:</strong> {reserva.orderId}</p>
           <p><strong>Desde tarjeta:</strong> {reserva.desdeTarjeta ? "Sí" : "No"}</p>
 
@@ -138,10 +155,22 @@ const styles = {
     border: "none",
     borderTop: "1px solid #eee",
   },
+  uidLink: {
+  color: "#7c5c2e",
+  cursor: "pointer",
+  textDecoration: "underline",
+  fontWeight: 500,
+},
   mensaje: {
     textAlign: "center",
     padding: 40,
   },
+  linkClase: {
+  color: "#7c5c2e",
+  cursor: "pointer",
+  textDecoration: "underline",
+  fontWeight: 500,
+},
 };
 
 export default AdminDetalleReservaNuevo;

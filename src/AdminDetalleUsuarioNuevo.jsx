@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ref, get } from "firebase/database";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleUsuarioNuevo = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const uid = searchParams.get("uid");
 
   const [usuario, setUsuario] = useState(null);
@@ -101,25 +102,40 @@ const AdminDetalleUsuarioNuevo = () => {
             <p style={styles.textoVacio}>Este usuario no tiene reservas guardadas.</p>
           ) : (
             <div style={styles.lista}>
-              {reservasUsuario.map((r, index) => (
-                <div key={`${r.id}-${index}`} style={styles.reservaItem}>
-                  <p style={styles.linea}>
-                    <strong>Clase:</strong> {r.clase || "—"}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Fecha:</strong> {r.fecha || "—"}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Turno:</strong> {r.turno || "—"}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Estado:</strong> {r.estado || "—"}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Pago:</strong> {r.estadoPago || "—"}
-                  </p>
-                </div>
-              ))}
+              {reservasUsuario.map((r, index) => {
+                const destino = r.orderId
+                  ? `/admin-detalle-reserva?id=${r.orderId}`
+                  : null;
+
+                return (
+                  <div
+                    key={`${r.id}-${index}`}
+                    style={styles.reservaItem}
+                    onClick={() => {
+                      if (destino) navigate(destino);
+                    }}
+                  >
+                    <p style={styles.linea}>
+                      <strong>Clase:</strong> {r.clase || "—"}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Fecha:</strong> {r.fecha || "—"}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Turno:</strong> {r.turno || "—"}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Estado:</strong> {r.estado || "—"}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Pago:</strong> {r.estadoPago || "—"}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Order ID:</strong> {r.orderId || "—"}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -178,6 +194,8 @@ const styles = {
     borderRadius: 16,
     backgroundColor: "#fffaf0",
     border: "1px solid #eadfbe",
+    cursor: "pointer",
+    transition: "0.2s",
   },
   linea: {
     margin: "4px 0",

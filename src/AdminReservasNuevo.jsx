@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ref, get } from "firebase/database";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminReservasNuevo = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const claseInicial = searchParams.get("clase") || "";
 
   const [reservas, setReservas] = useState([]);
@@ -39,11 +40,17 @@ const AdminReservasNuevo = () => {
             const claseId = claseSnap.key;
             const claseData = claseSnap.val() || {};
             const nombre = claseData.nombre || claseId;
+            const orden = Number(claseData.orden || 9999);
 
-            mapaClases[claseId] = nombre;
+            mapaClases[claseId] = {
+              nombre,
+              orden,
+            };
+
             listaClases.push({
               id: claseId,
               nombre,
+              orden,
             });
           });
         }
@@ -53,9 +60,6 @@ const AdminReservasNuevo = () => {
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
             const claseKey = claseSnap.key;
-
-            // Ignorar clases antiguas o que no existen en el nodo "clases"
-            if (!mapaClases[claseKey]) return;
 
             claseSnap.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
@@ -76,45 +80,59 @@ const AdminReservasNuevo = () => {
                     "uid" in nivelVal ||
                     "orderId" in nivelVal;
 
+                  const construirReserva = (reserva, idReserva, metodoFallback = "—") => {
+                    const claseIdReal = reserva.claseId || claseKey;
+                    const claseInfo = mapaClases[claseIdReal];
+
+                    if (!claseInfo) return null;
+
+                    return {
+                      id: idReserva,
+                      claseId: claseIdReal,
+                      clase: reserva.clase || claseInfo.nombre || claseIdReal,
+                      fecha: reserva.fecha || fechaKey,
+                      turno: reserva.turno || turnoKey,
+                      metodo: reserva.metodo || reserva.tipoClase || metodoFallback,
+                      plazas: Number(reserva.plazas || 1),
+                      estado: reserva.estado || "—",
+                      estadoPago: reserva.estadoPago || "—",
+                      precioTotal: Number(
+                        reserva.precioTotal ||
+                          reserva.precioUnitario ||
+                          reserva.precio ||
+                          0
+                      ),
+                      uid: reserva.uid || "",
+                      orderId: reserva.orderId || "",
+                      procesado: reserva.procesado ?? false,
+                    };
+                  };
+
                   if (pareceReservaDirecta) {
-                    datos.push({
-                      id: nivelKey,
-                      claseId: nivelVal.claseId || claseKey,
-                      clase: nivelVal.clase || mapaClases[claseKey] || claseKey,
-                      fecha: nivelVal.fecha || fechaKey,
-                      turno: nivelVal.turno || turnoKey,
-                      metodo: nivelVal.metodo || nivelVal.tipoClase || "—",
-                      plazas: Number(nivelVal.plazas || 1),
-                      estado: nivelVal.estado || "—",
-                      estadoPago: nivelVal.estadoPago || "—",
-                      precioTotal: Number(nivelVal.precioTotal || nivelVal.precio || 0),
-                      uid: nivelVal.uid || "",
-                      orderId: nivelVal.orderId || "",
-                      procesado: nivelVal.procesado ?? false,
-                    });
+                    const reservaConstruida = construirReserva(
+                      nivelVal,
+                      nivelKey,
+                      nivelKey
+                    );
+                    if (reservaConstruida) {
+                      datos.push(reservaConstruida);
+                    }
                     return;
                   }
 
-                  // Caso normal: .../turno/metodo/idReserva
                   nivelSnap.forEach((reservaSnap) => {
                     const reserva = reservaSnap.val();
                     if (!reserva || typeof reserva !== "object") return;
 
-                    datos.push({
-                      id: reservaSnap.key,
-                      claseId: reserva.claseId || claseKey,
-                      clase: reserva.clase || mapaClases[claseKey] || claseKey,
-                      fecha: reserva.fecha || fechaKey,
-                      turno: reserva.turno || turnoKey,
-                      metodo: reserva.metodo || reserva.tipoClase || nivelKey || "—",
-                      plazas: Number(reserva.plazas || 1),
-                      estado: reserva.estado || "—",
-                      estadoPago: reserva.estadoPago || "—",
-                      precioTotal: Number(reserva.precioTotal || reserva.precio || 0),
-                      uid: reserva.uid || "",
-                      orderId: reserva.orderId || "",
-                      procesado: reserva.procesado ?? false,
-                    });
+                    const reservaConstruida = construirReserva(
+                      reserva,
+                      reservaSnap.key,
+                      nivelKey
+                    );
+
+                    if (reservaConstruida) {
+                      datos.push(reservaConstruida);
+                    }
                   });
                 });
               });
@@ -130,8 +148,12 @@ const AdminReservasNuevo = () => {
         });
 
         setClasesValidas(
-          listaClases.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
+          listaClases.sort((a, b) => {
+            if (a.orden !== b.orden) return a.orden - b.orden;
+            return a.nombre.localeCompare(b.nombre, "es");
+          })
         );
+
         setReservas(datos);
       } catch (error) {
         console.error("Error al cargar reservas:", error);
@@ -262,7 +284,11 @@ const AdminReservasNuevo = () => {
               </thead>
               <tbody>
                 {reservasFiltradas.map((r) => (
-                  <tr key={`${r.claseId}-${r.fecha}-${r.turno}-${r.id}`}>
+                  <tr
+                    key={`${r.claseId}-${r.fecha}-${r.turno}-${r.id}`}
+                    onClick={() => navigate(`/admin-detalle-reserva?id=${r.orderId}`)}
+                    style={styles.trClickable}
+                  >
                     <td style={styles.td}>{r.fecha}</td>
                     <td style={styles.td}>{r.turno}</td>
                     <td style={styles.td}>{r.clase}</td>
@@ -383,6 +409,10 @@ const styles = {
     borderBottom: "1px solid #f3ead7",
     color: "#333",
     fontSize: "0.95rem",
+  },
+  trClickable: {
+    cursor: "pointer",
+    transition: "0.2s",
   },
 };
 

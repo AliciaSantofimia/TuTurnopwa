@@ -122,22 +122,23 @@ export default function DondeReservar() {
         </div>
       </div>
 
-      {/* Panel admin */}
-      {esAdmin && (
-        <div className="mt-10 flex flex-col items-center">
-          <div
-            onClick={() => navigate("/admin-panel")}
-            className="bg-yellow-300 p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
-          >
-            <img
-              src="/img/panel-admin-negro.jpg"
-              alt="Panel admin"
-              className="w-24 h-auto mx-auto"
-            />
-          </div>
-          <p className="mt-2 text-sm text-gray-700 font-medium text-center">Panel admin</p>
-        </div>
-      )}
+      
+    {/* Panel admin */}
+{esAdmin && (
+  <div className="mt-10 flex flex-col items-center">
+    <div
+      onClick={() => navigate("/admin-dashboard")}
+      className="bg-yellow-300 p-4 rounded-xl shadow-xl hover:scale-105 transition duration-300 cursor-pointer"
+    >
+      <img
+        src="/img/panel-admin-negro.jpg"
+        alt="Panel admin"
+        className="w-24 h-auto mx-auto"
+      />
+    </div>
+    <p className="mt-2 text-sm text-gray-700 font-medium text-center">Panel admin</p>
+  </div>
+)}
 
 
 

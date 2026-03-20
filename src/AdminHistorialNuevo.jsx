@@ -20,7 +20,7 @@ const AdminHistorialNuevo = () => {
           get(ref(dbRealtime, "reservas")),
         ]);
 
-        const clasesValidas = {};
+        const mapaClases = {};
         const listaClases = [];
 
         if (clasesSnap.exists()) {
@@ -28,11 +28,17 @@ const AdminHistorialNuevo = () => {
             const claseId = claseSnap.key;
             const claseData = claseSnap.val() || {};
             const nombre = claseData.nombre || claseId;
+            const orden = Number(claseData.orden || 9999);
 
-            clasesValidas[claseId] = true;
+            mapaClases[claseId] = {
+              nombre,
+              orden,
+            };
+
             listaClases.push({
               id: claseId,
               nombre,
+              orden,
             });
           });
         }
@@ -42,7 +48,7 @@ const AdminHistorialNuevo = () => {
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
             const claseKey = claseSnap.key;
-            if (!clasesValidas[claseKey]) return;
+            if (!mapaClases[claseKey]) return;
 
             claseSnap.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
@@ -60,9 +66,13 @@ const AdminHistorialNuevo = () => {
                     datos.push({
                       id:
                         reserva.orderId ||
+                        reserva.id ||
                         `${claseKey}-${fechaKey}-${turnoKey}-${Math.random()}`,
                       claseId: reserva.claseId || claseKey,
-                      clase: reserva.clase || clasesValidas[claseKey] || claseKey,
+                      clase:
+                        reserva.clase ||
+                        mapaClases[claseKey]?.nombre ||
+                        claseKey,
                       fecha: reserva.fecha || fechaKey,
                       turno: reserva.turno || turnoKey,
                       metodo:
@@ -71,7 +81,10 @@ const AdminHistorialNuevo = () => {
                       estado: reserva.estado || "—",
                       estadoPago: reserva.estadoPago || "—",
                       precioTotal: Number(
-                        reserva.precioTotal || reserva.precio || 0
+                        reserva.precioTotal ||
+                          reserva.precioUnitario ||
+                          reserva.precio ||
+                          0
                       ),
                     });
                   };
@@ -104,7 +117,10 @@ const AdminHistorialNuevo = () => {
           return (a.turno || "").localeCompare(b.turno || "", "es");
         });
 
-        listaClases.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        listaClases.sort((a, b) => {
+          if (a.orden !== b.orden) return a.orden - b.orden;
+          return a.nombre.localeCompare(b.nombre, "es");
+        });
 
         setClasesDisponibles(listaClases);
         setReservas(datos);

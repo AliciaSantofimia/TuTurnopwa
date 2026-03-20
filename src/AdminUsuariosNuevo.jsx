@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ref, get } from "firebase/database";
+import { useNavigate } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
@@ -7,6 +8,7 @@ const AdminUsuariosNuevo = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarUsuarios = async () => {
@@ -100,7 +102,13 @@ const AdminUsuariosNuevo = () => {
         ) : (
           <div style={styles.grid}>
             {usuariosFiltrados.map((usuario) => (
-              <div key={usuario.uid} style={styles.card}>
+              <div
+                key={usuario.uid}
+                style={styles.card}
+                onClick={() =>
+                  navigate(`/admin-detalle-usuario?uid=${usuario.uid}`)
+                }
+              >
                 <div style={styles.cardTop}>
                   <div>
                     <h2 style={styles.nombre}>{usuario.nombre}</h2>
@@ -203,6 +211,8 @@ const styles = {
     borderRadius: 22,
     padding: 20,
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+    cursor: "pointer",
+    transition: "0.2s",
   },
   cardTop: {
     display: "flex",

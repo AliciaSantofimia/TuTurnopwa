@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ref, get } from "firebase/database";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleClaseNuevo = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const claseId = searchParams.get("clase");
 
   const [clase, setClase] = useState(null);
@@ -22,7 +23,7 @@ const AdminDetalleClaseNuevo = () => {
 
         const [claseSnap, reservasSnap] = await Promise.all([
           get(ref(dbRealtime, `clases/${claseId}`)),
-          get(ref(dbRealtime, `reservas/${claseId}`)),
+          get(ref(dbRealtime, "reservas")),
         ]);
 
         if (claseSnap.exists()) {
@@ -42,51 +43,61 @@ const AdminDetalleClaseNuevo = () => {
         hoy.setHours(0, 0, 0, 0);
 
         if (reservasSnap.exists()) {
-          reservasSnap.forEach((fechaSnap) => {
-            const fechaKey = fechaSnap.key;
+          reservasSnap.forEach((claseSnap) => {
+            claseSnap.forEach((fechaSnap) => {
+              const fechaKey = fechaSnap.key;
 
-            fechaSnap.forEach((turnoSnap) => {
-              const turnoKey = turnoSnap.key;
+              fechaSnap.forEach((turnoSnap) => {
+                const turnoKey = turnoSnap.key;
 
-              turnoSnap.forEach((nivelSnap) => {
-                const nivelVal = nivelSnap.val();
-                if (!nivelVal || typeof nivelVal !== "object") return;
+                turnoSnap.forEach((nivelSnap) => {
+                  const nivelVal = nivelSnap.val();
+                  if (!nivelVal || typeof nivelVal !== "object") return;
 
-                const procesarReserva = (reserva, metodoPorDefecto = "—") => {
-                  if (!reserva || typeof reserva !== "object") return;
-                  if (reserva.estado !== "Confirmada") return;
+                  const procesarReserva = (reserva, metodoPorDefecto = "—") => {
+                    if (!reserva || typeof reserva !== "object") return;
+                    if ((reserva.claseId || "") !== claseId) return;
+                    if (reserva.estado !== "Confirmada") return;
 
-                  const fecha = reserva.fecha || fechaKey;
-                  const fechaObj = new Date(`${fecha}T00:00:00`);
-                  if (fechaObj < hoy) return;
+                    const fecha = reserva.fecha || fechaKey;
+                    const fechaObj = new Date(`${fecha}T00:00:00`);
+                    if (fechaObj < hoy) return;
 
-                  datos.push({
-                    id:
-                      reserva.orderId ||
-                      `${claseId}-${fechaKey}-${turnoKey}-${Math.random()}`,
-                    fecha,
-                    turno: reserva.turno || turnoKey,
-                    metodo: reserva.metodo || reserva.tipoClase || metodoPorDefecto,
-                    plazas: Number(reserva.plazas || 1),
-                    estadoPago: reserva.estadoPago || "—",
-                    precioTotal: Number(reserva.precioTotal || reserva.precio || 0),
+                    datos.push({
+                      id:
+                        reserva.orderId ||
+                        reserva.id ||
+                        `${claseId}-${fechaKey}-${turnoKey}-${Math.random()}`,
+                      orderId: reserva.orderId || "",
+                      fecha,
+                      turno: reserva.turno || turnoKey,
+                      metodo: reserva.metodo || reserva.tipoClase || metodoPorDefecto,
+                      plazas: Number(reserva.plazas || 1),
+                      estadoPago: reserva.estadoPago || "—",
+                      precioTotal: Number(
+                        reserva.precioTotal ||
+                          reserva.precioUnitario ||
+                          reserva.precio ||
+                          0
+                      ),
+                    });
+                  };
+
+                  const pareceReservaDirecta =
+                    "fecha" in nivelVal ||
+                    "estado" in nivelVal ||
+                    "estadoPago" in nivelVal ||
+                    "uid" in nivelVal ||
+                    "orderId" in nivelVal;
+
+                  if (pareceReservaDirecta) {
+                    procesarReserva(nivelVal);
+                    return;
+                  }
+
+                  nivelSnap.forEach((reservaSnap) => {
+                    procesarReserva(reservaSnap.val(), nivelSnap.key);
                   });
-                };
-
-                const pareceReservaDirecta =
-                  "fecha" in nivelVal ||
-                  "estado" in nivelVal ||
-                  "estadoPago" in nivelVal ||
-                  "uid" in nivelVal ||
-                  "orderId" in nivelVal;
-
-                if (pareceReservaDirecta) {
-                  procesarReserva(nivelVal);
-                  return;
-                }
-
-                nivelSnap.forEach((reservaSnap) => {
-                  procesarReserva(reservaSnap.val(), nivelSnap.key);
                 });
               });
             });
@@ -143,28 +154,43 @@ const AdminDetalleClaseNuevo = () => {
             <p style={styles.textoVacio}>No hay reservas futuras confirmadas.</p>
           ) : (
             <div style={styles.lista}>
-              {reservas.map((r, index) => (
-                <div key={`${r.id}-${index}`} style={styles.reservaItem}>
-                  <p style={styles.linea}>
-                    <strong>Fecha:</strong> {r.fecha}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Turno:</strong> {r.turno}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Método:</strong> {r.metodo}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Plazas:</strong> {r.plazas}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Estado pago:</strong> {r.estadoPago}
-                  </p>
-                  <p style={styles.linea}>
-                    <strong>Precio total:</strong> {r.precioTotal}€
-                  </p>
-                </div>
-              ))}
+              {reservas.map((r, index) => {
+                const destino = r.orderId
+                  ? `/admin-detalle-reserva?id=${r.orderId}`
+                  : null;
+
+                return (
+                  <div
+                    key={`${r.id}-${index}`}
+                    style={styles.reservaItem}
+                    onClick={() => {
+                      if (destino) navigate(destino);
+                    }}
+                  >
+                    <p style={styles.linea}>
+                      <strong>Fecha:</strong> {r.fecha}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Turno:</strong> {r.turno}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Método:</strong> {r.metodo}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Plazas:</strong> {r.plazas}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Estado pago:</strong> {r.estadoPago}
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Precio total:</strong> {r.precioTotal}€
+                    </p>
+                    <p style={styles.linea}>
+                      <strong>Order ID:</strong> {r.orderId || "—"}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -223,6 +249,8 @@ const styles = {
     borderRadius: 16,
     backgroundColor: "#fffaf0",
     border: "1px solid #eadfbe",
+    cursor: "pointer",
+    transition: "0.2s",
   },
   linea: {
     margin: "4px 0",
