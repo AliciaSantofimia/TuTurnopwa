@@ -4,35 +4,35 @@ import { useNavigate } from "react-router-dom";
 const ConfirmacionPago = () => {
   const navigate = useNavigate();
 
-  // cuando hago clic en el botón, llevo al usuario a su perfil
-  const handleVolverInicio = () => {
-    navigate("/perfil");
-  };
-
   return (
     <div style={styles.body}>
       <div style={styles.container}>
         <div style={styles.check}>✓</div>
+
         <h1 style={styles.title}>¡Pago realizado con éxito!</h1>
+
         <p style={styles.text}>
           Gracias por tu reserva. Te esperamos en el taller con muchas ganas.
         </p>
-        <button
-  onClick={() => navigate("/dondereservar")}
-  className="..."
->
-  Seguir reservando
-</button>
 
-<button
-  onClick={() => navigate("/perfil")}
-  className="mt-3 px-4 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-100 transition"
->
-  Ver mi reserva
-</button>
+        <div style={styles.botones}>
+          <button
+            onClick={() => navigate("/dondereservar")}
+            style={styles.botonPrincipal}
+          >
+            Seguir reservando
+          </button>
+
+          <button
+            onClick={() => navigate("/perfil")}
+            style={styles.botonSecundario}
+          >
+            Ver mi reserva
+          </button>
+        </div>
 
         <img
-          src="/logoPC.png"
+          src="/img/logoPC.png"
           alt="Logo TuTurno"
           style={styles.logo}
         />
@@ -71,10 +71,17 @@ const styles = {
   },
   text: {
     fontSize: "1rem",
-    marginBottom: 20,
+    marginBottom: 24,
+    lineHeight: 1.5,
   },
-  btn: {
-    display: "inline-block",
+  botones: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 12,
+    flexWrap: "wrap",
+    marginBottom: 24,
+  },
+  botonPrincipal: {
     backgroundColor: "#f59e8f",
     color: "white",
     padding: "12px 20px",
@@ -83,14 +90,23 @@ const styles = {
     fontSize: "1rem",
     fontWeight: "bold",
     cursor: "pointer",
-    textDecoration: "none",
+  },
+  botonSecundario: {
+    backgroundColor: "white",
+    color: "#5f6368",
+    padding: "12px 20px",
+    border: "1px solid #d1d5db",
+    borderRadius: "999px",
+    fontSize: "1rem",
+    fontWeight: "500",
+    cursor: "pointer",
   },
   logo: {
     display: "block",
-    margin: "30px auto 10px",
+    margin: "10px auto 0",
     width: 80,
+    height: "auto",
   },
 };
 
 export default ConfirmacionPago;
-
