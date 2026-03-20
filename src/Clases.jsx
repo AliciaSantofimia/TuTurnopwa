@@ -31,7 +31,7 @@ export default function Clases() {
     ],
     ruta: "/talleres/clase-suelta-continuidad",
     color: "border-[#F4C542]",
-    imagen: "/img/vasijaclasesuelta.png",
+    imagen: "/img/vasijabono2.png",
   },
   {
     id: 4,
