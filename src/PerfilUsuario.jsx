@@ -12,6 +12,7 @@ export default function PerfilUsuario() {
   const [email, setEmail] = useState("");
   const [reservaActiva, setReservaActiva] = useState(null);
   const [reservasPasadas, setReservasPasadas] = useState([]);
+  const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -22,7 +23,10 @@ export default function PerfilUsuario() {
         const snapshot = await get(userRef);
         if (snapshot.exists()) setNombre(snapshot.val().nombre);
 
-        const refListaReservas = ref(dbRealtime, `usuarios/${user.uid}/listaReservas`);
+        const refListaReservas = ref(
+          dbRealtime,
+          `usuarios/${user.uid}/listaReservas`
+        );
         const snapListaReservas = await get(refListaReservas);
 
         if (snapListaReservas.exists()) {
@@ -36,6 +40,26 @@ export default function PerfilUsuario() {
             setReservaActiva(todas[0]);
             setReservasPasadas(todas.slice(1));
           }
+        }
+
+        const refTarjetasRegalo = ref(
+          dbRealtime,
+          `usuarios/${user.uid}/tarjetasRegalo`
+        );
+        const snapTarjetasRegalo = await get(refTarjetasRegalo);
+
+        if (snapTarjetasRegalo.exists()) {
+          const tarjetas = Object.values(snapTarjetasRegalo.val()).sort(
+            (a, b) => {
+              const fechaA = new Date(a.actualizadoEn || a.fechaCompra || 0);
+              const fechaB = new Date(b.actualizadoEn || b.fechaCompra || 0);
+              return fechaB - fechaA;
+            }
+          );
+
+          setTarjetasRegalo(tarjetas);
+        } else {
+          setTarjetasRegalo([]);
         }
       } else {
         navigate("/login");
@@ -52,7 +76,6 @@ export default function PerfilUsuario() {
   return (
     <PantallaConVolver volverA="/dondereservar">
       <div className="max-w-md w-full mx-auto bg-[#fcfaf6] rounded-[30px] shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-[#eee6da] p-5 text-[#3b3025]">
-
         {/* Cabecera */}
         <div className="text-center mb-6">
           <h1 className="text-[2rem] font-serif font-bold text-[#6f3d22] mb-2">
@@ -79,30 +102,36 @@ export default function PerfilUsuario() {
             className="bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-bold py-3 rounded-2xl text-sm shadow-md transition"
             onClick={() => navigate("/dondereservar")}
           >
-             Reservar
+            Reservar
           </button>
 
           <button
             className="bg-white border border-[#e6a6cf] text-[#b84c85] font-bold py-3 rounded-2xl text-sm shadow-sm transition hover:bg-[#fdf2f8]"
             onClick={() => navigate("/canjear-tarjeta")}
           >
-             Canjear tarjeta regalo
+            Canjear tarjeta regalo
           </button>
         </div>
 
         {/* Reserva activa */}
         <div className="bg-white rounded-2xl border border-[#efe7db] px-4 py-4 shadow-sm mb-5">
-          <h2 className="text-base font-semibold mb-3">
-            Tu próxima reserva
-          </h2>
+          <h2 className="text-base font-semibold mb-3">Tu próxima reserva</h2>
 
           {reservaActiva ? (
             <div className="space-y-1 text-sm">
-              <p><strong>Clase:</strong> {reservaActiva.clase}</p>
-              <p><strong>Fecha:</strong> {reservaActiva.fecha}</p>
-              <p><strong>Turno:</strong> {reservaActiva.turno}</p>
+              <p>
+                <strong>Clase:</strong> {reservaActiva.clase}
+              </p>
+              <p>
+                <strong>Fecha:</strong> {reservaActiva.fecha}
+              </p>
+              <p>
+                <strong>Turno:</strong> {reservaActiva.turno}
+              </p>
               {reservaActiva.ubicacion && (
-                <p><strong>Ubicación:</strong> {reservaActiva.ubicacion}</p>
+                <p>
+                  <strong>Ubicación:</strong> {reservaActiva.ubicacion}
+                </p>
               )}
             </div>
           ) : (
@@ -115,14 +144,17 @@ export default function PerfilUsuario() {
         {/* Historial */}
         <details className="mb-5 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
           <summary className="cursor-pointer font-semibold">
-             Historial de reservas
+            Historial de reservas
           </summary>
 
           <div className="mt-3">
             {reservasPasadas.length > 0 ? (
               <ul className="text-sm space-y-2">
                 {reservasPasadas.map((r, i) => (
-                  <li key={i} className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]">
+                  <li
+                    key={i}
+                    className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]"
+                  >
                     <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
                     {r.ubicacion ? ` en ${r.ubicacion}` : ""}
                   </li>
@@ -136,14 +168,54 @@ export default function PerfilUsuario() {
           </div>
         </details>
 
+        {/* Tarjetas regalo */}
+        <details className="mb-5 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
+          <summary className="cursor-pointer font-semibold">
+            🎁 Mis tarjetas regalo
+          </summary>
+
+          <div className="mt-3">
+            {tarjetasRegalo.length > 0 ? (
+              <ul className="text-sm space-y-2">
+                {tarjetasRegalo.map((tarjeta, i) => (
+                  <li
+                    key={i}
+                    className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]"
+                  >
+                    <p>
+                      <strong>Producto:</strong>{" "}
+                      {tarjeta.clase || "Tarjeta regalo"}
+                    </p>
+                    <p>
+                      <strong>Precio:</strong> {tarjeta.precioTotal} €
+                    </p>
+                    <p>
+                      <strong>Código:</strong> {tarjeta.codigo || "—"}
+                    </p>
+                    <p>
+                      <strong>Estado:</strong>{" "}
+                      {tarjeta.estadoCanje || "pendiente"}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#7b6d62]">
+                Aún no has comprado ninguna tarjeta regalo.
+              </p>
+            )}
+          </div>
+        </details>
+
         {/* Recoger pieza */}
         <details className="mb-5 bg-[#fbf4d8] border border-[#ead66d] rounded-2xl p-4 shadow-sm">
           <summary className="cursor-pointer font-semibold">
-             Recoger mi pieza
+            Recoger mi pieza
           </summary>
 
           <p className="text-sm mt-3">
-            Tus piezas necesitan secado y cocción. Cuando estén listas, podrás verlas en la carpeta.
+            Tus piezas necesitan secado y cocción. Cuando estén listas, podrás
+            verlas en la carpeta.
           </p>
 
           <a
@@ -166,20 +238,21 @@ export default function PerfilUsuario() {
             <li>📞 644 671 664</li>
             <li>📧 lapurisimaconchioficial@gmail.com</li>
             <li>🏠 Calle Israel Nº5, Córdoba</li>
-            <div className="mt-4">
-  <button
-    onClick={() =>
-      window.open(
-        "https://maps.google.com/?q=Calle+Israel+5+Córdoba",
-        "_blank"
-      )
-    }
-    className="w-full px-4 py-2 bg-[#f5f1ea] hover:bg-[#ebe4da] rounded-xl text-sm font-medium transition"
-  >
-    📍 Cómo llegar
-  </button>
-</div>
           </ul>
+
+          <div className="mt-4">
+            <button
+              onClick={() =>
+                window.open(
+                  "https://maps.google.com/?q=Calle+Israel+5+Córdoba",
+                  "_blank"
+                )
+              }
+              className="w-full px-4 py-2 bg-[#f5f1ea] hover:bg-[#ebe4da] rounded-xl text-sm font-medium transition"
+            >
+              📍 Cómo llegar
+            </button>
+          </div>
         </details>
 
         {/* Logout */}
@@ -200,7 +273,6 @@ export default function PerfilUsuario() {
             Condiciones de Pago
           </button>
         </div>
-
       </div>
 
       <Footer />
