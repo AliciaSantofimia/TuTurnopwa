@@ -16,8 +16,10 @@ const AdminTarjetasRegalo = () => {
       setCargando(true);
 
       try {
-        const tarjetasSnap = await get(ref(dbRealtime, "tarjetasRegalo"));
         const datosTarjetas = [];
+
+        // 1. TARJETAS EN ROOT
+        const tarjetasSnap = await get(ref(dbRealtime, "tarjetasRegalo"));
 
         if (tarjetasSnap.exists()) {
           tarjetasSnap.forEach((tarjetaSnap) => {
@@ -32,12 +34,18 @@ const AdminTarjetasRegalo = () => {
                 tarjeta.fechaCompra.length >= 10
                   ? tarjeta.fechaCompra.slice(0, 10)
                   : "—",
-              fechaCompleta: tarjeta.fechaCompra || "",
+              fechaCompleta:
+                tarjeta.fechaCompra ||
+                tarjeta.creadoEn ||
+                tarjeta.actualizadoEn ||
+                "",
               codigo: tarjeta.codigo || "",
               plazas: Number(tarjeta.plazas || 1),
               estadoCanje: tarjeta.estadoCanje || "pendiente",
               estadoPago: tarjeta.estadoPago || "—",
-              precioTotal: Number(tarjeta.precioTotal || 0),
+              precioTotal: Number(
+                tarjeta.precioTotal || tarjeta.precioOriginal || 0
+              ),
               precioOriginal: Number(tarjeta.precioOriginal || 0),
               uidComprador: tarjeta.uidComprador || "",
               orderId: tarjeta.orderId || tarjetaSnap.key,
@@ -55,7 +63,70 @@ const AdminTarjetasRegalo = () => {
           });
         }
 
-        datosTarjetas.sort((a, b) => {
+        // 2. TARJETAS GUARDADAS DENTRO DE USUARIOS/{uid}/tarjetasRegalo
+        const usuariosSnap = await get(ref(dbRealtime, "usuarios"));
+
+        if (usuariosSnap.exists()) {
+          usuariosSnap.forEach((userSnap) => {
+            const uid = userSnap.key;
+            const user = userSnap.val() || {};
+
+            if (user.tarjetasRegalo && typeof user.tarjetasRegalo === "object") {
+              Object.entries(user.tarjetasRegalo).forEach(([id, tarjeta]) => {
+                const t = tarjeta || {};
+
+                datosTarjetas.push({
+                  id,
+                  claseId: "tarjeta_regalo",
+                  clase: t.clase || "Tarjeta regalo",
+                  fecha:
+                    typeof t.fechaCompra === "string" &&
+                    t.fechaCompra.length >= 10
+                      ? t.fechaCompra.slice(0, 10)
+                      : "—",
+                  fechaCompleta:
+                    t.fechaCompra || t.creadoEn || t.actualizadoEn || "",
+                  codigo: t.codigo || "",
+                  plazas: Number(t.plazas || 1),
+                  estadoCanje: t.estadoCanje || "pendiente",
+                  estadoPago: t.estadoPago || "—",
+                  precioTotal: Number(t.precioTotal || t.precioOriginal || 0),
+                  precioOriginal: Number(t.precioOriginal || 0),
+                  uidComprador: t.uidComprador || uid,
+                  orderId: t.orderId || id,
+                  procesado: t.procesado ?? false,
+                  nombreDestinatario: t.nombreDestinatario || "",
+                  emailDestinatario: t.emailDestinatario || "",
+                  mensajePersonalizado: t.mensajePersonalizado || "",
+                  subtipo: t.subtipo || "",
+                  tipo: t.tipo || "",
+                  numeroClases: Number(t.numeroClases || 0),
+                  desdeTarjeta: t.desdeTarjeta ?? false,
+                  creadoEn: t.creadoEn || "",
+                  actualizadoEn: t.actualizadoEn || "",
+                });
+              });
+            }
+          });
+        }
+
+        // Eliminar duplicados por orderId o código
+        const mapa = new Map();
+
+        datosTarjetas.forEach((t, index) => {
+          const clave =
+            t.orderId ||
+            t.codigo ||
+            `${t.uidComprador || "sinuid"}-${t.fechaCompleta || "sinfecha"}-${index}`;
+
+          if (!mapa.has(clave)) {
+            mapa.set(clave, t);
+          }
+        });
+
+        const tarjetasUnicas = Array.from(mapa.values());
+
+        tarjetasUnicas.sort((a, b) => {
           const fechaA =
             a.fechaCompleta && !isNaN(new Date(a.fechaCompleta).getTime())
               ? new Date(a.fechaCompleta).getTime()
@@ -69,7 +140,7 @@ const AdminTarjetasRegalo = () => {
           return fechaB - fechaA;
         });
 
-        setTarjetasRegalo(datosTarjetas);
+        setTarjetasRegalo(tarjetasUnicas);
       } catch (error) {
         console.error("Error al cargar tarjetas regalo:", error);
         setTarjetasRegalo([]);
@@ -230,8 +301,11 @@ const AdminTarjetasRegalo = () => {
                 </tr>
               </thead>
               <tbody>
-                {tarjetasFiltradas.map((t) => (
-                  <tr key={t.id} style={styles.tr}>
+                {tarjetasFiltradas.map((t, index) => (
+                  <tr
+                    key={`${t.orderId || t.id || index}-${index}`}
+                    style={styles.tr}
+                  >
                     <td style={styles.td}>{t.fecha}</td>
                     <td style={styles.td}>{t.codigo || "—"}</td>
                     <td style={styles.td}>{t.clase}</td>
