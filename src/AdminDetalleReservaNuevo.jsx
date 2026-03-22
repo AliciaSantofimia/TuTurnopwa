@@ -17,26 +17,68 @@ const AdminDetalleReservaNuevo = () => {
       try {
         const snapshot = await get(ref(dbRealtime, "reservas"));
 
-        if (!snapshot.exists()) return;
+        if (!snapshot.exists()) {
+          setReserva(null);
+          return;
+        }
 
         let encontrada = null;
 
         snapshot.forEach((claseSnap) => {
+          const claseKey = claseSnap.key;
+
           claseSnap.forEach((fechaSnap) => {
+            const fechaKey = fechaSnap.key;
+
             fechaSnap.forEach((turnoSnap) => {
+              const turnoKey = turnoSnap.key;
+
               turnoSnap.forEach((nivelSnap) => {
+                const nivelKey = nivelSnap.key;
                 const nivelVal = nivelSnap.val();
+
                 if (!nivelVal || typeof nivelVal !== "object") return;
+
+                const construirReserva = (r) => {
+                  if (!r || typeof r !== "object") return null;
+
+                  return {
+                    ...r,
+                    claseId: r.claseId || claseKey,
+                    clase: r.clase || claseKey,
+                    fecha: r.fecha || fechaKey,
+                    turno: r.turno || turnoKey,
+                    metodo: r.metodo || r.tipoClase || nivelKey || "—",
+                    plazas: Number(r.plazas || 1),
+                    estado: r.estado || "—",
+                    estadoPago: r.estadoPago || "—",
+                    precioUnitario: Number(
+                      r.precioUnitario || r.precio || 0
+                    ),
+                    precioTotal: Number(
+                      r.precioTotal || r.precioUnitario || r.precio || 0
+                    ),
+                    uid: r.uid || "",
+                    orderId: r.orderId || "",
+                    desdeTarjeta: r.desdeTarjeta ?? false,
+                    timestamp: r.timestamp || r.creadoEn || "—",
+                    procesado: r.procesado ?? false,
+                  };
+                };
 
                 const comprobarReserva = (r) => {
                   if (!r || typeof r !== "object") return;
+
                   if (r.orderId === orderId) {
-                    encontrada = r;
+                    encontrada = construirReserva(r);
                   }
                 };
 
                 const pareceReservaDirecta =
-                  "orderId" in nivelVal || "fecha" in nivelVal;
+                  "orderId" in nivelVal ||
+                  "fecha" in nivelVal ||
+                  "estado" in nivelVal ||
+                  "estadoPago" in nivelVal;
 
                 if (pareceReservaDirecta) {
                   comprobarReserva(nivelVal);
@@ -54,6 +96,7 @@ const AdminDetalleReservaNuevo = () => {
         setReserva(encontrada);
       } catch (error) {
         console.error("Error al buscar reserva:", error);
+        setReserva(null);
       } finally {
         setCargando(false);
       }
@@ -79,14 +122,21 @@ const AdminDetalleReservaNuevo = () => {
 
         <div style={styles.card}>
           <p>
-  <strong>Clase:</strong>{" "}
-  <span
-    style={styles.linkClase}
-    onClick={() => navigate(`/admin-detalle-clase?clase=${reserva.claseId}`)}
-  >
-    {reserva.clase}
-  </span>
-</p>
+            <strong>Clase:</strong>{" "}
+            <span
+              style={styles.linkClase}
+              onClick={() =>
+  navigate(
+    `/admin-detalle-clase?clase=${encodeURIComponent(
+      reserva.claseId || ""
+    )}&nombre=${encodeURIComponent(reserva.clase || "")}`
+  )
+}
+            >
+              {reserva.clase}
+            </span>
+          </p>
+
           <p><strong>Fecha:</strong> {reserva.fecha}</p>
           <p><strong>Turno:</strong> {reserva.turno}</p>
           <p><strong>Método:</strong> {reserva.metodo}</p>
@@ -105,14 +155,17 @@ const AdminDetalleReservaNuevo = () => {
           <hr style={styles.hr} />
 
           <p>
-  <strong>UID:</strong>{" "}
-  <span
-    style={styles.uidLink}
-    onClick={() => navigate(`/admin-detalle-usuario?uid=${reserva.uid}`)}
-  >
-    {reserva.uid}
-  </span>
-</p>
+            <strong>UID:</strong>{" "}
+            <span
+              style={styles.uidLink}
+              onClick={() =>
+                navigate(`/admin-detalle-usuario?uid=${reserva.uid}`)
+              }
+            >
+              {reserva.uid}
+            </span>
+          </p>
+
           <p><strong>Order ID:</strong> {reserva.orderId}</p>
           <p><strong>Desde tarjeta:</strong> {reserva.desdeTarjeta ? "Sí" : "No"}</p>
 
@@ -156,21 +209,21 @@ const styles = {
     borderTop: "1px solid #eee",
   },
   uidLink: {
-  color: "#7c5c2e",
-  cursor: "pointer",
-  textDecoration: "underline",
-  fontWeight: 500,
-},
+    color: "#7c5c2e",
+    cursor: "pointer",
+    textDecoration: "underline",
+    fontWeight: 500,
+  },
   mensaje: {
     textAlign: "center",
     padding: 40,
   },
   linkClase: {
-  color: "#7c5c2e",
-  cursor: "pointer",
-  textDecoration: "underline",
-  fontWeight: 500,
-},
+    color: "#7c5c2e",
+    cursor: "pointer",
+    textDecoration: "underline",
+    fontWeight: 500,
+  },
 };
 
 export default AdminDetalleReservaNuevo;

@@ -5,9 +5,11 @@ import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleClaseNuevo = () => {
+  
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const claseId = searchParams.get("clase");
+  const nombreClase = searchParams.get("nombre") || "";
 
   const [clase, setClase] = useState(null);
   const [reservas, setReservas] = useState([]);
@@ -26,24 +28,48 @@ const AdminDetalleClaseNuevo = () => {
           get(ref(dbRealtime, "reservas")),
         ]);
 
-        if (claseSnap.exists()) {
-          const data = claseSnap.val() || {};
-          setClase({
-            id: claseId,
-            nombre: data.nombre || claseId,
-            categoria: data.categoria || "Sin categoría",
-            precioDesde: data.precioDesde || "",
-          });
-        } else {
-          setClase(null);
-        }
+       let claseEncontrada = null;
+let claseIdReal = claseId;
 
+if (claseSnap.exists()) {
+  const data = claseSnap.val() || {};
+  claseEncontrada = {
+    id: claseId,
+    nombre: data.nombre || claseId,
+    categoria: data.categoria || "Sin categoría",
+    precioDesde: data.precioDesde || "",
+  };
+} else {
+  const todasLasClasesSnap = await get(ref(dbRealtime, "clases"));
+
+  if (todasLasClasesSnap.exists()) {
+    todasLasClasesSnap.forEach((itemSnap) => {
+      const data = itemSnap.val() || {};
+      const nombre = (data.nombre || "").trim().toLowerCase();
+      const nombreBuscado = nombreClase.trim().toLowerCase();
+
+      if (!claseEncontrada && nombre && nombre === nombreBuscado) {
+        claseIdReal = itemSnap.key;
+        claseEncontrada = {
+          id: itemSnap.key,
+          nombre: data.nombre || itemSnap.key,
+          categoria: data.categoria || "Sin categoría",
+          precioDesde: data.precioDesde || "",
+        };
+      }
+    });
+  }
+}
+
+setClase(claseEncontrada);
         const datos = [];
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
 
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
+            const claseKey = claseSnap.key;
+
             claseSnap.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
 
@@ -56,7 +82,10 @@ const AdminDetalleClaseNuevo = () => {
 
                   const procesarReserva = (reserva, metodoPorDefecto = "—") => {
                     if (!reserva || typeof reserva !== "object") return;
-                    if ((reserva.claseId || "") !== claseId) return;
+
+                    const claseReal = reserva.claseId || claseKey;
+if (claseReal !== (clase?.id || claseId)) return;
+
                     if (reserva.estado !== "Confirmada") return;
 
                     const fecha = reserva.fecha || fechaKey;
@@ -67,11 +96,14 @@ const AdminDetalleClaseNuevo = () => {
                       id:
                         reserva.orderId ||
                         reserva.id ||
-                        `${claseId}-${fechaKey}-${turnoKey}-${Math.random()}`,
+                        `${claseReal}-${fechaKey}-${turnoKey}-${Math.random()}`,
                       orderId: reserva.orderId || "",
                       fecha,
                       turno: reserva.turno || turnoKey,
-                      metodo: reserva.metodo || reserva.tipoClase || metodoPorDefecto,
+                      metodo:
+                        reserva.metodo ||
+                        reserva.tipoClase ||
+                        metodoPorDefecto,
                       plazas: Number(reserva.plazas || 1),
                       estadoPago: reserva.estadoPago || "—",
                       precioTotal: Number(

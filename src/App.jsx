@@ -380,6 +380,14 @@ function App() {
   
 />
 <Route path="/admin-tarjetas-regalo" element={<AdminTarjetasRegalo />} />
+<Route
+  path="/admin-tarjetas-regalo"
+  element={
+    <RutaAdmin>
+      <AdminTarjetasRegalo />
+    </RutaAdmin>
+  }
+/>
           
 
           
