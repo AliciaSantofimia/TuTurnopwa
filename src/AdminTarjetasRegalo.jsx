@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ref, get } from "firebase/database";
+import { useNavigate } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminTarjetasRegalo = () => {
+  const navigate = useNavigate();
+
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [cargando, setCargando] = useState(true);
 
@@ -17,39 +20,49 @@ const AdminTarjetasRegalo = () => {
 
       try {
         const datosTarjetas = [];
+        const usuariosSnap = await get(ref(dbRealtime, "usuarios"));
 
-        const tarjetasSnap = await get(ref(dbRealtime, "tarjetasRegalo"));
+        if (usuariosSnap.exists()) {
+          usuariosSnap.forEach((userSnap) => {
+            const uid = userSnap.key;
+            const userData = userSnap.val() || {};
+            const nombreUsuario = userData.nombre || "";
+            const emailUsuario = userData.email || "";
 
-        if (tarjetasSnap.exists()) {
-          tarjetasSnap.forEach((tarjetaSnap) => {
-            const tarjeta = tarjetaSnap.val() || {};
+            const tarjetasUsuario = userData.tarjetasRegalo || {};
 
-            datosTarjetas.push({
-              id: tarjetaSnap.key,
-              tipoRegistro: "tarjeta_regalo",
-              claseId: "tarjeta_regalo",
-              clase: tarjeta.clase || "Tarjeta regalo",
-              fecha:
-                typeof tarjeta.fechaCompra === "string" &&
-                tarjeta.fechaCompra.length >= 10
-                  ? tarjeta.fechaCompra.slice(0, 10)
-                  : "—",
-              turno: "—",
-              metodo: tarjeta.codigo || "—",
-              plazas: Number(tarjeta.plazas || 1),
-              estado: tarjeta.estadoCanje || "pendiente",
-              estadoPago: tarjeta.estadoPago || "—",
-              precioTotal: Number(tarjeta.precioTotal || 0),
-              uid: tarjeta.uidComprador || "",
-              orderId: tarjeta.orderId || tarjetaSnap.key,
-              procesado: tarjeta.procesado ?? false,
-              codigo: tarjeta.codigo || "",
-              nombreDestinatario: tarjeta.nombreDestinatario || "",
-              emailDestinatario: tarjeta.emailDestinatario || "",
-              mensajePersonalizado: tarjeta.mensajePersonalizado || "",
-              subtipo: tarjeta.subtipo || "",
-              tipo: tarjeta.tipo || "",
-              numeroClases: Number(tarjeta.numeroClases || 0),
+            Object.entries(tarjetasUsuario).forEach(([tarjetaId, tarjeta]) => {
+              const t = tarjeta || {};
+
+              datosTarjetas.push({
+                id: tarjetaId,
+                tipoRegistro: "tarjeta_regalo",
+                claseId: "tarjeta_regalo",
+                clase: t.clase || "Tarjeta regalo",
+                fecha:
+                  typeof t.fechaCompra === "string" &&
+                  t.fechaCompra.length >= 10
+                    ? t.fechaCompra.slice(0, 10)
+                    : "—",
+                turno: "—",
+                metodo: t.codigo || "—",
+                plazas: Number(t.plazas || 1),
+                estado: t.estadoCanje || "pendiente",
+                estadoPago: t.estadoPago || "—",
+                precioTotal: Number(t.precioTotal || 0),
+                uid: uid,
+                orderId: t.orderId || tarjetaId,
+                procesado: t.procesado ?? false,
+                codigo: t.codigo || "",
+                nombreDestinatario: t.nombreDestinatario || "",
+                emailDestinatario: t.emailDestinatario || "",
+                mensajePersonalizado: t.mensajePersonalizado || "",
+                subtipo: t.subtipo || "",
+                tipo: t.tipo || "",
+                numeroClases: Number(t.numeroClases || 0),
+                nombreUsuario,
+                emailUsuario,
+              });
             });
           });
         }
@@ -211,6 +224,7 @@ const AdminTarjetasRegalo = () => {
                   <th style={styles.th}>Código</th>
                   <th style={styles.th}>Clase</th>
                   <th style={styles.th}>Destinatario / Info</th>
+                  <th style={styles.th}>Usuario</th>
                   <th style={styles.th}>Plazas</th>
                   <th style={styles.th}>Estado canje</th>
                   <th style={styles.th}>Pago</th>
@@ -219,12 +233,21 @@ const AdminTarjetasRegalo = () => {
               </thead>
               <tbody>
                 {tarjetasFiltradas.map((t) => (
-                  <tr key={`${t.orderId}-${t.id}`} style={styles.tr}>
+                  <tr
+                    key={`${t.claseId}-${t.fecha}-${t.orderId}-${t.id}`}
+                    onClick={() =>
+                      navigate(`/admin-detalle-reserva?id=${t.orderId}`)
+                    }
+                    style={styles.trClickable}
+                  >
                     <td style={styles.td}>{t.fecha}</td>
                     <td style={styles.td}>{t.codigo || "—"}</td>
                     <td style={styles.td}>{t.clase}</td>
                     <td style={styles.td}>
                       {t.nombreDestinatario || t.emailDestinatario || "—"}
+                    </td>
+                    <td style={styles.td}>
+                      {t.nombreUsuario || t.emailUsuario || t.uid}
                     </td>
                     <td style={styles.td}>{t.plazas}</td>
                     <td style={styles.td}>{t.estado}</td>
@@ -368,7 +391,8 @@ const styles = {
     color: "#333",
     fontSize: "0.95rem",
   },
-  tr: {
+  trClickable: {
+    cursor: "pointer",
     transition: "0.2s",
   },
 };
