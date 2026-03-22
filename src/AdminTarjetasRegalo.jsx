@@ -7,18 +7,17 @@ const AdminTarjetasRegalo = () => {
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  const [busqueda, setBusqueda] = useState("");
+  const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroEstadoCanje, setFiltroEstadoCanje] = useState("");
   const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
 
   useEffect(() => {
-    const cargarTarjetas = async () => {
+    const cargarDatos = async () => {
       setCargando(true);
 
       try {
         const datosTarjetas = [];
 
-        // 1. TARJETAS EN ROOT
         const tarjetasSnap = await get(ref(dbRealtime, "tarjetasRegalo"));
 
         if (tarjetasSnap.exists()) {
@@ -27,6 +26,7 @@ const AdminTarjetasRegalo = () => {
 
             datosTarjetas.push({
               id: tarjetaSnap.key,
+              tipoRegistro: "tarjeta_regalo",
               claseId: "tarjeta_regalo",
               clase: tarjeta.clase || "Tarjeta regalo",
               fecha:
@@ -34,113 +34,37 @@ const AdminTarjetasRegalo = () => {
                 tarjeta.fechaCompra.length >= 10
                   ? tarjeta.fechaCompra.slice(0, 10)
                   : "—",
-              fechaCompleta:
-                tarjeta.fechaCompra ||
-                tarjeta.creadoEn ||
-                tarjeta.actualizadoEn ||
-                "",
-              codigo: tarjeta.codigo || "",
+              turno: "—",
+              metodo: tarjeta.codigo || "—",
               plazas: Number(tarjeta.plazas || 1),
-              estadoCanje: tarjeta.estadoCanje || "pendiente",
+              estado: tarjeta.estadoCanje || "pendiente",
               estadoPago: tarjeta.estadoPago || "—",
-              precioTotal: Number(
-                tarjeta.precioTotal || tarjeta.precioOriginal || 0
-              ),
-              precioOriginal: Number(tarjeta.precioOriginal || 0),
-              uidComprador: tarjeta.uidComprador || "",
+              precioTotal: Number(tarjeta.precioTotal || 0),
+              uid: tarjeta.uidComprador || "",
               orderId: tarjeta.orderId || tarjetaSnap.key,
               procesado: tarjeta.procesado ?? false,
+              codigo: tarjeta.codigo || "",
               nombreDestinatario: tarjeta.nombreDestinatario || "",
               emailDestinatario: tarjeta.emailDestinatario || "",
               mensajePersonalizado: tarjeta.mensajePersonalizado || "",
               subtipo: tarjeta.subtipo || "",
               tipo: tarjeta.tipo || "",
               numeroClases: Number(tarjeta.numeroClases || 0),
-              desdeTarjeta: tarjeta.desdeTarjeta ?? false,
-              creadoEn: tarjeta.creadoEn || "",
-              actualizadoEn: tarjeta.actualizadoEn || "",
             });
           });
         }
 
-        // 2. TARJETAS GUARDADAS DENTRO DE USUARIOS/{uid}/tarjetasRegalo
-        const usuariosSnap = await get(ref(dbRealtime, "usuarios"));
-
-        if (usuariosSnap.exists()) {
-          usuariosSnap.forEach((userSnap) => {
-            const uid = userSnap.key;
-            const user = userSnap.val() || {};
-
-            if (user.tarjetasRegalo && typeof user.tarjetasRegalo === "object") {
-              Object.entries(user.tarjetasRegalo).forEach(([id, tarjeta]) => {
-                const t = tarjeta || {};
-
-                datosTarjetas.push({
-                  id,
-                  claseId: "tarjeta_regalo",
-                  clase: t.clase || "Tarjeta regalo",
-                  fecha:
-                    typeof t.fechaCompra === "string" &&
-                    t.fechaCompra.length >= 10
-                      ? t.fechaCompra.slice(0, 10)
-                      : "—",
-                  fechaCompleta:
-                    t.fechaCompra || t.creadoEn || t.actualizadoEn || "",
-                  codigo: t.codigo || "",
-                  plazas: Number(t.plazas || 1),
-                  estadoCanje: t.estadoCanje || "pendiente",
-                  estadoPago: t.estadoPago || "—",
-                  precioTotal: Number(t.precioTotal || t.precioOriginal || 0),
-                  precioOriginal: Number(t.precioOriginal || 0),
-                  uidComprador: t.uidComprador || uid,
-                  orderId: t.orderId || id,
-                  procesado: t.procesado ?? false,
-                  nombreDestinatario: t.nombreDestinatario || "",
-                  emailDestinatario: t.emailDestinatario || "",
-                  mensajePersonalizado: t.mensajePersonalizado || "",
-                  subtipo: t.subtipo || "",
-                  tipo: t.tipo || "",
-                  numeroClases: Number(t.numeroClases || 0),
-                  desdeTarjeta: t.desdeTarjeta ?? false,
-                  creadoEn: t.creadoEn || "",
-                  actualizadoEn: t.actualizadoEn || "",
-                });
-              });
-            }
-          });
-        }
-
-        // Eliminar duplicados por orderId o código
-        const mapa = new Map();
-
-        datosTarjetas.forEach((t, index) => {
-          const clave =
-            t.orderId ||
-            t.codigo ||
-            `${t.uidComprador || "sinuid"}-${t.fechaCompleta || "sinfecha"}-${index}`;
-
-          if (!mapa.has(clave)) {
-            mapa.set(clave, t);
-          }
-        });
-
-        const tarjetasUnicas = Array.from(mapa.values());
-
-        tarjetasUnicas.sort((a, b) => {
-          const fechaA =
-            a.fechaCompleta && !isNaN(new Date(a.fechaCompleta).getTime())
-              ? new Date(a.fechaCompleta).getTime()
-              : 0;
-
-          const fechaB =
-            b.fechaCompleta && !isNaN(new Date(b.fechaCompleta).getTime())
-              ? new Date(b.fechaCompleta).getTime()
-              : 0;
-
+        datosTarjetas.sort((a, b) => {
+          const fechaA = new Date(
+            a.fecha === "—" ? 0 : `${a.fecha}T00:00:00`
+          );
+          const fechaB = new Date(
+            b.fecha === "—" ? 0 : `${b.fecha}T00:00:00`
+          );
           return fechaB - fechaA;
         });
 
-        setTarjetasRegalo(tarjetasUnicas);
+        setTarjetasRegalo(datosTarjetas);
       } catch (error) {
         console.error("Error al cargar tarjetas regalo:", error);
         setTarjetasRegalo([]);
@@ -149,31 +73,20 @@ const AdminTarjetasRegalo = () => {
       }
     };
 
-    cargarTarjetas();
+    cargarDatos();
   }, []);
 
   const tarjetasFiltradas = useMemo(() => {
     return tarjetasRegalo.filter((t) => {
-      const texto = busqueda.trim().toLowerCase();
-
-      const coincideBusqueda =
-        !texto ||
-        String(t.codigo || "").toLowerCase().includes(texto) ||
-        String(t.uidComprador || "").toLowerCase().includes(texto) ||
-        String(t.nombreDestinatario || "").toLowerCase().includes(texto) ||
-        String(t.emailDestinatario || "").toLowerCase().includes(texto) ||
-        String(t.orderId || "").toLowerCase().includes(texto) ||
-        String(t.clase || "").toLowerCase().includes(texto);
-
-      const coincideEstadoCanje =
-        !filtroEstadoCanje || t.estadoCanje === filtroEstadoCanje;
-
-      const coincideEstadoPago =
+      const cumpleFecha = !filtroFecha || t.fecha === filtroFecha;
+      const cumpleEstadoCanje =
+        !filtroEstadoCanje || t.estado === filtroEstadoCanje;
+      const cumpleEstadoPago =
         !filtroEstadoPago || t.estadoPago === filtroEstadoPago;
 
-      return coincideBusqueda && coincideEstadoCanje && coincideEstadoPago;
+      return cumpleFecha && cumpleEstadoCanje && cumpleEstadoPago;
     });
-  }, [tarjetasRegalo, busqueda, filtroEstadoCanje, filtroEstadoPago]);
+  }, [tarjetasRegalo, filtroFecha, filtroEstadoCanje, filtroEstadoPago]);
 
   const totalTarjetas = tarjetasRegalo.length;
 
@@ -182,7 +95,7 @@ const AdminTarjetasRegalo = () => {
   ).length;
 
   const totalCanjeadas = tarjetasRegalo.filter(
-    (t) => String(t.estadoCanje).toLowerCase() === "canjeada"
+    (t) => String(t.estado).toLowerCase() === "canjeada"
   ).length;
 
   const ingresosEstimados = tarjetasRegalo.reduce((acc, t) => {
@@ -193,7 +106,7 @@ const AdminTarjetasRegalo = () => {
   }, 0);
 
   const limpiarFiltros = () => {
-    setBusqueda("");
+    setFiltroFecha("");
     setFiltroEstadoCanje("");
     setFiltroEstadoPago("");
   };
@@ -203,12 +116,10 @@ const AdminTarjetasRegalo = () => {
       <div style={styles.container}>
         <BotonVolver />
 
-        <div style={styles.header}>
-          <h1 style={styles.titulo}>Tarjetas regalo</h1>
-          <p style={styles.subtitulo}>
-            Gestión de compras, códigos y estado de canje.
-          </p>
-        </div>
+        <h1 style={styles.titulo}>Tarjetas regalo</h1>
+        <p style={styles.subtitulo}>
+          Vista general de todas las tarjetas regalo compradas.
+        </p>
 
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
@@ -236,36 +147,44 @@ const AdminTarjetasRegalo = () => {
 
         <div style={styles.filtrosBox}>
           <div style={styles.filtrosGrid}>
-            <input
-              type="text"
-              placeholder="Buscar por código, UID, destinatario, email, orderId..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              style={styles.input}
-            />
+            <div style={styles.campo}>
+              <label style={styles.label}>Fecha</label>
+              <input
+                type="date"
+                value={filtroFecha}
+                onChange={(e) => setFiltroFecha(e.target.value)}
+                style={styles.input}
+              />
+            </div>
 
-            <select
-              value={filtroEstadoCanje}
-              onChange={(e) => setFiltroEstadoCanje(e.target.value)}
-              style={styles.input}
-            >
-              <option value="">Todos los canjes</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="canjeada">Canjeada</option>
-              <option value="caducada">Caducada</option>
-            </select>
+            <div style={styles.campo}>
+              <label style={styles.label}>Estado canje</label>
+              <select
+                value={filtroEstadoCanje}
+                onChange={(e) => setFiltroEstadoCanje(e.target.value)}
+                style={styles.input}
+              >
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="canjeada">Canjeada</option>
+                <option value="caducada">Caducada</option>
+              </select>
+            </div>
 
-            <select
-              value={filtroEstadoPago}
-              onChange={(e) => setFiltroEstadoPago(e.target.value)}
-              style={styles.input}
-            >
-              <option value="">Todos los pagos</option>
-              <option value="pagado">Pagado</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="fallido">Fallido</option>
-              <option value="rechazado">Rechazado</option>
-            </select>
+            <div style={styles.campo}>
+              <label style={styles.label}>Estado pago</label>
+              <select
+                value={filtroEstadoPago}
+                onChange={(e) => setFiltroEstadoPago(e.target.value)}
+                style={styles.input}
+              >
+                <option value="">Todos</option>
+                <option value="pagado">Pagado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="fallido">Fallido</option>
+                <option value="rechazado">Rechazado</option>
+              </select>
+            </div>
           </div>
 
           <button onClick={limpiarFiltros} style={styles.botonSecundario}>
@@ -282,7 +201,7 @@ const AdminTarjetasRegalo = () => {
         {cargando ? (
           <p style={styles.mensaje}>Cargando tarjetas regalo...</p>
         ) : tarjetasFiltradas.length === 0 ? (
-          <p style={styles.mensaje}>No se han encontrado tarjetas regalo.</p>
+          <p style={styles.mensaje}>No hay tarjetas regalo para mostrar.</p>
         ) : (
           <div style={styles.tablaWrapper}>
             <table style={styles.table}>
@@ -291,31 +210,26 @@ const AdminTarjetasRegalo = () => {
                   <th style={styles.th}>Fecha</th>
                   <th style={styles.th}>Código</th>
                   <th style={styles.th}>Clase</th>
-                  <th style={styles.th}>Destinatario</th>
-                  <th style={styles.th}>Email destinatario</th>
-                  <th style={styles.th}>UID comprador</th>
+                  <th style={styles.th}>Destinatario / Info</th>
+                  <th style={styles.th}>Plazas</th>
                   <th style={styles.th}>Estado canje</th>
-                  <th style={styles.th}>Estado pago</th>
+                  <th style={styles.th}>Pago</th>
                   <th style={styles.th}>Precio</th>
-                  <th style={styles.th}>Order ID</th>
                 </tr>
               </thead>
               <tbody>
-                {tarjetasFiltradas.map((t, index) => (
-                  <tr
-                    key={`${t.orderId || t.id || index}-${index}`}
-                    style={styles.tr}
-                  >
+                {tarjetasFiltradas.map((t) => (
+                  <tr key={`${t.orderId}-${t.id}`} style={styles.tr}>
                     <td style={styles.td}>{t.fecha}</td>
                     <td style={styles.td}>{t.codigo || "—"}</td>
                     <td style={styles.td}>{t.clase}</td>
-                    <td style={styles.td}>{t.nombreDestinatario || "—"}</td>
-                    <td style={styles.td}>{t.emailDestinatario || "—"}</td>
-                    <td style={styles.td}>{t.uidComprador || "—"}</td>
-                    <td style={styles.td}>{t.estadoCanje}</td>
+                    <td style={styles.td}>
+                      {t.nombreDestinatario || t.emailDestinatario || "—"}
+                    </td>
+                    <td style={styles.td}>{t.plazas}</td>
+                    <td style={styles.td}>{t.estado}</td>
                     <td style={styles.td}>{t.estadoPago}</td>
                     <td style={styles.td}>{t.precioTotal}€</td>
-                    <td style={styles.td}>{t.orderId}</td>
                   </tr>
                 ))}
               </tbody>
@@ -335,26 +249,24 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
   },
   container: {
-    maxWidth: 1300,
+    maxWidth: 1200,
     margin: "0 auto",
     backgroundColor: "#ffffff",
     borderRadius: 28,
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
-  header: {
-    textAlign: "center",
-    marginBottom: 28,
-  },
   titulo: {
     margin: 0,
+    textAlign: "center",
     color: "#2f2f2f",
     fontSize: "2rem",
   },
   subtitulo: {
-    marginTop: 8,
+    textAlign: "center",
     color: "#7a7a7a",
-    fontSize: "1rem",
+    marginTop: 8,
+    marginBottom: 24,
   },
   statsGrid: {
     display: "grid",
@@ -394,6 +306,16 @@ const styles = {
     gap: 14,
     marginBottom: 14,
   },
+  campo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  label: {
+    fontSize: "0.92rem",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
   input: {
     padding: "10px 12px",
     borderRadius: 12,
@@ -431,7 +353,6 @@ const styles = {
     borderCollapse: "collapse",
     backgroundColor: "#fffdf7",
     overflow: "hidden",
-    minWidth: 1100,
   },
   th: {
     textAlign: "left",
