@@ -184,6 +184,13 @@ const AdminDashboard = () => {
             >
               Ver usuarios
             </button>
+
+            <button
+              style={styles.boton}
+              onClick={() => navigate("/admin-tarjetas-regalo")}
+            >
+              Ver tarjetas regalo
+            </button>
           </div>
         </div>
       </div>

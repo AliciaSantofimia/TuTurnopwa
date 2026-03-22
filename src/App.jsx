@@ -110,7 +110,7 @@ import AdminDetalleReservaNuevo from "./AdminDetalleReservaNuevo";
 import AdminDetalleUsuarioNuevo from "./AdminDetalleUsuarioNuevo";
 import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
 import RutaAdmin from "./RutaAdmin";
-
+import AdminTarjetasRegalo from "./AdminTarjetasRegalo";
 
 function App() {
   return (
@@ -377,7 +377,9 @@ function App() {
       <AdminDetalleClaseNuevo />
     </RutaAdmin>
   }
+  
 />
+<Route path="/admin-tarjetas-regalo" element={<AdminTarjetasRegalo />} />
           
 
           
