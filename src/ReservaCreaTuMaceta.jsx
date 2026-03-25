@@ -1,21 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, update, push } from "firebase/database";
+import { ref, get, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
 
-const actualizarContadorReservas = async (uid) => {
-  const userRef = ref(dbRealtime, "usuarios/" + uid);
-  const snapshot = await get(userRef);
-  if (snapshot.exists()) {
-    const datos = snapshot.val();
-    const nuevasReservas = (datos.reservas || 0) + 1;
-    await update(userRef, { reservas: nuevasReservas });
+const CLASE_ID = "creatumaceta";
+const RESERVAS_PATH_KEY = "CreaTuMaceta";
+
+// Fallback temporal mientras no metas estos límites en Firebase
+const MAX_TORNO_FALLBACK = 12;
+const MAX_TOTALES_FALLBACK = 45;
+
+const normalizarTurnos = (turnosRaw) => {
+  if (!turnosRaw) return [];
+
+  if (Array.isArray(turnosRaw)) {
+    return turnosRaw
+      .map((t) => String(t || "").trim())
+      .filter(Boolean);
   }
+
+  if (typeof turnosRaw === "object") {
+    return Object.values(turnosRaw)
+      .map((t) => String(t || "").trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
+const mapearPrecioDesdeFirebase = (tamanoMaceta, precios) => {
+  if (!tamanoMaceta || !precios) return 0;
+
+  if (tamanoMaceta === "estandar") {
+    return Number(precios.estandar || 0);
+  }
+
+  if (tamanoMaceta === "mediana") {
+    return Number(precios.mediana || 0);
+  }
+
+  if (tamanoMaceta === "grande") {
+    return Number(precios.grande || 0);
+  }
+
+  return 0;
+};
+
+const getNombreTamano = (tamanoMaceta) => {
+  if (tamanoMaceta === "estandar") return "Estándar hasta 12 cm";
+  if (tamanoMaceta === "mediana") return "Mediana hasta 20 cm";
+  if (tamanoMaceta === "grande") return "Grande hasta 30 cm";
+  return "";
 };
 
 export default function ReservaCreaTuMaceta() {
@@ -23,19 +63,20 @@ export default function ReservaCreaTuMaceta() {
   const [turno, setTurno] = useState("");
   const [metodo, setMetodo] = useState("");
   const [tamanoMaceta, setTamanoMaceta] = useState("");
-  const [plazas, setPlazas] = useState("1");
+  const [plazas, setPlazas] = useState(1);
+
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
   const [user, setUser] = useState(null);
+
+  const [cargandoConfig, setCargandoConfig] = useState(true);
+  const [claseConfig, setClaseConfig] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const desdeTarjeta =
     location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
-
-  const maxTorno = 12;
-  const maxTotales = 45;
 
   useEffect(() => {
     const auth = getAuth();
@@ -46,43 +87,109 @@ export default function ReservaCreaTuMaceta() {
   }, []);
 
   useEffect(() => {
-    if (fecha) {
-      contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
-        setOcupadasTorno(torno);
-        setOcupadasModelado(modelado);
-      });
+    const cargarConfiguracionClase = async () => {
+      try {
+        const claseRef = ref(dbRealtime, `clases/${CLASE_ID}`);
+        const snapshot = await get(claseRef);
+
+        if (snapshot.exists()) {
+          setClaseConfig(snapshot.val());
+        } else {
+          setClaseConfig(null);
+        }
+      } catch (error) {
+        console.error("Error al cargar configuración de la clase:", error);
+        setClaseConfig(null);
+      } finally {
+        setCargandoConfig(false);
+      }
+    };
+
+    cargarConfiguracionClase();
+  }, []);
+
+  useEffect(() => {
+    if (!fecha) {
+      setOcupadasTorno(0);
+      setOcupadasModelado(0);
+      return;
     }
+
+    contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+      setOcupadasTorno(torno);
+      setOcupadasModelado(modelado);
+    });
   }, [fecha]);
+
+  const turnosDisponibles = useMemo(() => {
+    return normalizarTurnos(claseConfig?.turnos);
+  }, [claseConfig]);
+
+  const precios = useMemo(() => {
+    return claseConfig?.precios || {};
+  }, [claseConfig]);
+
+  const maxTorno = Number(claseConfig?.plazas?.maxTorno || MAX_TORNO_FALLBACK);
+  const maxTotales = Number(
+    claseConfig?.plazas?.maxTotales || MAX_TOTALES_FALLBACK
+  );
 
   const plazasTotalesOcupadas = ocupadasTorno + ocupadasModelado;
 
-  const plazasDisponibles =
-    metodo === "torno"
-      ? Math.max(
-          Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
-          0
-        )
-      : metodo === "modelado a mano"
-      ? Math.max(maxTotales - plazasTotalesOcupadas, 0)
-      : 0;
+  const plazasDisponibles = useMemo(() => {
+    if (!metodo) return 0;
 
-  const getPrecioUnitario = () => {
-    if (tamanoMaceta === "estandar") return 55;
-    if (tamanoMaceta === "mediana") return 65;
-    if (tamanoMaceta === "grande") return 75;
+    if (metodo === "torno") {
+      return Math.max(
+        Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
+        0
+      );
+    }
+
+    if (metodo === "modelado a mano") {
+      return Math.max(maxTotales - plazasTotalesOcupadas, 0);
+    }
+
     return 0;
+  }, [
+    metodo,
+    maxTorno,
+    maxTotales,
+    ocupadasTorno,
+    ocupadasModelado,
+    plazasTotalesOcupadas,
+  ]);
+
+  const precioUnitario = useMemo(() => {
+    return mapearPrecioDesdeFirebase(tamanoMaceta, precios);
+  }, [tamanoMaceta, precios]);
+
+  const precioTotal = useMemo(() => {
+    const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+    return precioUnitario * plazasNum;
+  }, [precioUnitario, plazas]);
+
+  const nombreTamano = useMemo(() => {
+    return getNombreTamano(tamanoMaceta);
+  }, [tamanoMaceta]);
+
+  const handleTamanoChange = (valor) => {
+    setTamanoMaceta(valor);
+    setPlazas(1);
   };
 
-  const getNombreTamano = () => {
-    if (tamanoMaceta === "estandar") return "Estándar hasta 12 cm";
-    if (tamanoMaceta === "mediana") return "Mediana hasta 20 cm";
-    if (tamanoMaceta === "grande") return "Grande hasta 30 cm";
-    return "";
+  const handleMetodoChange = (valor) => {
+    setMetodo(valor);
+    setTurno("");
+    setPlazas(1);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      alert("Debes iniciar sesión para reservar.");
+      return;
+    }
 
     if (!fecha || !turno || !metodo || !tamanoMaceta) {
       alert("Selecciona tamaño, fecha, turno y método.");
@@ -92,52 +199,49 @@ export default function ReservaCreaTuMaceta() {
     const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
     if (plazasDisponibles <= 0 || plazasNum > plazasDisponibles) {
-      alert("No hay plazas suficientes para este método y turno.");
+      alert("No hay plazas suficientes para este método.");
+      return;
+    }
+
+    if (!(precioUnitario > 0)) {
+      alert("No se ha podido calcular el precio de la clase.");
       return;
     }
 
     try {
-      const precioUnitario = getPrecioUnitario();
-      const precioTotal = precioUnitario * plazasNum;
-      const nombreTamano = getNombreTamano();
       const orderId = Date.now().toString().slice(-12);
-      
-const reserva = {
-  clase: "Crea tu maceta",
-  claseId: "creatumaceta",
-  tamanoMaceta,
-  nombreTamano,
-  fecha,
-  turno,
-  metodo,
-  plazas: plazasNum,
-  desdeTarjeta,
-  precio: precioTotal,
-  precioUnitario,
-  precioTotal,
-  estadoPago: "pendiente",
-  orderId,
-  timestamp: new Date().toISOString(),
-};
+
+      const reserva = {
+        clase: claseConfig?.nombre || "Crea tu maceta",
+        claseId: CLASE_ID,
+        tamanoMaceta,
+        nombreTamano,
+        fecha,
+        turno,
+        metodo,
+        plazas: plazasNum,
+        desdeTarjeta,
+        precio: precioTotal,
+        precioUnitario,
+        precioTotal,
+        estado: "Pendiente",
+        estadoPago: "pendiente",
+        orderId,
+        timestamp: new Date().toISOString(),
+      };
 
       const reservaRef = ref(
         dbRealtime,
-        `reservas/CreaTuMaceta/${fecha}/${turno}/${metodo}`
+        `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
       await push(reservaRef, { uid: user.uid, ...reserva });
-
-     const userListaReservasRef = ref(
-  dbRealtime,
-  `usuarios/${user.uid}/listaReservas`
-);
-await push(userListaReservasRef, reserva);
-      await actualizarContadorReservas(user.uid);
 
       navigate("/resumen-pago", {
         state: {
           desdeTarjeta,
           tipo: "clase",
-          clase: "Crea tu maceta",
+          clase: claseConfig?.nombre || "Crea tu maceta",
+          claseId: CLASE_ID,
           subtipo: nombreTamano,
           tamanoMaceta,
           precio: precioTotal,
@@ -157,8 +261,6 @@ await push(userListaReservasRef, reserva);
   };
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
-  const precioUnitario = getPrecioUnitario();
-  const precioTotal = precioUnitario * plazasNum;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -166,7 +268,7 @@ await push(userListaReservasRef, reserva);
         <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-6">
-          Reserva – Crea tu maceta
+          Reserva – {claseConfig?.nombre || "Crea tu maceta"}
         </h1>
 
         {desdeTarjeta && (
@@ -175,141 +277,173 @@ await push(userListaReservasRef, reserva);
           </p>
         )}
 
-        <BloqueoReserva>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="tamanoMaceta" className="block font-bold text-sm mb-1">
-                Tamaño de la maceta:
-              </label>
-              <select
-                id="tamanoMaceta"
-                value={tamanoMaceta}
-                onChange={(e) => setTamanoMaceta(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              >
-                <option value="">-- Elige una opción --</option>
-                <option value="estandar">Estándar hasta 12 cm — 55€</option>
-                <option value="mediana">Mediana hasta 20 cm — 65€</option>
-                <option value="grande">Grande hasta 30 cm — 75€</option>
-              </select>
-            </div>
+        {cargandoConfig ? (
+          <p className="text-center text-gray-500 py-8">
+            Cargando configuración de la clase...
+          </p>
+        ) : !claseConfig ? (
+          <p className="text-center text-red-600 py-8">
+            No se ha encontrado la configuración de esta clase en Firebase.
+          </p>
+        ) : (
+          <BloqueoReserva>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="tamanoMaceta"
+                  className="block font-bold text-sm mb-1"
+                >
+                  Tamaño de la maceta:
+                </label>
+                <select
+                  id="tamanoMaceta"
+                  value={tamanoMaceta}
+                  onChange={(e) => handleTamanoChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  required
+                >
+                  <option value="">-- Elige una opción --</option>
+                  <option value="estandar">
+                    Estándar hasta 12 cm — {Number(precios.estandar || 0)}€
+                  </option>
+                  <option value="mediana">
+                    Mediana hasta 20 cm — {Number(precios.mediana || 0)}€
+                  </option>
+                  <option value="grande">
+                    Grande hasta 30 cm — {Number(precios.grande || 0)}€
+                  </option>
+                </select>
+              </div>
 
-            <div>
-              <label htmlFor="fecha" className="block font-bold text-sm mb-1">
-                Selecciona fecha:
-              </label>
-              <DateInputReserva
-                id="fecha"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-              />
-            </div>
+              <div>
+                <label htmlFor="fecha" className="block font-bold text-sm mb-1">
+                  Selecciona fecha:
+                </label>
+                <DateInputReserva
+                  id="fecha"
+                  value={fecha}
+                  onChange={(e) => {
+                    setFecha(e.target.value);
+                    setTurno("");
+                  }}
+                />
+              </div>
 
-            <div>
-              <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                Selecciona turno:
-              </label>
-              <select
-                id="turno"
-                value={turno}
-                onChange={(e) => setTurno(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              >
-                <option value="">-- Elige turno --</option>
-                <option value="11:00-15:00">11:00 – 15:00 (mañana)</option>
-                <option value="17:00-20:00">17:00 – 20:00 (tarde)</option>
-              </select>
-            </div>
+              <div>
+                <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                  Selecciona turno:
+                </label>
+                <select
+                  id="turno"
+                  value={turno}
+                  onChange={(e) => setTurno(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  required
+                  disabled={!metodo}
+                >
+                  <option value="">-- Elige turno --</option>
+                  {turnosDisponibles.map((turnoItem) => (
+                    <option key={turnoItem} value={turnoItem}>
+                      {turnoItem}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label htmlFor="metodo" className="block font-bold text-sm mb-1">
-                Método:
-              </label>
-              <select
-                id="metodo"
-                value={metodo}
-                onChange={(e) => setMetodo(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              >
-                <option value="">-- Selecciona --</option>
-                <option value="torno">Torno</option>
-                <option value="modelado a mano">Modelado a mano</option>
-              </select>
-            </div>
+              <div>
+                <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+                  Método:
+                </label>
+                <select
+                  id="metodo"
+                  value={metodo}
+                  onChange={(e) => handleMetodoChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  required
+                >
+                  <option value="">-- Selecciona --</option>
+                  <option value="torno">Torno</option>
+                  <option value="modelado a mano">Modelado a mano</option>
+                </select>
+              </div>
 
-            {metodo && (
+              {metodo && fecha && (
+                <div className="text-sm text-gray-600">
+                  Quedan {plazasDisponibles} plazas disponibles para este método.
+                </div>
+              )}
+
               <div className="text-sm text-gray-600">
-                Quedan {plazasDisponibles} plazas disponibles para este método.
-              </div>
-            )}
-
-            <div>
-              <label className="block font-bold text-sm mb-2">
-                ¿Cuántas plazas deseas reservar?
-              </label>
-
-              <div className="flex items-center justify-between border border-gray-300 rounded-xl px-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
-                  className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
-                >
-                  −
-                </button>
-
-                <span className="text-lg font-semibold">{plazasNum}</span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPlazas(Math.min(plazasDisponibles || 1, plazasNum + 1))
-                  }
-                  className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
-                >
-                  +
-                </button>
+                Máximo {maxTotales} plazas por día ({maxTorno} para torno).
               </div>
 
-              <p className="text-xs text-gray-500 mt-1">
-                Máximo {plazasDisponibles} plazas disponibles.
-              </p>
-            </div>
+              <div>
+                <label className="block font-bold text-sm mb-2">
+                  ¿Cuántas plazas deseas reservar?
+                </label>
 
-            {tamanoMaceta && (
-              <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p>
-                  <strong>Tamaño elegido:</strong> {getNombreTamano()}
-                </p>
-                <p>
-                  <strong>Precio unitario:</strong> {precioUnitario}€
-                </p>
-                <p>
-                  <strong>Precio total:</strong> {precioTotal}€
+                <div className="flex items-center justify-between border border-gray-300 rounded-xl px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                  >
+                    −
+                  </button>
+
+                  <span className="text-lg font-semibold">{plazasNum}</span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPlazas(Math.min(plazasDisponibles || 1, plazasNum + 1))
+                    }
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Máximo {plazasDisponibles} plazas disponibles.
                 </p>
               </div>
-            )}
 
-            <button
-              type="submit"
-              className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
-              bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
-              shadow-md hover:shadow-lg
-              hover:from-[#F4C542] hover:to-[#E5B92F]
-              transition-all duration-200"
-              disabled={
-                !tamanoMaceta ||
-                !metodo ||
-                plazasNum > plazasDisponibles ||
-                plazasDisponibles <= 0
-              }
-            >
-              Confirmar y pagar
-            </button>
-          </form>
-        </BloqueoReserva>
+              {tamanoMaceta && (
+                <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+                  <p>
+                    <strong>Tamaño elegido:</strong> {nombreTamano}
+                  </p>
+                  <p>
+                    <strong>Precio unitario:</strong> {precioUnitario}€
+                  </p>
+                  <p>
+                    <strong>Precio total:</strong> {precioTotal}€
+                  </p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
+                bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+                shadow-md hover:shadow-lg
+                hover:from-[#F4C542] hover:to-[#E5B92F]
+                transition-all duration-200"
+                disabled={
+                  !tamanoMaceta ||
+                  !metodo ||
+                  !turno ||
+                  plazasNum > plazasDisponibles ||
+                  plazasDisponibles <= 0 ||
+                  !(precioUnitario > 0)
+                }
+              >
+                Confirmar y pagar
+              </button>
+            </form>
+          </BloqueoReserva>
+        )}
 
         <div className="mt-8 text-center">
           <img
