@@ -64,7 +64,6 @@ import CreaTuPiezaFavoritaRegalo from "./CreaTuPiezaFavoritaRegalo.jsx";
 
 // Reservas normales
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
-import ReservaPintarCeramica from "./ReservaPintarCeramica.jsx";
 import ReservaCreaTuBrunchBowl from "./ReservaCreaTuBrunchBowl.jsx";
 import ReservaCreaTuCuencoRamen from "./ReservaCreaTuCuencoRamen.jsx";
 import ReservaCreaTuBandejaHogar from "./ReservaCreaTuBandejaHogar.jsx";
@@ -253,10 +252,7 @@ function App() {
             element={<ReservaEspecialPintaTuPieza />}
           />
           <Route path="/reserva-pinta-tu-pieza" element={<ReservaPintaTuPieza />} />
-          <Route
-            path="/reserva-pintar-ceramica"
-            element={<ReservaPintarCeramica />}
-          />
+          
           <Route
             path="/reserva-clase-suelta-continuidad"
             element={<ReservaClaseSueltaContinuidad />}
@@ -379,7 +375,7 @@ function App() {
   }
   
 />
-<Route path="/admin-tarjetas-regalo" element={<AdminTarjetasRegalo />} />
+
 <Route
   path="/admin-tarjetas-regalo"
   element={
