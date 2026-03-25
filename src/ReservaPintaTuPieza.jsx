@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAuth } from "firebase/auth";
-import { ref, get, update, push } from "firebase/database";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ref, get, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
 
-const actualizarContadorReservas = async (uid) => {
-  const userRef = ref(dbRealtime, "usuarios/" + uid);
-  const snapshot = await get(userRef);
+const CLASE_ID = "pintatupieza";
+const RESERVAS_PATH_KEY = "PintaTuPieza";
 
-  if (snapshot.exists()) {
-    const datos = snapshot.val();
-    const nuevasReservas = (datos.reservas || 0) + 1;
-    await update(userRef, { reservas: nuevasReservas });
+const MAX_TOTALES_FALLBACK = 45;
+
+const normalizarTurnos = (turnosRaw) => {
+  if (!turnosRaw) return [];
+
+  if (Array.isArray(turnosRaw)) {
+    return turnosRaw
+      .map((t) => String(t || "").trim())
+      .filter(Boolean);
   }
+
+  if (typeof turnosRaw === "object") {
+    return Object.values(turnosRaw)
+      .map((t) => String(t || "").trim())
+      .filter(Boolean);
+  }
+
+  return [];
 };
 
 export default function ReservaPintaTuPieza() {
@@ -24,28 +36,63 @@ export default function ReservaPintaTuPieza() {
   const [plazas, setPlazas] = useState(1);
   const [user, setUser] = useState(null);
 
+  const [cargandoConfig, setCargandoConfig] = useState(true);
+  const [claseConfig, setClaseConfig] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const desdeTarjeta =
     location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
 
-  const precioBase = 25;
-  const precioTotal = precioBase * Number(plazas || 1);
-
   useEffect(() => {
     const auth = getAuth();
-    setUser(auth.currentUser);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const cargarConfiguracionClase = async () => {
+      try {
+        const claseRef = ref(dbRealtime, `clases/${CLASE_ID}`);
+        const snapshot = await get(claseRef);
+
+        if (snapshot.exists()) {
+          setClaseConfig(snapshot.val());
+        } else {
+          setClaseConfig(null);
+        }
+      } catch (error) {
+        console.error("Error al cargar configuración de la clase:", error);
+        setClaseConfig(null);
+      } finally {
+        setCargandoConfig(false);
+      }
+    };
+
+    cargarConfiguracionClase();
+  }, []);
+
+  const turnosDisponibles = useMemo(() => {
+    return normalizarTurnos(claseConfig?.turnos);
+  }, [claseConfig]);
+
+  const precioBase = Number(claseConfig?.precio || 25);
+  const duracion = claseConfig?.duracion || "2 horas y media";
+  const maxTotales = Number(
+    claseConfig?.plazas?.maxTotales || MAX_TOTALES_FALLBACK
+  );
+
+  const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const precioTotal = precioBase * plazasNum;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-
-    if (!currentUser) {
-      console.error("Usuario no autenticado.");
+    if (!user) {
+      alert("Debes iniciar sesión para reservar.");
       return;
     }
 
@@ -54,54 +101,56 @@ export default function ReservaPintaTuPieza() {
       return;
     }
 
-    const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+    if (plazasNum < 1) {
+      alert("Debes seleccionar al menos 1 plaza.");
+      return;
+    }
+
+    if (plazasNum > maxTotales) {
+      alert(`No puedes reservar más de ${maxTotales} plazas.`);
+      return;
+    }
 
     try {
       const orderId = Date.now().toString().slice(-12);
 
-     const reserva = {
-  clase: "Pinta tu pieza de cerámica",
-  claseId: "pintatupieza",
-  tipoTaller: "pinta_y_decora",
-  fecha,
-  turno,
-  plazas: plazasNum,
-  duracion: "2 horas y media",
-  desdeTarjeta,
-  precio: precioTotal,
-  precioBase,
-  precioTotal,
-  estadoPago: "pendiente",
-  orderId,
-  timestamp: new Date().toISOString(),
-};
+      const reserva = {
+        clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
+        claseId: CLASE_ID,
+        tipoTaller: "pinta_y_decora",
+        fecha,
+        turno,
+        plazas: plazasNum,
+        duracion,
+        desdeTarjeta,
+        precio: precioTotal,
+        precioBase,
+        precioTotal,
+        estado: "Pendiente",
+        estadoPago: "pendiente",
+        orderId,
+        timestamp: new Date().toISOString(),
+      };
 
       const generalRef = ref(
         dbRealtime,
-        `reservas/PintaTuPieza/${fecha}/${turno}`
+        `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}`
       );
-      await push(generalRef, { uid: currentUser.uid, ...reserva });
-
-      const userListaReservasRef = ref(
-  dbRealtime,
-  `usuarios/${currentUser.uid}/listaReservas`
-);
-await push(userListaReservasRef, reserva);
-
-      await actualizarContadorReservas(currentUser.uid);
+      await push(generalRef, { uid: user.uid, ...reserva });
 
       navigate("/resumen-pago", {
         state: {
           desdeTarjeta,
           tipo: "clase",
-          clase: "Pinta tu pieza de cerámica",
+          clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
+          claseId: CLASE_ID,
           precio: precioTotal,
           precioBase,
           precioTotal,
           fecha,
           turno,
           plazas: plazasNum,
-          duracion: "2 horas y media",
+          duracion,
           orderId,
         },
       });
@@ -117,7 +166,7 @@ await push(userListaReservasRef, reserva);
         <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
-          Reserva – Pinta tu pieza de cerámica
+          Reserva – {claseConfig?.nombre || "Pinta tu pieza de cerámica"}
         </h1>
 
         {desdeTarjeta && (
@@ -126,79 +175,98 @@ await push(userListaReservasRef, reserva);
           </p>
         )}
 
-        <BloqueoReserva>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-              <p><strong>Taller de pintura cerámica.</strong></p>
-              <p>
-                Tendrás hasta 2 horas y media para pintar tu pieza en un espacio
-                creativo y guiado por el estudio.
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="fecha" className="block font-bold text-sm mb-1">
-                Selecciona el día:
-              </label>
-              <DateInputReserva
-                id="fecha"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                Selecciona el turno:
-              </label>
-              <select
-                id="turno"
-                value={turno}
-                onChange={(e) => setTurno(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              >
-                <option value="">-- Elige turno --</option>
-                <option value="11:00-13:30">11:00 – 13:30</option>
-                <option value="17:00-19:30">17:00 – 19:30</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="plazas" className="block font-bold text-sm mb-1">
-                ¿Cuántas plazas deseas reservar?
-              </label>
-              <input
-                type="number"
-                id="plazas"
-                value={plazas}
-                onChange={(e) => setPlazas(e.target.value)}
-                min="1"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                required
-              />
-            </div>
-
-            {fecha && (
+        {cargandoConfig ? (
+          <p className="text-center text-gray-500 py-8">
+            Cargando configuración de la clase...
+          </p>
+        ) : !claseConfig ? (
+          <p className="text-center text-red-600 py-8">
+            No se ha encontrado la configuración de esta clase en Firebase.
+          </p>
+        ) : (
+          <BloqueoReserva>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p><strong>Precio por plaza:</strong> 25€</p>
-                <p><strong>Precio total:</strong> {precioTotal}€</p>
-                <p><strong>Duración:</strong> 2 horas y media</p>
+                <p><strong>Taller de pintura cerámica.</strong></p>
+                <p>
+                  Tendrás hasta {duracion} para pintar tu pieza en un espacio
+                  creativo y guiado por el estudio.
+                </p>
               </div>
-            )}
 
-            <button
-              type="submit"
-              className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
-              bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
-              shadow-md hover:shadow-lg
-              hover:from-[#F4C542] hover:to-[#E5B92F]
-              transition-all duration-200"
-            >
-              Confirmar y pagar
-            </button>
-          </form>
-        </BloqueoReserva>
+              <div>
+                <label htmlFor="fecha" className="block font-bold text-sm mb-1">
+                  Selecciona el día:
+                </label>
+                <DateInputReserva
+                  id="fecha"
+                  value={fecha}
+                  onChange={(e) => {
+                    setFecha(e.target.value);
+                    setTurno("");
+                  }}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                  Selecciona el turno:
+                </label>
+                <select
+                  id="turno"
+                  value={turno}
+                  onChange={(e) => setTurno(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  required
+                >
+                  <option value="">-- Elige turno --</option>
+                  {turnosDisponibles.map((turnoItem) => (
+                    <option key={turnoItem} value={turnoItem}>
+                      {turnoItem}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="plazas" className="block font-bold text-sm mb-1">
+                  ¿Cuántas plazas deseas reservar?
+                </label>
+                <input
+                  type="number"
+                  id="plazas"
+                  value={plazas}
+                  onChange={(e) => setPlazas(e.target.value)}
+                  min="1"
+                  max={maxTotales}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  required
+                />
+              </div>
+
+              {fecha && (
+                <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+                  <p><strong>Precio por plaza:</strong> {precioBase}€</p>
+                  <p><strong>Precio total:</strong> {precioTotal}€</p>
+                  <p><strong>Duración:</strong> {duracion}</p>
+                  <p><strong>Máximo plazas:</strong> {maxTotales}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
+                bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+                shadow-md hover:shadow-lg
+                hover:from-[#F4C542] hover:to-[#E5B92F]
+                transition-all duration-200"
+                disabled={!turno || plazasNum < 1 || plazasNum > maxTotales}
+              >
+                Confirmar y pagar
+              </button>
+            </form>
+          </BloqueoReserva>
+        )}
 
         <div className="mt-8 text-center">
           <img
