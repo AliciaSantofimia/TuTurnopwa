@@ -8,8 +8,8 @@ import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
 
-const CLASE_ID = "creatugrancentrodemesa";
-const RESERVAS_PATH_KEY = "CreaTuGranCentroMesa";
+const CLASE_ID = "creatujarrajarrongrande";
+const RESERVAS_PATH_KEY = "CreaTuJarraJarronGrande";
 
 // Fallback temporal mientras no metas estos límites en Firebase
 const MAX_TORNO_FALLBACK = 12;
@@ -53,7 +53,7 @@ const getNombreMetodo = (metodo) => {
   return "";
 };
 
-export default function ReservaCreaTuGranCentroMesa() {
+export default function ReservaCreaTuJarraJarronGrande() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
   const [metodo, setMetodo] = useState("");
@@ -202,7 +202,7 @@ export default function ReservaCreaTuGranCentroMesa() {
       const orderId = Date.now().toString().slice(-12);
 
       const reserva = {
-        clase: claseConfig?.nombre || "Crea tu gran centro mesa",
+        clase: claseConfig?.nombre || "Crea tu jarra / jarrón grande",
         claseId: CLASE_ID,
         fecha,
         turno,
@@ -229,7 +229,7 @@ export default function ReservaCreaTuGranCentroMesa() {
         state: {
           desdeTarjeta,
           tipo: "clase",
-          clase: claseConfig?.nombre || "Crea tu gran centro mesa",
+          clase: claseConfig?.nombre || "Crea tu jarra / jarrón grande",
           claseId: CLASE_ID,
           precio: precioTotal,
           precioUnitario,
@@ -255,7 +255,7 @@ export default function ReservaCreaTuGranCentroMesa() {
         <BotonVolver />
 
         <h1 className="text-center text-2xl text-[#5c3c00] font-serif mb-4">
-          Reserva – {claseConfig?.nombre || "Crea tu gran centro mesa"}
+          Reserva – {claseConfig?.nombre || "Crea tu jarra / jarrón grande"}
         </h1>
 
         {desdeTarjeta && (
