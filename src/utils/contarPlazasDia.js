@@ -2,8 +2,53 @@
 import { ref, get, child } from "firebase/database";
 import { dbRealtime } from "../firebase";
 
+function normalizarMetodo(data = {}) {
+  const valor = (
+    data.metodo ||
+    data.tipoClase ||
+    data.tipo ||
+    ""
+  )
+    .toString()
+    .trim()
+    .toLowerCase();
+
+  if (valor === "torno") return "torno";
+
+  if (
+    valor === "modelado a mano" ||
+    valor === "modelado" ||
+    valor === "decoración con esmaltes" ||
+    valor === "decoracion con esmaltes"
+  ) {
+    return "modelado";
+  }
+
+  return "";
+}
+
+function esReservaValida(data = {}) {
+  const estado = (data.estado || "").toString().trim().toLowerCase();
+  const estadoPago = (data.estadoPago || "").toString().trim().toLowerCase();
+
+  return estado === "confirmada" && estadoPago === "pagado";
+}
+
+function pareceReservaDirecta(obj) {
+  if (!obj || typeof obj !== "object") return false;
+
+  return (
+    "fecha" in obj ||
+    "estado" in obj ||
+    "estadoPago" in obj ||
+    "uid" in obj ||
+    "orderId" in obj
+  );
+}
+
 /**
  * Cuenta las plazas ocupadas por tipo de método: torno o modelado.
+ * Solo cuenta reservas confirmadas y pagadas.
  * @param {string} fechaStr - Fecha en formato YYYY-MM-DD.
  * @returns {Promise<{torno: number, modelado: number}>}
  */
@@ -13,21 +58,41 @@ export async function contarPlazasPorMetodo(fechaStr) {
     let torno = 0;
     let modelado = 0;
 
+    if (!snapshot.exists()) {
+      return { torno: 0, modelado: 0 };
+    }
+
+    const sumarReserva = (data) => {
+      if (!data || typeof data !== "object") return;
+      if (!esReservaValida(data)) return;
+
+      const plazas = Number(data.plazas || 1);
+      const metodo = normalizarMetodo(data);
+
+      if (metodo === "torno") {
+        torno += plazas;
+      } else if (metodo === "modelado") {
+        modelado += plazas;
+      }
+    };
+
     snapshot.forEach((claseSnap) => {
       const fechaSnap = claseSnap.child(fechaStr);
       if (!fechaSnap.exists()) return;
 
       fechaSnap.forEach((turnoSnap) => {
         turnoSnap.forEach((tipoSnap) => {
-          tipoSnap.forEach((reservaSnap) => {
-            const data = reservaSnap.val();
-            const metodo = data?.tipo?.toLowerCase();
+          const tipoVal = tipoSnap.val();
 
-            if (metodo === "torno") {
-              torno += data.plazas || 0;
-            } else if (metodo === "modelado") {
-              modelado += data.plazas || 0;
-            }
+          if (!tipoVal || typeof tipoVal !== "object") return;
+
+          if (pareceReservaDirecta(tipoVal)) {
+            sumarReserva(tipoVal);
+            return;
+          }
+
+          tipoSnap.forEach((reservaSnap) => {
+            sumarReserva(reservaSnap.val());
           });
         });
       });
@@ -42,6 +107,7 @@ export async function contarPlazasPorMetodo(fechaStr) {
 
 /**
  * Cuenta el total de plazas ocupadas en todas las clases en un día.
+ * Solo cuenta reservas confirmadas y pagadas.
  * @param {string} fechaStr - Fecha en formato YYYY-MM-DD.
  * @returns {Promise<number>}
  */
@@ -50,15 +116,32 @@ export async function contarPlazasTotalesPorDia(fechaStr) {
     const snapshot = await get(child(ref(dbRealtime), "reservas"));
     let total = 0;
 
+    if (!snapshot.exists()) return 0;
+
+    const sumarReserva = (data) => {
+      if (!data || typeof data !== "object") return;
+      if (!esReservaValida(data)) return;
+
+      total += Number(data.plazas || 1);
+    };
+
     snapshot.forEach((claseSnap) => {
       const fechaSnap = claseSnap.child(fechaStr);
       if (!fechaSnap.exists()) return;
 
       fechaSnap.forEach((turnoSnap) => {
         turnoSnap.forEach((tipoSnap) => {
+          const tipoVal = tipoSnap.val();
+
+          if (!tipoVal || typeof tipoVal !== "object") return;
+
+          if (pareceReservaDirecta(tipoVal)) {
+            sumarReserva(tipoVal);
+            return;
+          }
+
           tipoSnap.forEach((reservaSnap) => {
-            const data = reservaSnap.val();
-            total += data.plazas || 0;
+            sumarReserva(reservaSnap.val());
           });
         });
       });
@@ -73,7 +156,8 @@ export async function contarPlazasTotalesPorDia(fechaStr) {
 
 /**
  * Cuenta plazas reservadas para una clase específica, en una fecha y turno concretos.
- * @param {string} clase - Nombre de la clase.
+ * Solo cuenta reservas confirmadas y pagadas.
+ * @param {string} clase - ID de la clase.
  * @param {string} fecha - Fecha en formato YYYY-MM-DD.
  * @param {string} turno - Turno exacto, como "12:00-15:00".
  * @returns {Promise<number>}
@@ -83,16 +167,32 @@ export async function contarPlazasPorFechaYTurno(clase, fecha, turno) {
     const snapshot = await get(
       child(ref(dbRealtime), `reservas/${clase}/${fecha}/${turno}`)
     );
+
     let total = 0;
 
-    if (snapshot.exists()) {
-      snapshot.forEach((tipoSnap) => {
-        tipoSnap.forEach((reservaSnap) => {
-          const data = reservaSnap.val();
-          total += Number(data.plazas || 1);
-        });
+    if (!snapshot.exists()) return 0;
+
+    const sumarReserva = (data) => {
+      if (!data || typeof data !== "object") return;
+      if (!esReservaValida(data)) return;
+
+      total += Number(data.plazas || 1);
+    };
+
+    snapshot.forEach((tipoSnap) => {
+      const tipoVal = tipoSnap.val();
+
+      if (!tipoVal || typeof tipoVal !== "object") return;
+
+      if (pareceReservaDirecta(tipoVal)) {
+        sumarReserva(tipoVal);
+        return;
+      }
+
+      tipoSnap.forEach((reservaSnap) => {
+        sumarReserva(reservaSnap.val());
       });
-    }
+    });
 
     return total;
   } catch (error) {
@@ -100,4 +200,3 @@ export async function contarPlazasPorFechaYTurno(clase, fecha, turno) {
     return 0;
   }
 }
-
