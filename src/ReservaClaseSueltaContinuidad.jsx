@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, update, push } from "firebase/database";
+import { ref, get, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -14,17 +14,6 @@ const RESERVAS_PATH_KEY = "ClaseSueltaContinuidad";
 // Fallback temporal mientras no metas estos límites en Firebase
 const MAX_TORNO_FALLBACK = 12;
 const MAX_TOTALES_FALLBACK = 45;
-
-const actualizarContadorReservas = async (uid) => {
-  const userRef = ref(dbRealtime, "usuarios/" + uid);
-  const snapshot = await get(userRef);
-
-  if (snapshot.exists()) {
-    const datos = snapshot.val();
-    const nuevasReservas = (Number(datos.reservas) || 0) + 1;
-    await update(userRef, { reservas: nuevasReservas });
-  }
-};
 
 const normalizarTurnos = (turnosRaw) => {
   if (!turnosRaw) return [];
@@ -254,14 +243,6 @@ export default function ReservaClaseSueltaContinuidad() {
       );
       await push(reservaRef, { uid: user.uid, ...reserva });
 
-      const userListaReservasRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/listaReservas`
-      );
-      await push(userListaReservasRef, reserva);
-
-      await actualizarContadorReservas(user.uid);
-
       navigate("/resumen-pago", {
         state: {
           desdeTarjeta,
@@ -349,7 +330,10 @@ export default function ReservaClaseSueltaContinuidad() {
                 <DateInputReserva
                   id="fecha"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  onChange={(e) => {
+                    setFecha(e.target.value);
+                    setTurno("");
+                  }}
                 />
               </div>
 

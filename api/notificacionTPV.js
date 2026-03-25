@@ -10,7 +10,7 @@ function getSecretKey() {
   return Buffer.from(secret, "base64");
 }
 
-/** Firma Redsys HMAC_SHA256_V1: HMAC-SHA256(clave Base64 decodificada, Ds_MerchantParameters literal) */
+/** Firma Redsys HMAC_SHA256_V1 */
 function computeSignatureHmacSha256V1(dsMerchantParameters) {
   const key = getSecretKey();
   return crypto
@@ -44,9 +44,9 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
   const reservasRef = adminDb.ref("reservas");
   const snapshot = await reservasRef.get();
 
-  if (!snapshot.exists()) return false;
+  if (!snapshot.exists()) return null;
 
-  let actualizada = false;
+  let reservaEncontrada = null;
   const updates = {};
 
   snapshot.forEach((claseSnap) => {
@@ -65,7 +65,28 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
               updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
               updates[`${rutaBase}/actualizadoEn`] = timestamp;
 
-              actualizada = true;
+              reservaEncontrada = {
+                ...reserva,
+                uid: reserva.uid || "",
+                clase: reserva.clase || "",
+                claseId: reserva.claseId || claseSnap.key,
+                fecha: reserva.fecha || fechaSnap.key,
+                turno: reserva.turno || turnoSnap.key,
+                metodo: reserva.metodo || tipoSnap.key,
+                plazas: Number(reserva.plazas || 1),
+                precio: Number(
+                  reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+                ),
+                precioUnitario: Number(reserva.precioUnitario ?? reserva.precio ?? 0),
+                precioTotal: Number(
+                  reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+                ),
+                estado: "Confirmada",
+                estadoPago: "pagado",
+                procesado: true,
+                webhookRecibidoEn: timestamp,
+                actualizadoEn: timestamp,
+              };
             }
           });
         });
@@ -73,11 +94,11 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
     });
   });
 
-  if (actualizada) {
+  if (reservaEncontrada) {
     await adminDb.ref().update(updates);
   }
 
-  return actualizada;
+  return reservaEncontrada;
 }
 
 function generarCodigoTarjetaRegalo() {
@@ -119,13 +140,63 @@ async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
   };
 
   await adminDb.ref(`tarjetasRegalo/${orderId}`).set(tarjetaData);
+
   if (pedido.uid) {
-  await adminDb
-    .ref(`usuarios/${pedido.uid}/tarjetasRegalo/${orderId}`)
-    .set(tarjetaData);
-}
+    await adminDb.ref(`usuarios/${pedido.uid}/tarjetasRegalo/${orderId}`).set(tarjetaData);
+  }
 
   return tarjetaData;
+}
+
+async function guardarReservaEnPerfilUsuario(reserva) {
+  if (!reserva?.uid || !reserva?.orderId) return;
+
+  const listaRef = adminDb.ref(`usuarios/${reserva.uid}/listaReservas`);
+  const listaSnap = await listaRef.get();
+
+  let yaExiste = false;
+
+  if (listaSnap.exists()) {
+    listaSnap.forEach((itemSnap) => {
+      const item = itemSnap.val();
+      if (item?.orderId === reserva.orderId) {
+        yaExiste = true;
+      }
+    });
+  }
+
+  if (!yaExiste) {
+    await listaRef.push({
+      clase: reserva.clase || "",
+      claseId: reserva.claseId || "",
+      fecha: reserva.fecha || "",
+      turno: reserva.turno || "",
+      metodo: reserva.metodo || "",
+      plazas: Number(reserva.plazas || 1),
+      precio: Number(reserva.precio ?? 0),
+      precioUnitario: Number(reserva.precioUnitario ?? 0),
+      precioTotal: Number(reserva.precioTotal ?? 0),
+      estado: "Confirmada",
+      estadoPago: "pagado",
+      orderId: reserva.orderId,
+      timestamp: reserva.timestamp || new Date().toISOString(),
+      actualizadoEn: reserva.actualizadoEn || new Date().toISOString(),
+      desdeTarjeta: !!reserva.desdeTarjeta,
+      nombreTipoClase: reserva.nombreTipoClase || "",
+      tipoClase: reserva.tipoClase || "",
+    });
+
+    const userRef = adminDb.ref(`usuarios/${reserva.uid}`);
+    const userSnap = await userRef.get();
+
+    if (userSnap.exists()) {
+      const datos = userSnap.val() || {};
+      const totalActual = Number(datos.reservas) || 0;
+      await userRef.update({
+        reservas: totalActual + 1,
+      });
+    }
+  }
 }
 
 export default async function handler(req, res) {
@@ -189,12 +260,12 @@ export default async function handler(req, res) {
     const amountMatches =
       amountCentsRedsys !== null && amountCentsPedido === amountCentsRedsys;
 
-    if (paidOk && amountMatches) {
+    if (signOk && paidOk && amountMatches) {
       await ref.update({
         estadoPago: "pagado",
         procesado: true,
-        firmaValida: signOk,
-        firmaError: signOk ? "" : "Firma Redsys no validada",
+        firmaValida: true,
+        firmaError: "",
         responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
         amountCentsRedsys,
         amountCentsPedido,
@@ -209,13 +280,19 @@ export default async function handler(req, res) {
           order,
           codigo: tarjetaGuardada.codigo,
         });
+
+        return res.status(200).send("OK");
       }
 
       const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
 
+      if (reservaActualizada) {
+        await guardarReservaEnPerfilUsuario(reservaActualizada);
+      }
+
       console.log("Reserva actualizada en /reservas:", {
         order,
-        reservaActualizada,
+        reservaActualizada: !!reservaActualizada,
       });
 
       return res.status(200).send("OK");
