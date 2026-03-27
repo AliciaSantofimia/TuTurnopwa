@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { ref, get, update } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 import { OPCIONES_TARJETA_REGALO } from "./opcionesTarjetaRegalo";
@@ -25,7 +25,8 @@ const CanjearTarjetaRegalo = () => {
 
       if (
         tarjeta?.codigo &&
-        String(tarjeta.codigo).trim().toUpperCase() === codigoBuscado.toUpperCase()
+        String(tarjeta.codigo).trim().toUpperCase() ===
+          codigoBuscado.toUpperCase()
       ) {
         encontrada = {
           id: itemSnap.key,
@@ -124,24 +125,6 @@ const CanjearTarjetaRegalo = () => {
         setValidando(false);
         return;
       }
-
-      const fechaCanje = tarjeta.fechaCanje || new Date().toISOString();
-
-      await update(ref(dbRealtime, `tarjetasRegalo/${tarjeta.id}`), {
-        canjeado: true,
-        canjeadoPorUID: user.uid,
-        fechaCanje,
-        estadoCanje: "canjeada",
-        actualizadoEn: new Date().toISOString(),
-      });
-
-      await update(ref(dbRealtime, `tarjetasRegalo/${tarjeta.id}`), {
-  canjeado: true,
-  canjeadoPorUID: user.uid,
-  fechaCanje,
-  estadoCanje: "canjeada",
-  actualizadoEn: new Date().toISOString(),
-});
 
       setMensaje("✅ Código válido. Redirigiendo a tu reserva...");
 
