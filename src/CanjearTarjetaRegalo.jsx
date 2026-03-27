@@ -4,75 +4,175 @@ import { getAuth } from "firebase/auth";
 import { ref, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
+import { OPCIONES_TARJETA_REGALO } from "./opcionesTarjetaRegalo";
 
 const CanjearTarjetaRegalo = () => {
   const [codigo, setCodigo] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [validando, setValidando] = useState(false);
   const navigate = useNavigate();
+
+  const buscarTarjetaPorCodigo = async (codigoBuscado) => {
+    const tarjetasRef = ref(dbRealtime, "tarjetasRegalo");
+    const snapshot = await get(tarjetasRef);
+
+    if (!snapshot.exists()) return null;
+
+    let encontrada = null;
+
+    snapshot.forEach((itemSnap) => {
+      const tarjeta = itemSnap.val();
+
+      if (
+        tarjeta?.codigo &&
+        String(tarjeta.codigo).trim().toUpperCase() === codigoBuscado.toUpperCase()
+      ) {
+        encontrada = {
+          id: itemSnap.key,
+          ...tarjeta,
+        };
+      }
+    });
+
+    return encontrada;
+  };
+
+  const obtenerOpcionRegalo = (tarjeta) => {
+    if (!tarjeta) return null;
+
+    return (
+      OPCIONES_TARJETA_REGALO.find((opcion) => {
+        const mismoClaseId = opcion.claseId === tarjeta.claseId;
+        if (!mismoClaseId) return false;
+
+        const subtipoTarjeta = String(tarjeta.subtipo || "").trim();
+        const subtipoOpcion = String(opcion.subtipo || "").trim();
+
+        const tipoPiezaTarjeta = String(tarjeta.tipoPieza || "").trim();
+        const tipoPiezaOpcion = String(opcion.tipoPieza || "").trim();
+
+        if (subtipoTarjeta && subtipoOpcion) {
+          return subtipoTarjeta === subtipoOpcion;
+        }
+
+        if (tipoPiezaTarjeta && tipoPiezaOpcion) {
+          return tipoPiezaTarjeta === tipoPiezaOpcion;
+        }
+
+        if (!subtipoTarjeta && !tipoPiezaTarjeta) {
+          return true;
+        }
+
+        return false;
+      }) || null
+    );
+  };
 
   const handleValidar = async () => {
     setMensaje("");
+    setValidando(true);
+
     const auth = getAuth();
     const user = auth.currentUser;
-
     const code = codigo.trim();
 
     if (!code) {
       setMensaje("Por favor, introduce un código.");
+      setValidando(false);
       return;
     }
 
     if (!user) {
       setMensaje("Debes iniciar sesión para canjear tu tarjeta.");
+      setValidando(false);
       return;
     }
 
     try {
-      const snapRef = ref(dbRealtime, `tarjetas_regalo/${code}`);
-      const snapshot = await get(snapRef);
+      const tarjeta = await buscarTarjetaPorCodigo(code);
 
-      if (!snapshot.exists()) {
+      if (!tarjeta) {
         setMensaje("❌ Código no válido. Revisa que lo has escrito bien.");
+        setValidando(false);
         return;
       }
 
-      const tarjeta = snapshot.val();
+      if (String(tarjeta.estadoPago || "").toLowerCase() !== "pagado") {
+        setMensaje("❌ Esta tarjeta regalo aún no consta como pagada.");
+        setValidando(false);
+        return;
+      }
 
-      // Si ya fue usada (consumida en una reserva), bloquea
       if (tarjeta.usado) {
         setMensaje("❌ Este código ya ha sido usado.");
+        setValidando(false);
         return;
       }
 
-      // Si ya está canjeada por otra persona, bloquea
       if (tarjeta.canjeadoPorUID && tarjeta.canjeadoPorUID !== user.uid) {
         setMensaje("❌ Este código ya ha sido canjeado por otro usuario.");
+        setValidando(false);
         return;
       }
 
-      // Marcamos como CANJEADA (pero NO usada todavía)
-      await update(snapRef, {
+      const opcionRegalo = obtenerOpcionRegalo(tarjeta);
+
+      if (!opcionRegalo || !opcionRegalo.rutaReserva) {
+        setMensaje(
+          "❌ No se ha podido identificar la clase de esta tarjeta regalo."
+        );
+        setValidando(false);
+        return;
+      }
+
+      const fechaCanje = tarjeta.fechaCanje || new Date().toISOString();
+
+      await update(ref(dbRealtime, `tarjetasRegalo/${tarjeta.id}`), {
         canjeado: true,
         canjeadoPorUID: user.uid,
-        fechaCanje: tarjeta.fechaCanje || new Date().toISOString(),
+        fechaCanje,
+        estadoCanje: "canjeada",
+        actualizadoEn: new Date().toISOString(),
       });
 
-      setMensaje("✅ Código válido. Ahora elige tu taller para reservar.");
+      if (tarjeta.uidComprador) {
+        await update(
+          ref(dbRealtime, `usuarios/${tarjeta.uidComprador}/tarjetasRegalo/${tarjeta.id}`),
+          {
+            canjeado: true,
+            canjeadoPorUID: user.uid,
+            fechaCanje,
+            estadoCanje: "canjeada",
+            actualizadoEn: new Date().toISOString(),
+          }
+        );
+      }
 
-      // Te mando a la pantalla donde se eligen talleres.
-      // Ajusta esta ruta si tu “pantalla de categorías” no es /clases.
-      navigate("/reserva-con-tarjeta-regalo", {
-  state: {
-    desdeTarjeta: true,
-    codigo: code,
-    tipo: tarjeta.tipo || "tarjeta_regalo_universal",
-    importe: tarjeta.importe || tarjeta.precio || tarjeta.valor || null,
-    saldo: tarjeta.importe || tarjeta.precio || tarjeta.valor || null,
-  },
-});
+      setMensaje("✅ Código válido. Redirigiendo a tu reserva...");
+
+      navigate(opcionRegalo.rutaReserva, {
+        state: {
+          desdeTarjeta: true,
+          desdeTarjetaRegalo: true,
+          codigoTarjeta: tarjeta.codigo,
+          tarjetaRegaloId: tarjeta.id,
+          clase: tarjeta.clase || opcionRegalo.clase,
+          claseId: tarjeta.claseId || opcionRegalo.claseId,
+          subtipo: tarjeta.subtipo || opcionRegalo.subtipo || "",
+          tipoPieza: tarjeta.tipoPieza || opcionRegalo.tipoPieza || "",
+          tipoTaller: tarjeta.tipoTaller || opcionRegalo.tipoTaller || "",
+          precio: tarjeta.precioTotal || opcionRegalo.precio || 0,
+          precioTotal: tarjeta.precioTotal || opcionRegalo.precio || 0,
+          rutaReserva: opcionRegalo.rutaReserva,
+          requiereMetodo: !!opcionRegalo.requiereMetodo,
+          requiereTipoPieza: !!opcionRegalo.requiereTipoPieza,
+        },
+      });
     } catch (error) {
       console.error("Error al validar el código:", error);
       setMensaje("⚠️ Ocurrió un error al validar el código.");
+    } finally {
+      setValidando(false);
     }
   };
 
@@ -94,8 +194,12 @@ const CanjearTarjetaRegalo = () => {
           style={styles.input}
         />
 
-        <button onClick={handleValidar} style={styles.btn}>
-          VALIDAR CÓDIGO
+        <button
+          onClick={handleValidar}
+          style={styles.btn}
+          disabled={validando}
+        >
+          {validando ? "VALIDANDO..." : "VALIDAR CÓDIGO"}
         </button>
 
         {mensaje && <div style={styles.mensaje}>{mensaje}</div>}
@@ -151,6 +255,7 @@ const styles = {
     fontSize: "0.95rem",
     border: "none",
     cursor: "pointer",
+    opacity: 1,
   },
   mensaje: {
     marginTop: 20,
