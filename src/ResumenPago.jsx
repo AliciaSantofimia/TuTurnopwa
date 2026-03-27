@@ -216,36 +216,6 @@ export default function ResumenPago() {
   async function handleConfirmarPago() {
     if (!aceptaPoliticas) return;
 
-    if (desdeCompraTarjeta) {
-      if (!(totalEuros > 0)) {
-        alert("Falta el precio para generar la tarjeta.");
-        return;
-      }
-
-      navigate("/generar-codigo-tarjeta-regalo", {
-        state: {
-          tipo,
-          desdeCompraTarjeta: true,
-          clase,
-          claseId,
-          subtipo: subtipo || "",
-          tipoPieza: tipoPieza || "",
-          tipoTaller: tipoTaller || "",
-          rutaReserva: rutaReserva || "",
-          requiereMetodo: !!requiereMetodo,
-          requiereTipoPieza: !!requiereTipoPieza,
-          precio: totalEuros,
-          precioBase: totalEuros,
-          precioTotal: totalEuros,
-          plazas: plazasNum,
-          nombreRegalado: nombreRegalado || "",
-          nombreComprador: nombreComprador || "",
-          mensaje: mensaje || "",
-        },
-      });
-      return;
-    }
-
     const auth = getAuth();
 
     if (!auth.currentUser) {
@@ -254,7 +224,7 @@ export default function ResumenPago() {
     }
 
     if (!(totalEuros > 0)) {
-      alert("No se ha podido calcular el precio de la clase.");
+      alert("No se ha podido calcular el precio.");
       return;
     }
 
@@ -378,7 +348,7 @@ export default function ResumenPago() {
           {cargando
             ? "Conectando con el banco..."
             : desdeCompraTarjeta
-            ? "Generar tarjeta regalo"
+            ? "Ir al pago"
             : "Confirmar pago"}
         </button>
       </div>
