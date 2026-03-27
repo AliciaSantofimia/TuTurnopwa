@@ -12,31 +12,28 @@ const CanjearTarjetaRegalo = () => {
   const [validando, setValidando] = useState(false);
   const navigate = useNavigate();
 
-  const buscarTarjetaPorCodigo = async (codigoBuscado) => {
-    const tarjetasRef = ref(dbRealtime, "tarjetasRegalo");
-    const snapshot = await get(tarjetasRef);
+ const buscarTarjetaPorCodigo = async (codigoBuscado) => {
+  const codigoNormalizado = codigoBuscado.trim().toUpperCase();
 
-    if (!snapshot.exists()) return null;
+  // 1) Buscar el ID de la tarjeta por código
+  const indexRef = ref(dbRealtime, `codigosTarjetaRegalo/${codigoNormalizado}`);
+  const indexSnap = await get(indexRef);
 
-    let encontrada = null;
+  if (!indexSnap.exists()) return null;
 
-    snapshot.forEach((itemSnap) => {
-      const tarjeta = itemSnap.val();
+  const tarjetaId = String(indexSnap.val());
 
-      if (
-        tarjeta?.codigo &&
-        String(tarjeta.codigo).trim().toUpperCase() ===
-          codigoBuscado.toUpperCase()
-      ) {
-        encontrada = {
-          id: itemSnap.key,
-          ...tarjeta,
-        };
-      }
-    });
+  // 2) Leer la tarjeta concreta
+  const tarjetaRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaId}`);
+  const tarjetaSnap = await get(tarjetaRef);
 
-    return encontrada;
+  if (!tarjetaSnap.exists()) return null;
+
+  return {
+    id: tarjetaId,
+    ...tarjetaSnap.val(),
   };
+};
 
   const obtenerOpcionRegalo = (tarjeta) => {
     if (!tarjeta) return null;
