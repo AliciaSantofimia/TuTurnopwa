@@ -135,18 +135,13 @@ const CanjearTarjetaRegalo = () => {
         actualizadoEn: new Date().toISOString(),
       });
 
-      if (tarjeta.uidComprador) {
-        await update(
-          ref(dbRealtime, `usuarios/${tarjeta.uidComprador}/tarjetasRegalo/${tarjeta.id}`),
-          {
-            canjeado: true,
-            canjeadoPorUID: user.uid,
-            fechaCanje,
-            estadoCanje: "canjeada",
-            actualizadoEn: new Date().toISOString(),
-          }
-        );
-      }
+      await update(ref(dbRealtime, `tarjetasRegalo/${tarjeta.id}`), {
+  canjeado: true,
+  canjeadoPorUID: user.uid,
+  fechaCanje,
+  estadoCanje: "canjeada",
+  actualizadoEn: new Date().toISOString(),
+});
 
       setMensaje("✅ Código válido. Redirigiendo a tu reserva...");
 
