@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { ref, set } from "firebase/database";
+import { ref, set, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
@@ -38,6 +38,8 @@ function getUnitPrice(clase = "", metodo = "") {
     "pinta tu pieza de ceramica",
     "pinta tu pieza de cerámica",
     "pinta tu pieza",
+    "especial pinta tu pieza de ceramica",
+    "especial pinta tu pieza de cerámica",
   ]);
   const CREA_PIEZA = new Set([
     "crea tu pieza favorita",
@@ -95,6 +97,7 @@ export default function ResumenPago() {
 
   const {
     desdeTarjeta,
+    desdeTarjetaRegalo,
     desdeCompraTarjeta,
     tipo,
     clase,
@@ -122,6 +125,8 @@ export default function ResumenPago() {
     nombreRegalado,
     nombreComprador,
     mensaje,
+    codigoTarjeta,
+    tarjetaRegaloId,
   } = state;
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
@@ -178,6 +183,7 @@ export default function ResumenPago() {
       orderId,
       uid,
       desdeTarjeta: !!desdeTarjeta,
+      desdeTarjetaRegalo: !!desdeTarjetaRegalo,
       desdeCompraTarjeta: !!desdeCompraTarjeta,
       tipo: tipo || "reserva",
       clase: clase || "",
@@ -213,6 +219,154 @@ export default function ResumenPago() {
     await set(ref(dbRealtime, `pedidosPendientes/${orderId}`), pedido);
   }
 
+  async function guardarReservaEnPerfilUsuario(uid, reserva) {
+    const listaRef = ref(dbRealtime, `usuarios/${uid}/listaReservas`);
+    const listaSnap = await get(listaRef);
+
+    let yaExiste = false;
+
+    if (listaSnap.exists()) {
+      listaSnap.forEach((itemSnap) => {
+        const item = itemSnap.val();
+        if (item?.orderId === reserva.orderId) {
+          yaExiste = true;
+        }
+      });
+    }
+
+    if (!yaExiste) {
+      await push(listaRef, reserva);
+    }
+
+    const userRef = ref(dbRealtime, `usuarios/${uid}`);
+    const userSnap = await get(userRef);
+
+    if (userSnap.exists()) {
+      const datos = userSnap.val() || {};
+      const totalActual = Number(datos.reservas) || 0;
+      await update(userRef, {
+        reservas: totalActual + 1,
+      });
+    }
+  }
+
+  async function confirmarReservaConTarjeta(uid) {
+    const orderId = orderIdFromState;
+
+    if (!orderId) {
+      throw new Error("Falta el identificador de la reserva.");
+    }
+
+    const reservasRef = ref(dbRealtime, "reservas");
+    const snapshot = await get(reservasRef);
+
+    if (!snapshot.exists()) {
+      throw new Error("No se ha encontrado la reserva a confirmar.");
+    }
+
+    let encontrada = null;
+    const updates = {};
+
+    snapshot.forEach((nivel1Snap) => {
+      nivel1Snap.forEach((nivel2Snap) => {
+        nivel2Snap.forEach((nivel3Snap) => {
+          nivel3Snap.forEach((nivel4Snap) => {
+            const valorNivel4 = nivel4Snap.val();
+
+            // Caso anidado con push key final
+            if (valorNivel4 && typeof valorNivel4 === "object") {
+              Object.entries(valorNivel4).forEach(([childKey, childValue]) => {
+                if (childValue?.orderId === orderId) {
+                  const rutaBase = `reservas/${nivel1Snap.key}/${nivel2Snap.key}/${nivel3Snap.key}/${nivel4Snap.key}/${childKey}`;
+
+                  updates[`${rutaBase}/estadoPago`] = "pagado";
+                  updates[`${rutaBase}/estado`] = "Confirmada";
+                  updates[`${rutaBase}/procesado`] = true;
+                  updates[`${rutaBase}/desdeTarjeta`] = true;
+                  updates[`${rutaBase}/codigoTarjeta`] = codigoTarjeta || "";
+                  updates[`${rutaBase}/actualizadoEn`] = new Date().toISOString();
+
+                  encontrada = {
+                    ...childValue,
+                    uid,
+                    estadoPago: "pagado",
+                    estado: "Confirmada",
+                    procesado: true,
+                    desdeTarjeta: true,
+                    codigoTarjeta: codigoTarjeta || "",
+                    actualizadoEn: new Date().toISOString(),
+                  };
+                }
+              });
+            }
+
+            // Caso directo sin push extra
+            if (valorNivel4?.orderId === orderId) {
+              const rutaBase = `reservas/${nivel1Snap.key}/${nivel2Snap.key}/${nivel3Snap.key}/${nivel4Snap.key}`;
+
+              updates[`${rutaBase}/estadoPago`] = "pagado";
+              updates[`${rutaBase}/estado`] = "Confirmada";
+              updates[`${rutaBase}/procesado`] = true;
+              updates[`${rutaBase}/desdeTarjeta`] = true;
+              updates[`${rutaBase}/codigoTarjeta`] = codigoTarjeta || "";
+              updates[`${rutaBase}/actualizadoEn`] = new Date().toISOString();
+
+              encontrada = {
+                ...valorNivel4,
+                uid,
+                estadoPago: "pagado",
+                estado: "Confirmada",
+                procesado: true,
+                desdeTarjeta: true,
+                codigoTarjeta: codigoTarjeta || "",
+                actualizadoEn: new Date().toISOString(),
+              };
+            }
+          });
+        });
+      });
+    });
+
+    if (!encontrada) {
+      throw new Error("No se ha encontrado la reserva creada para esta tarjeta regalo.");
+    }
+
+    await update(ref(dbRealtime), updates);
+
+    if (tarjetaRegaloId) {
+      await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+        usado: true,
+        fechaUso: new Date().toISOString(),
+        usadoPorUID: uid,
+        canjeado: true,
+        canjeadoPorUID: uid,
+        estadoCanje: "usada",
+        actualizadoEn: new Date().toISOString(),
+      });
+    }
+
+    await guardarReservaEnPerfilUsuario(uid, {
+      clase: encontrada.clase || clase || "",
+      claseId: encontrada.claseId || claseId || "",
+      fecha: encontrada.fecha || fecha || "",
+      turno: encontrada.turno || turno || "",
+      metodo: encontrada.metodo || metodo || "",
+      plazas: Number(encontrada.plazas || plazasNum || 1),
+      precio: 0,
+      precioUnitario: 0,
+      precioTotal: 0,
+      estado: "Confirmada",
+      estadoPago: "pagado",
+      orderId,
+      timestamp: encontrada.timestamp || new Date().toISOString(),
+      actualizadoEn: new Date().toISOString(),
+      desdeTarjeta: true,
+      codigoTarjeta: codigoTarjeta || "",
+      nombreTipoClase: encontrada.nombreTipoClase || subtipo || "",
+      tipoClase: encontrada.tipoClase || tipoPieza || "",
+    });
+  }
+
   async function handleConfirmarPago() {
     if (!aceptaPoliticas) return;
 
@@ -220,6 +374,20 @@ export default function ResumenPago() {
 
     if (!auth.currentUser) {
       alert("Debes iniciar sesión.");
+      return;
+    }
+
+    if (desdeTarjeta || desdeTarjetaRegalo) {
+      try {
+        setCargando(true);
+        await confirmarReservaConTarjeta(auth.currentUser.uid);
+        navigate("/pago/exito");
+      } catch (error) {
+        console.error("Error al confirmar la reserva con tarjeta regalo:", error);
+        alert(error?.message || "No se pudo confirmar la reserva con la tarjeta regalo.");
+      } finally {
+        setCargando(false);
+      }
       return;
     }
 
@@ -294,7 +462,7 @@ export default function ResumenPago() {
 
         <p className="mb-4">
           <strong>Precio total:</strong>{" "}
-          {totalEuros > 0 ? (
+          {desdeTarjeta || desdeTarjetaRegalo ? "0.00 €" : totalEuros > 0 ? (
             `${totalEuros.toFixed(2)} €`
           ) : (
             <span className="text-red-600">— falta precio —</span>
@@ -338,15 +506,23 @@ export default function ResumenPago() {
 
         <button
           onClick={handleConfirmarPago}
-          disabled={!aceptaPoliticas || !(totalEuros > 0) || cargando}
+          disabled={
+            !aceptaPoliticas ||
+            (!(desdeTarjeta || desdeTarjetaRegalo) && !(totalEuros > 0)) ||
+            cargando
+          }
           className={`w-full py-2 px-4 rounded-xl font-bold mb-4 ${
-            aceptaPoliticas && totalEuros > 0 && !cargando
+            aceptaPoliticas &&
+            ((desdeTarjeta || desdeTarjetaRegalo) || totalEuros > 0) &&
+            !cargando
               ? "bg-yellow-600 hover:bg-yellow-500 text-white"
               : "bg-gray-400 text-white cursor-not-allowed"
           }`}
         >
           {cargando
-            ? "Conectando con el banco..."
+            ? "Procesando..."
+            : desdeTarjeta || desdeTarjetaRegalo
+            ? "Confirmar reserva"
             : desdeCompraTarjeta
             ? "Ir al pago"
             : "Confirmar pago"}
