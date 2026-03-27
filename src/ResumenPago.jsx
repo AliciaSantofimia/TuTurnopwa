@@ -1,4 +1,3 @@
-// RResumenPago.jsx
 import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
@@ -40,7 +39,10 @@ function getUnitPrice(clase = "", metodo = "") {
     "pinta tu pieza de cerámica",
     "pinta tu pieza",
   ]);
-  const CREA_PIEZA = new Set(["crea tu pieza favorita"]);
+  const CREA_PIEZA = new Set([
+    "crea tu pieza favorita",
+    "crea tu pieza favorita desde cero",
+  ]);
   const TEARIUM = new Set(["tearum", "tea rium", "tearium"]);
   const THE_CLUB = new Set(["the club"]);
   const BONO2 = new Set([
@@ -93,8 +95,16 @@ export default function ResumenPago() {
 
   const {
     desdeTarjeta,
+    desdeCompraTarjeta,
     tipo,
     clase,
+    claseId,
+    subtipo,
+    tipoPieza,
+    tipoTaller,
+    rutaReserva,
+    requiereMetodo,
+    requiereTipoPieza,
     precio,
     fecha,
     fechaInicio,
@@ -107,11 +117,11 @@ export default function ResumenPago() {
     numeroClases,
     duracionClase,
     incluyeDecoracion,
-    subtipo,
-    tipoTaller,
-    claseId,
     orderId: orderIdFromState,
     payMethod: payMethodFromState,
+    nombreRegalado,
+    nombreComprador,
+    mensaje,
   } = state;
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
@@ -168,11 +178,16 @@ export default function ResumenPago() {
       orderId,
       uid,
       desdeTarjeta: !!desdeTarjeta,
+      desdeCompraTarjeta: !!desdeCompraTarjeta,
       tipo: tipo || "reserva",
       clase: clase || "",
       claseId: claseId || "",
       tipoTaller: tipoTaller || "",
       subtipo: subtipo || "",
+      tipoPieza: tipoPieza || "",
+      rutaReserva: rutaReserva || "",
+      requiereMetodo: !!requiereMetodo,
+      requiereTipoPieza: !!requiereTipoPieza,
       precioTotal: totalEuros,
       precioOriginal: precio || "",
       fecha: fecha || "",
@@ -186,6 +201,9 @@ export default function ResumenPago() {
       numeroClases: numeroClases || 0,
       duracionClase: duracionClase || "",
       incluyeDecoracion: !!incluyeDecoracion,
+      nombreRegalado: nombreRegalado || "",
+      nombreComprador: nombreComprador || "",
+      mensaje: mensaje || "",
       payMethod: payMethodFromState || "card",
       estadoPago: "pendiente",
       procesado: false,
@@ -198,7 +216,7 @@ export default function ResumenPago() {
   async function handleConfirmarPago() {
     if (!aceptaPoliticas) return;
 
-    if (desdeTarjeta) {
+    if (desdeCompraTarjeta) {
       if (!(totalEuros > 0)) {
         alert("Falta el precio para generar la tarjeta.");
         return;
@@ -207,10 +225,22 @@ export default function ResumenPago() {
       navigate("/generar-codigo-tarjeta-regalo", {
         state: {
           tipo,
+          desdeCompraTarjeta: true,
           clase,
+          claseId,
+          subtipo: subtipo || "",
+          tipoPieza: tipoPieza || "",
+          tipoTaller: tipoTaller || "",
+          rutaReserva: rutaReserva || "",
+          requiereMetodo: !!requiereMetodo,
+          requiereTipoPieza: !!requiereTipoPieza,
           precio: totalEuros,
-          metodo,
+          precioBase: totalEuros,
+          precioTotal: totalEuros,
           plazas: plazasNum,
+          nombreRegalado: nombreRegalado || "",
+          nombreComprador: nombreComprador || "",
+          mensaje: mensaje || "",
         },
       });
       return;
@@ -255,22 +285,33 @@ export default function ResumenPago() {
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-6">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6 text-[#333] text-center">
         <BotonVolver />
+
         <h1 className="text-[1.6rem] text-[#3b3025] font-semibold mb-4">
           Resumen del pago
         </h1>
 
         <p className="mb-2">
-          <strong>Clase:</strong> {clase || (desdeTarjeta ? "Clase regalo" : "-")}
+          <strong>Clase:</strong> {clase || (desdeCompraTarjeta ? "Tarjeta regalo" : "-")}
         </p>
+
+        {subtipo && (
+          <p className="mb-2">
+            <strong>Opción:</strong> {subtipo}
+          </p>
+        )}
+
         <p className="mb-2">
           <strong>Fecha:</strong> {fecha || fechaInicio || "-"}
         </p>
+
         <p className="mb-2">
           <strong>Turno:</strong> {turno || "-"}
         </p>
+
         <p className="mb-2">
           <strong>Método:</strong> {metodo || modalidad || "-"}
         </p>
+
         <p className="mb-2">
           <strong>Plazas:</strong> {plazasNum}
         </p>
@@ -336,7 +377,7 @@ export default function ResumenPago() {
         >
           {cargando
             ? "Conectando con el banco..."
-            : desdeTarjeta
+            : desdeCompraTarjeta
             ? "Generar tarjeta regalo"
             : "Confirmar pago"}
         </button>
