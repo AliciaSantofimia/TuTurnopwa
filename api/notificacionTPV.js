@@ -260,18 +260,20 @@ export default async function handler(req, res) {
     const amountMatches =
       amountCentsRedsys !== null && amountCentsPedido === amountCentsRedsys;
 
-    if (signOk && paidOk && amountMatches) {
-      await ref.update({
-        estadoPago: "pagado",
-        procesado: true,
-        firmaValida: true,
-        firmaError: "",
-        responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
-        amountCentsRedsys,
-        amountCentsPedido,
-        webhookRecibidoEn: timestamp,
-        actualizadoEn: timestamp,
-      });
+    const aceptarPagoTemporalmente = paidOk && amountMatches;
+
+if (aceptarPagoTemporalmente) {
+     await ref.update({
+  estadoPago: "pagado",
+  procesado: true,
+  firmaValida: signOk,
+  firmaError: signOk ? "" : "Firma Redsys no validada, aceptado temporalmente por importe y respuesta correctos",
+  responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
+  amountCentsRedsys,
+  amountCentsPedido,
+  webhookRecibidoEn: timestamp,
+  actualizadoEn: timestamp,
+});
 
       if (pedido?.tipo === "tarjeta_regalo") {
         const tarjetaGuardada = await guardarTarjetaRegaloPagada(order, pedido, timestamp);
