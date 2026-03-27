@@ -27,18 +27,64 @@ const generarCodigoUnico = async () => {
   return codigo;
 };
 
-export const crearTarjetaRegalo = async ({ importe, compradorUID }) => {
+export const crearTarjetaRegalo = async ({
+  clase,
+  claseId,
+  subtipo = "",
+  tipoPieza = "",
+  tipoTaller = "",
+  rutaReserva = "",
+  requiereMetodo = false,
+  requiereTipoPieza = false,
+  precio,
+  precioBase,
+  precioTotal,
+  plazas = 1,
+  compradorUID,
+  nombreDestinatario = "",
+  nombreComprador = "",
+  mensajePersonalizado = "",
+  orderId = "",
+}) => {
   const codigo = await generarCodigoUnico();
+  const ahora = new Date().toISOString();
 
   const tarjeta = {
     codigo,
-    importe,
-    tipo: "tarjeta_regalo_universal",
+    tipo: "tarjeta_regalo",
+
+    clase: clase || "",
+    claseId: claseId || "",
+    subtipo,
+    tipoPieza,
+    tipoTaller,
+    rutaReserva,
+    requiereMetodo,
+    requiereTipoPieza,
+
+    precioOriginal: Number(precioBase || precio || 0),
+    precioTotal: Number(precioTotal || precio || 0),
+    precio: Number(precio || 0),
+    plazas: Number(plazas || 1),
+
+    nombreDestinatario,
+    nombreComprador,
+    mensajePersonalizado,
+
+    uidComprador: compradorUID || "",
+    estadoPago: "pagado",
+    estadoCanje: "pendiente",
+
     usado: false,
     canjeado: false,
     canjeadoPorUID: "",
-    compradorUID,
-    fechaCompra: new Date().toISOString(),
+    usadoPorUID: "",
+
+    orderId: orderId || "",
+    procesado: true,
+    creadoEn: ahora,
+    actualizadoEn: ahora,
+    fechaCompra: ahora,
     fechaCanje: null,
     fechaUso: null,
   };
