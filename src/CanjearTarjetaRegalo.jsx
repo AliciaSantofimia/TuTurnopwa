@@ -146,12 +146,12 @@ const CanjearTarjetaRegalo = () => {
           requiereTipoPieza: !!opcionRegalo.requiereTipoPieza,
         },
       });
-    } catch (error) {
-      console.error("Error al validar el código:", error);
-      setMensaje("⚠️ Ocurrió un error al validar el código.");
-    } finally {
-      setValidando(false);
-    }
+   } catch (error) {
+  console.error("Error al validar el código:", error);
+  setMensaje(`⚠️ Error al validar: ${error?.message || "desconocido"}`);
+} finally {
+  setValidando(false);
+}
   };
 
   return (
