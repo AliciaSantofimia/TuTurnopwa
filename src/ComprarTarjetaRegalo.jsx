@@ -1,37 +1,50 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
+import { OPCIONES_TARJETA_REGALO } from "./opcionesTarjetaRegalo";
 
 export default function ComprarTarjetaRegalo() {
   const navigate = useNavigate();
 
-  const [importe, setImporte] = useState("25");
+  const [opcionSeleccionadaId, setOpcionSeleccionadaId] = useState("");
   const [nombreRegalado, setNombreRegalado] = useState("");
   const [nombreComprador, setNombreComprador] = useState("");
   const [mensaje, setMensaje] = useState("");
 
-  const handleContinuar = () => {
-    const precio = Number(importe);
+  const opcionSeleccionada = OPCIONES_TARJETA_REGALO.find(
+    (op) => op.id === opcionSeleccionadaId
+  );
 
-    if (!precio || precio <= 0) {
-      alert("Selecciona un importe válido.");
+  const handleContinuar = () => {
+    if (!opcionSeleccionada) {
+      alert("Selecciona una opción válida para regalar.");
       return;
     }
 
     navigate("/resumen-pago", {
-  state: {
-    tipo: "tarjeta_regalo",
-    clase: "Tarjeta regalo",
-    precio,
-    precioBase: precio,
-    precioTotal: precio,
-    importe,
-    desdeCompraTarjeta: true,
-    nombreRegalado,
-    nombreComprador,
-    mensaje,
-  },
-});
+      state: {
+        tipo: "tarjeta_regalo",
+        desdeCompraTarjeta: true,
+
+        clase: opcionSeleccionada.clase,
+        claseId: opcionSeleccionada.claseId,
+        subtipo: opcionSeleccionada.subtipo || "",
+        tipoPieza: opcionSeleccionada.tipoPieza || "",
+        tipoTaller: opcionSeleccionada.tipoTaller || "",
+        rutaReserva: opcionSeleccionada.rutaReserva || "",
+        requiereMetodo: opcionSeleccionada.requiereMetodo || false,
+        requiereTipoPieza: opcionSeleccionada.requiereTipoPieza || false,
+
+        precio: opcionSeleccionada.precio,
+        precioBase: opcionSeleccionada.precio,
+        precioTotal: opcionSeleccionada.precio,
+        plazas: 1,
+
+        nombreRegalado,
+        nombreComprador,
+        mensaje,
+      },
+    });
   };
 
   return (
@@ -44,38 +57,36 @@ export default function ComprarTarjetaRegalo() {
             Comprar tarjeta regalo
           </h1>
           <p className="text-sm text-gray-600">
-            Elige el importe de la tarjeta y añade los datos opcionales del regalo.
+            Elige el taller o experiencia que quieres regalar.
           </p>
         </div>
 
         <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4 mb-5 text-sm text-[#5c3c00]">
           <p className="mb-2">
-            <strong>La tarjeta regalo es válida para cualquier taller.</strong>
+            <strong>La tarjeta regalo será válida solo para la opción elegida.</strong>
           </p>
           <p>
-            La persona que la reciba podrá canjear el código más adelante y elegir
-            fecha y taller según disponibilidad.
+            La persona que la reciba podrá canjear el código más adelante y reservar
+            su fecha para ese taller concreto.
           </p>
         </div>
 
         <div className="space-y-5">
           <div>
             <label className="block font-bold text-sm mb-2">
-              Selecciona el importe
+              Selecciona el taller o regalo
             </label>
             <select
-              value={importe}
-              onChange={(e) => setImporte(e.target.value)}
+              value={opcionSeleccionadaId}
+              onChange={(e) => setOpcionSeleccionadaId(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
             >
-              <option value="25">25 €</option>
-              <option value="35">35 €</option>
-              <option value="55">55 €</option>
-              <option value="60">60 €</option>
-              <option value="79">79 €</option>
-              <option value="99">99 €</option>
-              <option value="120">120 €</option>
-              <option value="145">145 €</option>
+              <option value="">-- Elige una opción --</option>
+              {OPCIONES_TARJETA_REGALO.map((opcion) => (
+                <option key={opcion.id} value={opcion.id}>
+                  {opcion.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -118,14 +129,23 @@ export default function ComprarTarjetaRegalo() {
             />
           </div>
 
-          <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4 text-sm text-[#5c3c00]">
-            <p>
-              <strong>Importe seleccionado:</strong> {importe} €
-            </p>
-            <p className="mt-1">
-              Después del pago podrás generar o asociar el código de la tarjeta regalo.
-            </p>
-          </div>
+          {opcionSeleccionada && (
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4 text-sm text-[#5c3c00]">
+              <p>
+                <strong>Regalo seleccionado:</strong> {opcionSeleccionada.clase}
+              </p>
+
+              {opcionSeleccionada.subtipo && (
+                <p className="mt-1">
+                  <strong>Opción:</strong> {opcionSeleccionada.subtipo}
+                </p>
+              )}
+
+              <p className="mt-1">
+                <strong>Precio:</strong> {opcionSeleccionada.precio} €
+              </p>
+            </div>
+          )}
 
           <button
             type="button"
