@@ -9,11 +9,23 @@ export default function GenerarCodigoTarjetaRegalo() {
   const navigate = useNavigate();
 
   const {
-    importe,
+    clase,
+    claseId,
+    subtipo,
+    tipoPieza,
+    tipoTaller,
+    rutaReserva,
+    requiereMetodo,
+    requiereTipoPieza,
+    precio,
+    precioBase,
+    precioTotal,
+    plazas,
     desdeCompraTarjeta,
     nombreRegalado,
     nombreComprador,
     mensaje,
+    orderId,
   } = location.state || {};
 
   const [codigo, setCodigo] = useState(null);
@@ -30,31 +42,66 @@ export default function GenerarCodigoTarjetaRegalo() {
 
   useEffect(() => {
     const generar = async () => {
-      if (importe && user && desdeCompraTarjeta) {
-        try {
-          const codigoGenerado = await crearTarjetaRegalo({
-            importe,
-            compradorUID: user.uid,
-          });
+      if (!user) return;
 
-          if (codigoGenerado) {
-            setCodigo(codigoGenerado);
-          } else {
-            setError("No se pudo generar el código de la tarjeta regalo.");
-          }
-        } catch (e) {
-          console.error(e);
-          setError("Error al generar el código.");
-        }
-      } else {
+      if (!desdeCompraTarjeta || !clase || !claseId || !precioTotal) {
         setError("Faltan datos para generar la tarjeta regalo.");
+        return;
+      }
+
+      try {
+        const codigoGenerado = await crearTarjetaRegalo({
+          clase,
+          claseId,
+          subtipo: subtipo || "",
+          tipoPieza: tipoPieza || "",
+          tipoTaller: tipoTaller || "",
+          rutaReserva: rutaReserva || "",
+          requiereMetodo: !!requiereMetodo,
+          requiereTipoPieza: !!requiereTipoPieza,
+          precio: Number(precio || precioTotal || 0),
+          precioBase: Number(precioBase || precioTotal || 0),
+          precioTotal: Number(precioTotal || precio || 0),
+          plazas: Number(plazas || 1),
+          compradorUID: user.uid,
+          nombreDestinatario: nombreRegalado || "",
+          nombreComprador: nombreComprador || "",
+          mensajePersonalizado: mensaje || "",
+          orderId: orderId || "",
+        });
+
+        if (codigoGenerado) {
+          setCodigo(codigoGenerado);
+        } else {
+          setError("No se pudo generar el código de la tarjeta regalo.");
+        }
+      } catch (e) {
+        console.error(e);
+        setError("Error al generar el código.");
       }
     };
 
-    if (user) {
-      generar();
-    }
-  }, [importe, user, desdeCompraTarjeta]);
+    generar();
+  }, [
+    user,
+    clase,
+    claseId,
+    subtipo,
+    tipoPieza,
+    tipoTaller,
+    rutaReserva,
+    requiereMetodo,
+    requiereTipoPieza,
+    precio,
+    precioBase,
+    precioTotal,
+    plazas,
+    desdeCompraTarjeta,
+    nombreRegalado,
+    nombreComprador,
+    mensaje,
+    orderId,
+  ]);
 
   return (
     <div className="bg-[#fffef4] min-h-screen px-4 py-8 font-sans">
@@ -80,7 +127,17 @@ export default function GenerarCodigoTarjetaRegalo() {
           <>
             <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-5 text-center mb-5">
               <p className="text-sm text-gray-700 mb-2">
-                <strong>Importe de la tarjeta:</strong> {importe} €
+                <strong>Clase regalo:</strong> {clase}
+              </p>
+
+              {subtipo && (
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Opción:</strong> {subtipo}
+                </p>
+              )}
+
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>Importe:</strong> {precioTotal} €
               </p>
 
               <p className="text-sm text-gray-700 mb-3">
@@ -111,8 +168,8 @@ export default function GenerarCodigoTarjetaRegalo() {
             </div>
 
             <p className="text-sm text-gray-600 text-center mb-6">
-              La persona que reciba este código podrá canjearlo en la app y usarlo
-              para reservar el taller que prefiera.
+              La persona que reciba este código podrá canjearlo en la app y reservar
+              la experiencia concreta que le has regalado.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
