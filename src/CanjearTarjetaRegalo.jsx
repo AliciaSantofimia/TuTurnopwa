@@ -15,24 +15,46 @@ const CanjearTarjetaRegalo = () => {
  const buscarTarjetaPorCodigo = async (codigoBuscado) => {
   const codigoNormalizado = codigoBuscado.trim().toUpperCase();
 
-  // 1) Buscar el ID de la tarjeta por código
+  // 1) Intentar encontrarla por índice rápido
   const indexRef = ref(dbRealtime, `codigosTarjetaRegalo/${codigoNormalizado}`);
   const indexSnap = await get(indexRef);
 
-  if (!indexSnap.exists()) return null;
+  if (indexSnap.exists()) {
+    const tarjetaId = String(indexSnap.val());
+    const tarjetaRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaId}`);
+    const tarjetaSnap = await get(tarjetaRef);
 
-  const tarjetaId = String(indexSnap.val());
+    if (tarjetaSnap.exists()) {
+      return {
+        id: tarjetaId,
+        ...tarjetaSnap.val(),
+      };
+    }
+  }
 
-  // 2) Leer la tarjeta concreta
-  const tarjetaRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaId}`);
-  const tarjetaSnap = await get(tarjetaRef);
+  // 2) Respaldo para tarjetas antiguas sin índice
+  const tarjetasRef = ref(dbRealtime, "tarjetasRegalo");
+  const tarjetasSnap = await get(tarjetasRef);
 
-  if (!tarjetaSnap.exists()) return null;
+  if (!tarjetasSnap.exists()) return null;
 
-  return {
-    id: tarjetaId,
-    ...tarjetaSnap.val(),
-  };
+  let encontrada = null;
+
+  tarjetasSnap.forEach((itemSnap) => {
+    const tarjeta = itemSnap.val();
+
+    if (
+      tarjeta?.codigo &&
+      String(tarjeta.codigo).trim().toUpperCase() === codigoNormalizado
+    ) {
+      encontrada = {
+        id: itemSnap.key,
+        ...tarjeta,
+      };
+    }
+  });
+
+  return encontrada;
 };
 
   const obtenerOpcionRegalo = (tarjeta) => {
