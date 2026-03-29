@@ -19,11 +19,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     const cargarDashboard = async () => {
       try {
-        const [reservasSnap, clasesSnap, usuariosSnap] = await Promise.all([
-          get(ref(dbRealtime, "reservas")),
-          get(ref(dbRealtime, "clases")),
-          get(ref(dbRealtime, "usuarios")),
-        ]);
+        const [reservasSnap, reservasGruposSnap, clasesSnap, usuariosSnap] =
+          await Promise.all([
+            get(ref(dbRealtime, "reservas")),
+            get(ref(dbRealtime, "reservasGrupos")),
+            get(ref(dbRealtime, "clases")),
+            get(ref(dbRealtime, "usuarios")),
+          ]);
 
         let reservasTotales = 0;
         let ingresosEstimados = 0;
@@ -43,6 +45,7 @@ const AdminDashboard = () => {
           usuariosTotales = Object.keys(usuariosSnap.val()).length;
         }
 
+        // ---------- RESERVAS NORMALES ----------
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
             claseSnap.forEach((fechaSnap) => {
@@ -92,6 +95,27 @@ const AdminDashboard = () => {
                 });
               });
             });
+          });
+        }
+
+        // ---------- RESERVAS DE GRUPO ----------
+        if (reservasGruposSnap.exists()) {
+          reservasGruposSnap.forEach((grupoSnap) => {
+            if (grupoSnap.key === "placeholder") return;
+
+            const grupo = grupoSnap.val();
+            if (!grupo || typeof grupo !== "object") return;
+
+            reservasTotales += 1;
+
+            if (
+              grupo.estado === "Confirmada" &&
+              grupo.estadoPago === "pagado"
+            ) {
+              ingresosEstimados += Number(
+                grupo.precioTotal || grupo.precio || 0
+              );
+            }
           });
         }
 
@@ -169,6 +193,13 @@ const AdminDashboard = () => {
               onClick={() => navigate("/admin-reservas-nuevo")}
             >
               Ver reservas
+            </button>
+
+            <button
+              style={styles.boton}
+              onClick={() => navigate("/admin-reservas-grupos")}
+            >
+              Ver reservas de grupo
             </button>
 
             <button

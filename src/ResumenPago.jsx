@@ -446,9 +446,9 @@ export default function ResumenPago() {
           <strong>Turno:</strong> {turno || "-"}
         </p>
 
-        <p className="mb-2">
-          <strong>Método:</strong> {metodo || modalidad || "-"}
-        </p>
+       <p className="mb-2">
+  <strong>Modalidad:</strong> {tipo === "grupo" ? "Reserva para grupo" : (metodo || modalidad || "-")}
+</p>
 
         <p className="mb-2">
           <strong>Plazas:</strong> {plazasNum}

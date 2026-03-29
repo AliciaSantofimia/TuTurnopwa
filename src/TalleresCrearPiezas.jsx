@@ -1,17 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import BotonVolver from "./BotonVolver";
 
 export default function TalleresCrearPiezas() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const desdeGrupos = location.state?.desdeGrupos || false;
+  const volverA = location.state?.volverA || "/reserva-grupos";
+
   const [openSection, setOpenSection] = useState(null); // null | "1" | "2"
 
   const talleres1Sesion = [
     {
       id: 1,
-      titulo: "Crea tu pieza favorita desde cero",
-      precio: "desde 55€",
+      titulo: "Crea tu pieza favorita desde cero — Cuenco o taza",
+      precio: "55€",
       descripcion: "Elige el tamaño dentro del taller",
       slug: "/crea-tu-pieza-favorita-desde-cero",
       imagen: "/img/vasijaedicionpremium.png",
@@ -66,6 +71,20 @@ export default function TalleresCrearPiezas() {
       slug: "/crea-tu-jarra-jarron-grande",
       imagen: "/img/vasijaedicionpremium.png",
     },
+    {
+      id: 13,
+      titulo: "Crea tu pieza favorita desde cero — Frutero / cuenco grande",
+      precio: "65€",
+      slug: "/crea-tu-pieza-favorita-desde-cero",
+      imagen: "/img/vasijacreativoplus.png",
+    },
+    {
+      id: 14,
+      titulo: "Crea tu pieza favorita desde cero — Jarrón grande",
+      precio: "75€",
+      slug: "/crea-tu-pieza-favorita-desde-cero",
+      imagen: "/img/vasijaedicionpremium.png",
+    },
   ];
 
   const talleres2Sesiones = [
@@ -99,7 +118,16 @@ export default function TalleresCrearPiezas() {
     },
   ];
 
-  const handleReservar = (taller) => {
+  const handleAccionTaller = (taller) => {
+    if (desdeGrupos) {
+      navigate(volverA, {
+        state: {
+          clasePreseleccionada: taller.titulo,
+        },
+      });
+      return;
+    }
+
     const currentUser = getAuth().currentUser;
 
     if (!currentUser) {
@@ -135,7 +163,7 @@ export default function TalleresCrearPiezas() {
 
           {taller.especial && (
             <p className="text-[12px] text-gray-500 mt-1">
-              (Cuenco/taza 55€ · Frutero 65€ · Jarrón 75€)
+              (Cuenco/taza 55€)
             </p>
           )}
 
@@ -145,16 +173,29 @@ export default function TalleresCrearPiezas() {
             </p>
           )}
 
-          <button
-            className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
-            bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
-            shadow-md hover:shadow-lg
-            hover:from-[#F4C542] hover:to-[#E5B92F]
-            transition-all duration-200"
-            onClick={() => handleReservar(taller)}
-          >
-            Ver / Reservar
-          </button>
+          {desdeGrupos ? (
+            <button
+              className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
+              bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+              shadow-md hover:shadow-lg
+              hover:from-[#F4C542] hover:to-[#E5B92F]
+              transition-all duration-200"
+              onClick={() => handleAccionTaller(taller)}
+            >
+              Elegir esta opción para mi grupo
+            </button>
+          ) : (
+            <button
+              className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
+              bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+              shadow-md hover:shadow-lg
+              hover:from-[#F4C542] hover:to-[#E5B92F]
+              transition-all duration-200"
+              onClick={() => handleAccionTaller(taller)}
+            >
+              Ver / Reservar
+            </button>
+          )}
         </div>
       </div>
 
@@ -214,6 +255,16 @@ export default function TalleresCrearPiezas() {
         </div>
       </div>
 
+      {desdeGrupos && (
+        <div className="max-w-5xl mx-auto bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-4 mb-6">
+          <p className="text-sm text-[#7a5a1e] text-center leading-relaxed">
+            Estás viendo esta sección en modo informativo para una reserva de grupo.
+            Aquí podéis consultar las distintas opciones y precios. Si alguna os interesa,
+            podéis seleccionarla directamente y volveréis a la pantalla de grupos con esa opción elegida.
+          </p>
+        </div>
+      )}
+
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-6">
         <TarjetaSeccion
           id="1"
@@ -240,6 +291,17 @@ export default function TalleresCrearPiezas() {
           {talleres2Sesiones.map((t) => (
             <CardTaller key={t.id} taller={t} />
           ))}
+        </div>
+      )}
+
+      {desdeGrupos && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={() => navigate(volverA)}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a reservas de grupo
+          </button>
         </div>
       )}
     </div>

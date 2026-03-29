@@ -82,6 +82,7 @@ import ReservaTornoAlfareroPerfeccionaLoQueYaSabes from "./ReservaTornoAlfareroP
 import ReservaEspecialPintaTuPieza from "./ReservaEspecialPintaTuPieza";
 import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
 import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
+import ReservaGrupos from "./ReservaGrupos.jsx";
 
 // Tarjetas regalo
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
@@ -110,6 +111,8 @@ import AdminDetalleUsuarioNuevo from "./AdminDetalleUsuarioNuevo";
 import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
 import RutaAdmin from "./RutaAdmin";
 import AdminTarjetasRegalo from "./AdminTarjetasRegalo";
+import AdminReservasGrupos from "./AdminReservasGrupos";
+
 
 function App() {
   return (
@@ -257,6 +260,7 @@ function App() {
             path="/reserva-clase-suelta-continuidad"
             element={<ReservaClaseSueltaContinuidad />}
           />
+          <Route path="/reserva-grupos" element={<ReservaGrupos />} />
 
           {/* Tarjetas regalo */}
           <Route
@@ -294,6 +298,15 @@ function App() {
           
 
         {/* Nuevo Admin */}
+
+        <Route
+  path="/admin-reservas-grupos"
+  element={
+    <RutaAdmin>
+      <AdminReservasGrupos />
+    </RutaAdmin>
+  }
+/>
 <Route
   path="/admin-nuevo"
   element={

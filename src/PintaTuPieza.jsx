@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function PintaTuPieza() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const desdeGrupos = location.state?.desdeGrupos || false;
+  const volverA = location.state?.volverA || "/reserva-grupos";
+
   const imagenes = [
     "/img/pintaceramica/pintatupieza1.jpg",
     "/img/pintaceramica/pintatupieza2.jpg",
@@ -17,10 +24,8 @@ export default function PintaTuPieza() {
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-
           {/* GALERÍA */}
           <div className="p-4 sm:p-5">
-
             <button
               type="button"
               onClick={() => setModalAbierto(true)}
@@ -57,12 +62,10 @@ export default function PintaTuPieza() {
             <p className="text-xs text-gray-500 mt-2">
               Toca la imagen para verla en grande
             </p>
-
           </div>
 
           {/* TEXTO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
               Pinta tu pieza de cerámica
             </h1>
@@ -71,8 +74,17 @@ export default function PintaTuPieza() {
               25,00 €
             </p>
 
-            <div className="mb-5 min-w-0">
+            {desdeGrupos && (
+              <div className="bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-4 mb-5">
+                <p className="text-sm text-[#7a5a1e] leading-relaxed break-words">
+                  Estás viendo esta clase en modo informativo para una reserva
+                  de grupo. Si os interesa este taller, vuelve a la pantalla de
+                  grupos para seleccionarlo y continuar con la reserva.
+                </p>
+              </div>
+            )}
 
+            <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
@@ -128,11 +140,9 @@ export default function PintaTuPieza() {
               <p className="text-sm text-gray-700 leading-relaxed break-words">
                 ¡Te esperamos!
               </p>
-
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
-
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                 <strong>Nota importante:</strong> Las tarifas están sujetas a
                 cambios. Si no asististe a tu curso o bono en la fecha original
@@ -146,13 +156,20 @@ export default function PintaTuPieza() {
                 Reservas. Al proceder con la reserva, confirmas que has leído y
                 aceptado los términos.
               </p>
-
             </div>
 
             <div className="mt-auto">
-              <BotonReserva destino="/reserva-pinta-tu-pieza" />
+              {desdeGrupos ? (
+                <button
+                  onClick={() => navigate(volverA)}
+                  className="w-full px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+                >
+                  Volver a reservas de grupo
+                </button>
+              ) : (
+                <BotonReserva destino="/reserva-pinta-tu-pieza" />
+              )}
             </div>
-
           </div>
         </div>
       </div>

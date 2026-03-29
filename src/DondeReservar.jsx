@@ -52,7 +52,7 @@ export default function DondeReservar() {
         </button>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 max-w-5xl mx-auto">
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
         {/* Taller */}
         <div
           className="cursor-pointer rounded-2xl border border-[#ece7df] bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition"
@@ -69,6 +69,26 @@ export default function DondeReservar() {
           <p className="text-sm text-gray-600 mt-2 text-center leading-6">
             Reserva tu plaza para cualquiera de nuestras clases en el taller.
             Estamos en la Calle Israel nº 5, Córdoba - España -
+          </p>
+        </div>
+
+                {/* Reservas para grupos */}
+        <div
+          className="cursor-pointer rounded-2xl border border-[#ece7df] bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition"
+          onClick={() => navigate("/reserva-grupos")}
+        >
+          <img
+            src="/img/grupos/portadagrupos.jpg"
+            alt="Reservas para grupos"
+            className="w-24 h-24 object-contain rounded-xl mx-auto mb-4"
+          />
+          <h2 className="text-xl font-semibold text-gray-800 text-center">
+            Reservas para grupos
+          </h2>
+          <p className="text-sm text-gray-600 mt-2 text-center leading-6">
+            Cumpleaños, celebraciones, despedidas, planes con amigos o eventos
+            especiales en el taller. Reserva para grupos y concreta los detalles
+            con nosotros por WhatsApp.
           </p>
         </div>
 
