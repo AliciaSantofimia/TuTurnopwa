@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
@@ -7,7 +7,10 @@ const AdminReservasGrupos = () => {
   const [reservas, setReservas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardandoNota, setGuardandoNota] = useState({});
+  const [eliminandoNota, setEliminandoNota] = useState({});
   const [nuevasNotas, setNuevasNotas] = useState({});
+  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
 
   useEffect(() => {
     const cargarReservas = async () => {
@@ -30,8 +33,18 @@ const AdminReservasGrupos = () => {
               notasInternas.forEach((notaSnap) => {
                 const nota = notaSnap.val();
                 if (nota) {
-                  listaNotas.push(nota);
+                  listaNotas.push({
+                    id: notaSnap.key,
+                    texto: nota.texto || "",
+                    fecha: nota.fecha || "Sin fecha",
+                  });
                 }
+              });
+
+              listaNotas.sort((a, b) => {
+                const fechaA = new Date(a.fecha || 0);
+                const fechaB = new Date(b.fecha || 0);
+                return fechaB - fechaA;
               });
 
               mapaNotas[orderId] = listaNotas;
@@ -73,34 +86,6 @@ const AdminReservasGrupos = () => {
     cargarReservas();
   }, []);
 
-  const resumen = useMemo(() => {
-    const totalReservas = reservas.length;
-
-    const pendientes = reservas.filter(
-      (r) =>
-        (r.estado || "").toLowerCase() === "pendiente" ||
-        (r.estadoPago || "").toLowerCase() === "pendiente"
-    ).length;
-
-    const pagadas = reservas.filter(
-      (r) => (r.estadoPago || "").toLowerCase() === "pagado"
-    ).length;
-
-    const ingresosEstimados = reservas.reduce((acc, r) => {
-      if ((r.estadoPago || "").toLowerCase() === "pagado") {
-        return acc + Number(r.precioTotal || r.precio || 0);
-      }
-      return acc;
-    }, 0);
-
-    return {
-      totalReservas,
-      pendientes,
-      pagadas,
-      ingresosEstimados,
-    };
-  }, [reservas]);
-
   const handleChangeNota = (orderId, valor) => {
     setNuevasNotas((prev) => ({
       ...prev,
@@ -127,7 +112,7 @@ const AdminReservasGrupos = () => {
         fecha: new Date().toLocaleString("es-ES"),
       };
 
-      await push(
+      const nuevaNotaRef = await push(
         ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`),
         nuevaNota
       );
@@ -137,7 +122,13 @@ const AdminReservasGrupos = () => {
           r.orderId === orderId
             ? {
                 ...r,
-                notasInternas: [...(r.notasInternas || []), nuevaNota],
+                notasInternas: [
+                  ...(r.notasInternas || []),
+                  {
+                    id: nuevaNotaRef.key,
+                    ...nuevaNota,
+                  },
+                ],
               }
             : r
         )
@@ -158,6 +149,90 @@ const AdminReservasGrupos = () => {
     }
   };
 
+  const eliminarNotaInterna = async (orderId, notaId) => {
+    const confirmar = window.confirm(
+      "¿Seguro que quieres borrar esta nota interna?"
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setEliminandoNota((prev) => ({
+        ...prev,
+        [notaId]: true,
+      }));
+
+      await remove(
+        ref(dbRealtime, `reservasNotas/${orderId}/notasInternas/${notaId}`)
+      );
+
+      setReservas((prev) =>
+        prev.map((r) =>
+          r.orderId === orderId
+            ? {
+                ...r,
+                notasInternas: (r.notasInternas || []).filter(
+                  (nota) => nota.id !== notaId
+                ),
+              }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error("Error al borrar nota interna:", error);
+      alert("No se pudo borrar la nota interna.");
+    } finally {
+      setEliminandoNota((prev) => ({
+        ...prev,
+        [notaId]: false,
+      }));
+    }
+  };
+
+  const limpiarFiltros = () => {
+    setFiltroFecha("");
+    setFiltroEstadoPago("");
+  };
+
+  const reservasFiltradas = useMemo(() => {
+    return reservas.filter((r) => {
+      const cumpleFecha = !filtroFecha || r.fecha === filtroFecha;
+      const cumpleEstadoPago =
+        !filtroEstadoPago ||
+        (r.estadoPago || "").toLowerCase() === filtroEstadoPago.toLowerCase();
+
+      return cumpleFecha && cumpleEstadoPago;
+    });
+  }, [reservas, filtroFecha, filtroEstadoPago]);
+
+  const resumen = useMemo(() => {
+    const totalReservas = reservasFiltradas.length;
+
+    const pendientes = reservasFiltradas.filter(
+      (r) =>
+        (r.estado || "").toLowerCase() === "pendiente" ||
+        (r.estadoPago || "").toLowerCase() === "pendiente"
+    ).length;
+
+    const pagadas = reservasFiltradas.filter(
+      (r) => (r.estadoPago || "").toLowerCase() === "pagado"
+    ).length;
+
+    const ingresosEstimados = reservasFiltradas.reduce((acc, r) => {
+      if ((r.estadoPago || "").toLowerCase() === "pagado") {
+        return acc + Number(r.precioTotal || r.precio || 0);
+      }
+      return acc;
+    }, 0);
+
+    return {
+      totalReservas,
+      pendientes,
+      pagadas,
+      ingresosEstimados,
+    };
+  }, [reservasFiltradas]);
+
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -175,6 +250,39 @@ const AdminReservasGrupos = () => {
           <p style={styles.mensaje}>Cargando...</p>
         ) : (
           <>
+            <div style={styles.filtrosBox}>
+              <div style={styles.filtrosGrid}>
+                <div style={styles.campo}>
+                  <label style={styles.label}>Fecha</label>
+                  <input
+                    type="date"
+                    value={filtroFecha}
+                    onChange={(e) => setFiltroFecha(e.target.value)}
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.campo}>
+                  <label style={styles.label}>Estado de pago</label>
+                  <select
+                    value={filtroEstadoPago}
+                    onChange={(e) => setFiltroEstadoPago(e.target.value)}
+                    style={styles.input}
+                  >
+                    <option value="">Todos</option>
+                    <option value="pagado">Pagado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="fallido">Fallido</option>
+                    <option value="rechazado">Rechazado</option>
+                  </select>
+                </div>
+              </div>
+
+              <button onClick={limpiarFiltros} style={styles.botonSecundario}>
+                Limpiar filtros
+              </button>
+            </div>
+
             <div style={styles.gridResumen}>
               <div style={styles.cardResumen}>
                 <p style={styles.cardLabel}>Total reservas grupo</p>
@@ -197,15 +305,17 @@ const AdminReservasGrupos = () => {
               </div>
             </div>
 
-            {reservas.length === 0 ? (
+            {reservasFiltradas.length === 0 ? (
               <p style={styles.mensaje}>No hay reservas de grupo.</p>
             ) : (
               <div style={styles.lista}>
-                {reservas.map((r) => (
+                {reservasFiltradas.map((r) => (
                   <div key={r.id} style={styles.card}>
                     <div style={styles.cardTop}>
                       <div>
-                        <h2 style={styles.cardTitulo}>{r.clase || "Reserva de grupo"}</h2>
+                        <h2 style={styles.cardTitulo}>
+                          {r.clase || "Reserva de grupo"}
+                        </h2>
                         <p style={styles.cardSubtitulo}>
                           {r.fecha || "—"} · {r.turno || "—"}
                         </p>
@@ -242,10 +352,26 @@ const AdminReservasGrupos = () => {
                       <strong>Notas internas de Berto</strong>
 
                       {r.notasInternas && r.notasInternas.length > 0 ? (
-                        r.notasInternas.map((nota, index) => (
-                          <div key={index} style={styles.notaInternaItem}>
-                            <p style={styles.notaTexto}>{nota.texto}</p>
-                            <p style={styles.notaFecha}>{nota.fecha}</p>
+                        r.notasInternas.map((nota) => (
+                          <div key={nota.id} style={styles.notaInternaItem}>
+                            <div style={styles.notaHeader}>
+                              <div>
+                                <p style={styles.notaTexto}>{nota.texto}</p>
+                                <p style={styles.notaFecha}>{nota.fecha}</p>
+                              </div>
+
+                              <button
+                                onClick={() =>
+                                  eliminarNotaInterna(r.orderId, nota.id)
+                                }
+                                style={styles.botonEliminar}
+                                disabled={!!eliminandoNota[nota.id]}
+                              >
+                                {eliminandoNota[nota.id]
+                                  ? "Borrando..."
+                                  : "Eliminar"}
+                              </button>
+                            </div>
                           </div>
                         ))
                       ) : (
@@ -320,6 +446,45 @@ const styles = {
     textAlign: "center",
     color: "#777",
     padding: 20,
+  },
+  filtrosBox: {
+    backgroundColor: "#fffdf7",
+    border: "1px solid #f0e5cf",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
+  },
+  filtrosGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 14,
+    marginBottom: 14,
+  },
+  campo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  label: {
+    fontSize: "0.92rem",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  input: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid #e5d8b8",
+    fontSize: "0.95rem",
+    backgroundColor: "#fffaf0",
+  },
+  botonSecundario: {
+    padding: "10px 14px",
+    border: "1px solid #e5d8b8",
+    backgroundColor: "#fff8da",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#5b4a2d",
   },
   gridResumen: {
     display: "grid",
@@ -431,9 +596,16 @@ const styles = {
     paddingTop: 10,
     borderTop: "1px solid #eee",
   },
+  notaHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
   notaTexto: {
     margin: 0,
     color: "#333",
+    whiteSpace: "pre-wrap",
   },
   notaFecha: {
     margin: "4px 0 0 0",
@@ -466,6 +638,16 @@ const styles = {
     cursor: "pointer",
     fontWeight: 600,
     color: "#5b4a2d",
+  },
+  botonEliminar: {
+    padding: "8px 12px",
+    border: "1px solid #e7c9c9",
+    backgroundColor: "#fff1f1",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#8a3b3b",
+    flexShrink: 0,
   },
 };
 

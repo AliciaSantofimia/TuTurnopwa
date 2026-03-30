@@ -20,7 +20,30 @@ const AdminTarjetasRegalo = () => {
 
       try {
         const datosTarjetas = [];
-        const usuariosSnap = await get(ref(dbRealtime, "usuarios"));
+
+        const [usuariosSnap, notasSnap] = await Promise.all([
+          get(ref(dbRealtime, "usuarios")),
+          get(ref(dbRealtime, "reservasNotas")),
+        ]);
+
+        const mapaNotas = {};
+
+        if (notasSnap.exists()) {
+          notasSnap.forEach((notaReservaSnap) => {
+            const orderId = notaReservaSnap.key;
+            const notasInternas = notaReservaSnap.child("notasInternas");
+
+            let totalNotas = 0;
+
+            if (notasInternas.exists()) {
+              notasInternas.forEach(() => {
+                totalNotas += 1;
+              });
+            }
+
+            mapaNotas[orderId] = totalNotas;
+          });
+        }
 
         if (usuariosSnap.exists()) {
           usuariosSnap.forEach((userSnap) => {
@@ -33,6 +56,7 @@ const AdminTarjetasRegalo = () => {
 
             Object.entries(tarjetasUsuario).forEach(([tarjetaId, tarjeta]) => {
               const t = tarjeta || {};
+              const orderIdReal = t.orderId || tarjetaId;
 
               datosTarjetas.push({
                 id: tarjetaId,
@@ -51,7 +75,7 @@ const AdminTarjetasRegalo = () => {
                 estadoPago: t.estadoPago || "—",
                 precioTotal: Number(t.precioTotal || 0),
                 uid: uid,
-                orderId: t.orderId || tarjetaId,
+                orderId: orderIdReal,
                 procesado: t.procesado ?? false,
                 codigo: t.codigo || "",
                 nombreDestinatario: t.nombreDestinatario || "",
@@ -62,6 +86,7 @@ const AdminTarjetasRegalo = () => {
                 numeroClases: Number(t.numeroClases || 0),
                 nombreUsuario,
                 emailUsuario,
+                notasInternas: mapaNotas[orderIdReal] || 0,
               });
             });
           });
@@ -228,6 +253,7 @@ const AdminTarjetasRegalo = () => {
                   <th style={styles.th}>Plazas</th>
                   <th style={styles.th}>Estado canje</th>
                   <th style={styles.th}>Pago</th>
+                  <th style={styles.th}>Notas</th>
                   <th style={styles.th}>Precio</th>
                 </tr>
               </thead>
@@ -236,7 +262,7 @@ const AdminTarjetasRegalo = () => {
                   <tr
                     key={`${t.claseId}-${t.fecha}-${t.orderId}-${t.id}`}
                     onClick={() =>
-                      navigate(`/admin-detalle-reserva?id=${t.orderId}`)
+                      navigate(`/admin-detalle-tarjeta-regalo?id=${t.orderId}`)
                     }
                     style={styles.trClickable}
                   >
@@ -252,6 +278,16 @@ const AdminTarjetasRegalo = () => {
                     <td style={styles.td}>{t.plazas}</td>
                     <td style={styles.td}>{t.estado}</td>
                     <td style={styles.td}>{t.estadoPago}</td>
+                    <td style={styles.td}>
+                      {t.notasInternas > 0 ? (
+                        <span style={styles.badgeNotas}>
+                          {t.notasInternas}{" "}
+                          {t.notasInternas === 1 ? "nota" : "notas"}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td style={styles.td}>{t.precioTotal}€</td>
                   </tr>
                 ))}
@@ -394,6 +430,16 @@ const styles = {
   trClickable: {
     cursor: "pointer",
     transition: "0.2s",
+  },
+  badgeNotas: {
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    backgroundColor: "#fff8da",
+    border: "1px solid #eadfbe",
+    color: "#5b4a2d",
+    fontSize: "0.85rem",
+    fontWeight: 600,
   },
 };
 

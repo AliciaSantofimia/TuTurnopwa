@@ -216,12 +216,19 @@ const AdminDashboard = () => {
               Ver usuarios
             </button>
 
+
             <button
               style={styles.boton}
               onClick={() => navigate("/admin-tarjetas-regalo")}
             >
               Ver tarjetas regalo
             </button>
+            <button
+  style={styles.boton}
+  onClick={() => navigate("/admin-bloqueos-fechas")}
+>
+  Bloquear fechas
+</button>
           </div>
         </div>
       </div>

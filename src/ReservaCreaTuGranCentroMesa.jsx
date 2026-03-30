@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
@@ -25,6 +25,7 @@ export default function ReservaCreaTuGranCentroMesa() {
   const [plazas, setPlazas] = useState("1");
   const [ocupadasTorno, setOcupadasTorno] = useState(0);
   const [ocupadasModelado, setOcupadasModelado] = useState(0);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,11 +36,32 @@ export default function ReservaCreaTuGranCentroMesa() {
   const maxTotales = 45;
 
   useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
+  }, []);
+
+  useEffect(() => {
     if (fecha) {
       contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
         setOcupadasTorno(torno);
         setOcupadasModelado(modelado);
       });
+    } else {
+      setOcupadasTorno(0);
+      setOcupadasModelado(0);
     }
   }, [fecha]);
 
@@ -57,6 +79,17 @@ export default function ReservaCreaTuGranCentroMesa() {
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fecha) return null;
+
+    const bloqueo = fechasBloqueadas?.[fecha];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fecha, fechasBloqueadas]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -73,6 +106,15 @@ export default function ReservaCreaTuGranCentroMesa() {
       return;
     }
 
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fecha}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
+      return;
+    }
+
     if (plazasNum > plazasDisponibles) {
       alert("No hay suficientes plazas disponibles para este método.");
       return;
@@ -83,21 +125,21 @@ export default function ReservaCreaTuGranCentroMesa() {
       const precioTotal = precioUnitario * plazasNum;
       const orderId = Date.now().toString().slice(-12);
 
-     const reserva = {
-  clase: "Crea tu gran centro mesa",
-  claseId: "creatugrancentrodemesa",
-  fecha,
-  turno,
-  metodo,
-  plazas: plazasNum,
-  desdeTarjeta,
-  precio: precioTotal,
-  precioUnitario,
-  precioTotal,
-  estadoPago: "pendiente",
-  orderId,
-  timestamp: new Date().toISOString(),
-};
+      const reserva = {
+        clase: "Crea tu gran centro mesa",
+        claseId: "creatugrancentrodemesa",
+        fecha,
+        turno,
+        metodo,
+        plazas: plazasNum,
+        desdeTarjeta,
+        precio: precioTotal,
+        precioUnitario,
+        precioTotal,
+        estadoPago: "pendiente",
+        orderId,
+        timestamp: new Date().toISOString(),
+      };
 
       const generalRef = ref(
         dbRealtime,
@@ -106,10 +148,10 @@ export default function ReservaCreaTuGranCentroMesa() {
       await push(generalRef, { uid: user.uid, ...reserva });
 
       const userListaReservasRef = ref(
-  dbRealtime,
-  `usuarios/${user.uid}/listaReservas`
-);
-await push(userListaReservasRef, reserva);
+        dbRealtime,
+        `usuarios/${user.uid}/listaReservas`
+      );
+      await push(userListaReservasRef, reserva);
 
       await actualizarContadorReservas(user.uid);
 
@@ -160,6 +202,14 @@ await push(userListaReservasRef, reserva);
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
               />
+              {fechaBloqueada && (
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  Este día no está disponible para reservar.
+                  {fechaBloqueada.motivo
+                    ? ` Motivo: ${fechaBloqueada.motivo}.`
+                    : ""}
+                </p>
+              )}
             </div>
 
             <div>
@@ -254,7 +304,12 @@ await push(userListaReservasRef, reserva);
               shadow-md hover:shadow-lg
               hover:from-[#F4C542] hover:to-[#E5B92F]
               transition-all duration-200"
-              disabled={!metodo || plazasNum > plazasDisponibles || plazasDisponibles <= 0}
+              disabled={
+                !!fechaBloqueada ||
+                !metodo ||
+                plazasNum > plazasDisponibles ||
+                plazasDisponibles <= 0
+              }
             >
               Confirmar y pagar
             </button>

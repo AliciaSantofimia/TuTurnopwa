@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { ref, push, get, update } from "firebase/database";
@@ -39,7 +39,6 @@ const sumarTresMeses = (fechaISO) => {
 };
 
 const TALLERES = [
-  // 1 sesión
   {
     key: "crea-tu-pieza-favorita-desde-cero",
     clase: "Crea tu pieza favorita desde cero",
@@ -120,8 +119,6 @@ const TALLERES = [
       { value: "17:00-20:00", label: "17:00 – 20:00 (tarde)" },
     ],
   },
-
-  // 2 sesiones
   {
     key: "crea-tu-set-matcha",
     clase: "Crea tu set de matcha",
@@ -162,8 +159,6 @@ const TALLERES = [
       { value: "17:00-20:00", label: "17:00 – 20:00 (tarde)" },
     ],
   },
-
-  // Bonos
   {
     key: "modela-a-mano-y-decora-tus-piezas-favoritas",
     clase: "Modela a mano y decora tus piezas favoritas",
@@ -216,8 +211,6 @@ const TALLERES = [
       { value: "otro-horario", label: "Otro horario según disponibilidad" },
     ],
   },
-
-  // Pinta y decora
   {
     key: "pinta-tu-pieza",
     clase: "Pinta tu pieza de cerámica",
@@ -252,6 +245,25 @@ export default function ReservaConTarjetaRegalo() {
   const [fecha, setFecha] = useState("");
   const [turno, setTurno] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
+  }, []);
 
   const tallerSeleccionado = useMemo(
     () => TALLERES.find((t) => t.key === tallerKey),
@@ -259,6 +271,17 @@ export default function ReservaConTarjetaRegalo() {
   );
 
   const saldoDisponible = Number(importe || saldo || 0);
+
+  const fechaBloqueada = useMemo(() => {
+    if (!fecha) return null;
+
+    const bloqueo = fechasBloqueadas?.[fecha];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fecha, fechasBloqueadas]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -278,6 +301,15 @@ export default function ReservaConTarjetaRegalo() {
 
     if (!tallerSeleccionado || !fecha || !turno) {
       alert("Selecciona taller, fecha y turno.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fecha}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -349,10 +381,10 @@ export default function ReservaConTarjetaRegalo() {
       await push(generalRef, { uid: user.uid, ...reserva });
 
       const userListaReservasRef = ref(
-  dbRealtime,
-  `usuarios/${user.uid}/listaReservas`
-);
-await push(userListaReservasRef, reserva);
+        dbRealtime,
+        `usuarios/${user.uid}/listaReservas`
+      );
+      await push(userListaReservasRef, reserva);
 
       if (tallerSeleccionado.tipo === "bono") {
         await crearBonoActivo({
@@ -459,6 +491,14 @@ await push(userListaReservasRef, reserva);
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
               />
+              {fechaBloqueada && (
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  Este día no está disponible para reservar.
+                  {fechaBloqueada.motivo
+                    ? ` Motivo: ${fechaBloqueada.motivo}.`
+                    : ""}
+                </p>
+              )}
             </div>
 
             <div>
@@ -509,6 +549,7 @@ await push(userListaReservasRef, reserva);
               type="submit"
               disabled={
                 guardando ||
+                !!fechaBloqueada ||
                 !tallerSeleccionado ||
                 !fecha ||
                 !turno ||

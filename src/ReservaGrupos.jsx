@@ -57,7 +57,7 @@ const TODAS_LAS_CLASES = [
   { nombre: "Modela a mano y decora tus piezas favoritas — 4 clases", precio: 79 },
   { nombre: "Torno alfarero y decoración — 4 clases", precio: 99 },
   { nombre: "Torno alfarero empezar desde cero — 4 clases", precio: 120 },
-  { nombre: "Torno alfarero perfecciona lo que ya sabes — 6 clases", precio: 145 },
+  { nombre: "Torno alfarero perfecciona lo que ya sabes — 6 clases", price: 145 },
   { nombre: "Pinta tu pieza de cerámica", precio: 25 },
   { nombre: "Especial pinta tu pieza de cerámica", precio: 35 },
 ];
@@ -135,6 +135,7 @@ export default function ReservaGrupos() {
   const [claseSeleccionada, setClaseSeleccionada] = useState("");
   const [contactoConfirmado, setContactoConfirmado] = useState(false);
   const [cargando, setCargando] = useState(false);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   useEffect(() => {
     const auth = getAuth();
@@ -160,6 +161,24 @@ export default function ReservaGrupos() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
   }, []);
 
   useEffect(() => {
@@ -209,6 +228,17 @@ export default function ReservaGrupos() {
     return `https://wa.me/${WHATSAPP_BERTO}?text=${mensaje}`;
   }, [nombreReserva, telefono, claseSeleccionada, fecha, horario, personas, notas]);
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fecha) return null;
+
+    const bloqueo = fechasBloqueadas?.[fecha];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fecha, fechasBloqueadas]);
+
   const seleccionarRecomendado = (nombre) => {
     setClaseSeleccionada(nombre);
   };
@@ -228,6 +258,15 @@ export default function ReservaGrupos() {
 
     if (!esFechaValidaGrupo(fecha)) {
       alert("Solo se permiten reservas de grupo los viernes, sábados y domingos.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fecha}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -478,6 +517,14 @@ export default function ReservaGrupos() {
                     Solo puedes reservar grupos los viernes, sábados y domingos.
                   </p>
                 )}
+                {fechaBloqueada && (
+                  <p className="text-sm text-red-600 mt-2">
+                    Este día no está disponible para reservar.
+                    {fechaBloqueada.motivo
+                      ? ` Motivo: ${fechaBloqueada.motivo}.`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -586,6 +633,7 @@ export default function ReservaGrupos() {
                 type="submit"
                 disabled={
                   cargando ||
+                  !!fechaBloqueada ||
                   !claseSeleccionada ||
                   !nombreReserva ||
                   !telefono ||

@@ -4,12 +4,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
-const AdminDetalleReservaNuevo = () => {
+const AdminDetalleTarjetaRegaloNuevo = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderId = searchParams.get("id");
 
-  const [reserva, setReserva] = useState(null);
+  const [tarjeta, setTarjeta] = useState(null);
   const [notasInternas, setNotasInternas] = useState([]);
   const [nuevaNota, setNuevaNota] = useState("");
   const [guardandoNota, setGuardandoNota] = useState(false);
@@ -17,89 +17,64 @@ const AdminDetalleReservaNuevo = () => {
   const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
 
   useEffect(() => {
-    const buscarReserva = async () => {
+    const cargarDetalleTarjeta = async () => {
       try {
-        const [reservasSnap, notasSnap] = await Promise.all([
-          get(ref(dbRealtime, "reservas")),
+        const [usuariosSnap, notasSnap] = await Promise.all([
+          get(ref(dbRealtime, "usuarios")),
           get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
         ]);
 
-        if (!reservasSnap.exists()) {
-          setReserva(null);
-        } else {
-          let encontrada = null;
+        let encontrada = null;
 
-          reservasSnap.forEach((claseSnap) => {
-            const claseKey = claseSnap.key;
+        if (usuariosSnap.exists()) {
+          usuariosSnap.forEach((userSnap) => {
+            const uid = userSnap.key;
+            const userData = userSnap.val() || {};
+            const nombreUsuario = userData.nombre || "";
+            const emailUsuario = userData.email || "";
+            const tarjetasUsuario = userData.tarjetasRegalo || {};
 
-            claseSnap.forEach((fechaSnap) => {
-              const fechaKey = fechaSnap.key;
+            Object.entries(tarjetasUsuario).forEach(([tarjetaId, tarjeta]) => {
+              const t = tarjeta || {};
+              const orderIdReal = t.orderId || tarjetaId;
 
-              fechaSnap.forEach((turnoSnap) => {
-                const turnoKey = turnoSnap.key;
-
-                turnoSnap.forEach((nivelSnap) => {
-                  const nivelKey = nivelSnap.key;
-                  const nivelVal = nivelSnap.val();
-
-                  if (!nivelVal || typeof nivelVal !== "object") return;
-
-                  const construirReserva = (r) => {
-                    if (!r || typeof r !== "object") return null;
-
-                    return {
-                      ...r,
-                      claseId: r.claseId || claseKey,
-                      clase: r.clase || claseKey,
-                      fecha: r.fecha || fechaKey,
-                      turno: r.turno || turnoKey,
-                      metodo: r.metodo || r.tipoClase || nivelKey || "—",
-                      plazas: Number(r.plazas || 1),
-                      estado: r.estado || "—",
-                      estadoPago: r.estadoPago || "—",
-                      precioUnitario: Number(
-                        r.precioUnitario || r.precio || 0
-                      ),
-                      precioTotal: Number(
-                        r.precioTotal || r.precioUnitario || r.precio || 0
-                      ),
-                      uid: r.uid || "",
-                      orderId: r.orderId || "",
-                      desdeTarjeta: r.desdeTarjeta ?? false,
-                      timestamp: r.timestamp || r.creadoEn || "—",
-                      procesado: r.procesado ?? false,
-                    };
-                  };
-
-                  const comprobarReserva = (r) => {
-                    if (!r || typeof r !== "object") return;
-
-                    if (r.orderId === orderId) {
-                      encontrada = construirReserva(r);
-                    }
-                  };
-
-                  const pareceReservaDirecta =
-                    "orderId" in nivelVal ||
-                    "fecha" in nivelVal ||
-                    "estado" in nivelVal ||
-                    "estadoPago" in nivelVal;
-
-                  if (pareceReservaDirecta) {
-                    comprobarReserva(nivelVal);
-                    return;
-                  }
-
-                  nivelSnap.forEach((reservaSnap) => {
-                    comprobarReserva(reservaSnap.val());
-                  });
-                });
-              });
+              if (orderIdReal === orderId && !encontrada) {
+                encontrada = {
+                  id: tarjetaId,
+                  uid,
+                  orderId: orderIdReal,
+                  clase: t.clase || "Tarjeta regalo",
+                  codigo: t.codigo || "",
+                  fechaCompra:
+                    typeof t.fechaCompra === "string" ? t.fechaCompra : "—",
+                  fecha:
+                    typeof t.fechaCompra === "string" &&
+                    t.fechaCompra.length >= 10
+                      ? t.fechaCompra.slice(0, 10)
+                      : "—",
+                  estado: t.estadoCanje || "pendiente",
+                  estadoPago: t.estadoPago || "—",
+                  precioTotal: Number(t.precioTotal || 0),
+                  precioUnitario: Number(
+                    t.precioUnitario || t.precio || t.precioTotal || 0
+                  ),
+                  plazas: Number(t.plazas || 1),
+                  nombreDestinatario: t.nombreDestinatario || "",
+                  emailDestinatario: t.emailDestinatario || "",
+                  mensajePersonalizado: t.mensajePersonalizado || "",
+                  subtipo: t.subtipo || "",
+                  tipo: t.tipo || "",
+                  numeroClases: Number(t.numeroClases || 0),
+                  procesado: t.procesado ?? false,
+                  nombreUsuario,
+                  emailUsuario,
+                };
+              }
             });
           });
-
-          setReserva(encontrada);
         }
+
+        setTarjeta(encontrada);
 
         const listaNotas = [];
         if (notasSnap.exists()) {
@@ -114,18 +89,37 @@ const AdminDetalleReservaNuevo = () => {
             }
           });
         }
+
+        listaNotas.sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0);
+          const fechaB = new Date(b.fecha || 0);
+          return fechaB - fechaA;
+        });
+
         setNotasInternas(listaNotas);
       } catch (error) {
-        console.error("Error al buscar reserva:", error);
-        setReserva(null);
+        console.error("Error al cargar detalle de tarjeta regalo:", error);
+        setTarjeta(null);
         setNotasInternas([]);
       } finally {
         setCargando(false);
       }
     };
 
-    buscarReserva();
+    cargarDetalleTarjeta();
   }, [orderId]);
+
+  const formatearFechaNota = (fecha) => {
+    if (!fecha) return "Sin fecha";
+
+    const fechaParseada = new Date(fecha);
+
+    if (!isNaN(fechaParseada.getTime())) {
+      return fechaParseada.toLocaleString("es-ES");
+    }
+
+    return fecha;
+  };
 
   const guardarNotaInterna = async () => {
     const texto = nuevaNota.trim();
@@ -140,7 +134,7 @@ const AdminDetalleReservaNuevo = () => {
 
       const nota = {
         texto,
-        fecha: new Date().toLocaleString("es-ES"),
+        fecha: new Date().toISOString(),
       };
 
       const nuevaNotaRef = await push(
@@ -155,10 +149,9 @@ const AdminDetalleReservaNuevo = () => {
           ...nota,
         },
       ]);
-
       setNuevaNota("");
     } catch (error) {
-      console.error("Error al guardar la nota interna:", error);
+      console.error("Error al guardar nota interna:", error);
       alert("No se pudo guardar la nota interna.");
     } finally {
       setGuardandoNota(false);
@@ -189,11 +182,11 @@ const AdminDetalleReservaNuevo = () => {
   };
 
   if (cargando) {
-    return <p style={styles.mensaje}>Cargando reserva...</p>;
+    return <p style={styles.mensaje}>Cargando tarjeta regalo...</p>;
   }
 
-  if (!reserva) {
-    return <p style={styles.mensaje}>Reserva no encontrada.</p>;
+  if (!tarjeta) {
+    return <p style={styles.mensaje}>Tarjeta regalo no encontrada.</p>;
   }
 
   return (
@@ -201,7 +194,7 @@ const AdminDetalleReservaNuevo = () => {
       <div style={styles.container}>
         <BotonVolver />
 
-        <h1 style={styles.titulo}>Detalle de reserva</h1>
+        <h1 style={styles.titulo}>Detalle de tarjeta regalo</h1>
 
         <div style={styles.card}>
           <p>
@@ -211,51 +204,51 @@ const AdminDetalleReservaNuevo = () => {
               onClick={() =>
                 navigate(
                   `/admin-detalle-clase?clase=${encodeURIComponent(
-                    reserva.claseId || ""
-                  )}&nombre=${encodeURIComponent(reserva.clase || "")}`
+                    tarjeta.clase || ""
+                  )}&nombre=${encodeURIComponent(tarjeta.clase || "")}`
                 )
               }
             >
-              {reserva.clase}
+              {tarjeta.clase}
             </span>
           </p>
-
-          <p><strong>Fecha:</strong> {reserva.fecha}</p>
-          <p><strong>Turno:</strong> {reserva.turno}</p>
-          <p><strong>Método:</strong> {reserva.metodo}</p>
-          <p><strong>Plazas:</strong> {reserva.plazas}</p>
-
-          <hr style={styles.hr} />
-
-          <p><strong>Estado:</strong> {reserva.estado}</p>
-          <p><strong>Estado pago:</strong> {reserva.estadoPago}</p>
+          <p><strong>Código:</strong> {tarjeta.codigo || "—"}</p>
+          <p><strong>Fecha compra:</strong> {tarjeta.fecha}</p>
+          <p><strong>Estado canje:</strong> {tarjeta.estado}</p>
+          <p><strong>Estado pago:</strong> {tarjeta.estadoPago}</p>
 
           <hr style={styles.hr} />
 
-          <p><strong>Precio unitario:</strong> {reserva.precioUnitario}€</p>
-          <p><strong>Precio total:</strong> {reserva.precioTotal}€</p>
+          <p><strong>Precio unitario:</strong> {tarjeta.precioUnitario}€</p>
+          <p><strong>Precio total:</strong> {tarjeta.precioTotal}€</p>
+          <p><strong>Plazas:</strong> {tarjeta.plazas}</p>
+          <p><strong>Número de clases:</strong> {tarjeta.numeroClases || 0}</p>
+
+          <hr style={styles.hr} />
+
+          <p><strong>Destinatario:</strong> {tarjeta.nombreDestinatario || "—"}</p>
+          <p><strong>Email destinatario:</strong> {tarjeta.emailDestinatario || "—"}</p>
+          <p><strong>Mensaje:</strong> {tarjeta.mensajePersonalizado || "—"}</p>
+          <p><strong>Subtipo:</strong> {tarjeta.subtipo || "—"}</p>
+          <p><strong>Tipo:</strong> {tarjeta.tipo || "—"}</p>
 
           <hr style={styles.hr} />
 
           <p>
-            <strong>UID:</strong>{" "}
+            <strong>UID comprador:</strong>{" "}
             <span
               style={styles.uidLink}
               onClick={() =>
-                navigate(`/admin-detalle-usuario?uid=${reserva.uid}`)
+                navigate(`/admin-detalle-usuario?uid=${tarjeta.uid}`)
               }
             >
-              {reserva.uid}
+              {tarjeta.uid}
             </span>
           </p>
-
-          <p><strong>Order ID:</strong> {reserva.orderId}</p>
-          <p><strong>Desde tarjeta:</strong> {reserva.desdeTarjeta ? "Sí" : "No"}</p>
-
-          <hr style={styles.hr} />
-
-          <p><strong>Creado:</strong> {reserva.timestamp}</p>
-          <p><strong>Procesado:</strong> {reserva.procesado ? "Sí" : "No"}</p>
+          <p><strong>Nombre comprador:</strong> {tarjeta.nombreUsuario || "—"}</p>
+          <p><strong>Email comprador:</strong> {tarjeta.emailUsuario || "—"}</p>
+          <p><strong>Order ID:</strong> {tarjeta.orderId}</p>
+          <p><strong>Procesado:</strong> {tarjeta.procesado ? "Sí" : "No"}</p>
         </div>
 
         <div style={styles.notasBox}>
@@ -267,7 +260,7 @@ const AdminDetalleReservaNuevo = () => {
                 <div style={styles.notaHeader}>
                   <div>
                     <p style={styles.notaTexto}>{nota.texto}</p>
-                    <p style={styles.notaFecha}>{nota.fecha}</p>
+                    <p style={styles.notaFecha}>{formatearFechaNota(nota.fecha)}</p>
                   </div>
 
                   <button
@@ -344,12 +337,6 @@ const styles = {
     textAlign: "center",
     padding: 40,
   },
-  linkClase: {
-    color: "#7c5c2e",
-    cursor: "pointer",
-    textDecoration: "underline",
-    fontWeight: 500,
-  },
   notasBox: {
     marginTop: 24,
     padding: 16,
@@ -418,6 +405,24 @@ const styles = {
     color: "#8a3b3b",
     flexShrink: 0,
   },
+  bloqueVolverLista: {
+    marginBottom: 16,
+  },
+  botonVolverLista: {
+    padding: "10px 14px",
+    border: "1px solid #e5d8b8",
+    backgroundColor: "#fff8da",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  linkClase: {
+    color: "#7c5c2e",
+    cursor: "pointer",
+    textDecoration: "underline",
+    fontWeight: 500,
+  },
 };
 
-export default AdminDetalleReservaNuevo;
+export default AdminDetalleTarjetaRegaloNuevo;

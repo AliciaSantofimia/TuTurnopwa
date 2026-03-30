@@ -13,6 +13,7 @@ const AdminReservasNuevo = () => {
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [clasesValidas, setClasesValidas] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [mapaNotas, setMapaNotas] = useState({});
 
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroClase, setFiltroClase] = useState(claseInicial);
@@ -30,10 +31,33 @@ const AdminReservasNuevo = () => {
       setCargando(true);
 
       try {
-        const clasesSnap = await get(ref(dbRealtime, "clases"));
+        const [clasesSnap, notasSnap] = await Promise.all([
+  get(ref(dbRealtime, "clases")),
+  get(ref(dbRealtime, "reservasNotas")),
+]);
 
         const mapaClases = {};
         const listaClases = [];
+        const mapaNotasTemp = {};
+
+if (notasSnap.exists()) {
+  notasSnap.forEach((notaReservaSnap) => {
+    const orderId = notaReservaSnap.key;
+    const notasInternas = notaReservaSnap.child("notasInternas");
+
+    let totalNotas = 0;
+
+    if (notasInternas.exists()) {
+      notasInternas.forEach(() => {
+        totalNotas += 1;
+      });
+    }
+
+    mapaNotasTemp[orderId] = totalNotas;
+  });
+}
+
+setMapaNotas(mapaNotasTemp);
 
         if (clasesSnap.exists()) {
           clasesSnap.forEach((claseSnap) => {
@@ -129,6 +153,7 @@ const AdminReservasNuevo = () => {
                         uid: reserva.uid || "",
                         orderId: reserva.orderId || "",
                         procesado: reserva.procesado ?? false,
+                        notasInternas: mapaNotasTemp[reserva.orderId || ""] || 0,
                       };
                     };
 
@@ -204,6 +229,7 @@ const AdminReservasNuevo = () => {
                 codigo: tarjeta.codigo || "",
                 nombreDestinatario: tarjeta.nombreDestinatario || "",
                 emailDestinatario: tarjeta.emailDestinatario || "",
+                notasInternas: mapaNotasTemp[(tarjeta.orderId || tarjetaSnap.key) || ""] || 0,
               });
             });
           }
@@ -376,6 +402,7 @@ const AdminReservasNuevo = () => {
                     {mostrandoTarjetas ? "Estado canje" : "Estado"}
                   </th>
                   <th style={styles.th}>Pago</th>
+                  <th style={styles.th}>Notas</th>
                   <th style={styles.th}>Precio</th>
                 </tr>
               </thead>
@@ -384,8 +411,12 @@ const AdminReservasNuevo = () => {
                   <tr
                     key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
                     onClick={() =>
-                      navigate(`/admin-detalle-reserva?id=${r.orderId}`)
-                    }
+  navigate(
+    r.tipoRegistro === "tarjeta_regalo"
+      ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
+      : `/admin-detalle-reserva?id=${r.orderId}`
+  )
+}
                     style={styles.trClickable}
                   >
                     <td style={styles.td}>{r.fecha}</td>
@@ -401,6 +432,16 @@ const AdminReservasNuevo = () => {
                     <td style={styles.td}>{r.plazas}</td>
                     <td style={styles.td}>{r.estado}</td>
                     <td style={styles.td}>{r.estadoPago}</td>
+                    <td style={styles.td}>
+  {r.notasInternas > 0 ? (
+    <span style={styles.badgeNotas}>
+      {r.notasInternas} {r.notasInternas === 1 ? "nota" : "notas"}
+    </span>
+  ) : (
+    "—"
+  )}
+</td>
+                    
                     <td style={styles.td}>{r.precioTotal}€</td>
                   </tr>
                 ))}
@@ -518,6 +559,16 @@ const styles = {
   trClickable: {
     cursor: "pointer",
     transition: "0.2s",
+  },
+  badgeNotas: {
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    backgroundColor: "#fff8da",
+    border: "1px solid #eadfbe",
+    color: "#5b4a2d",
+    fontSize: "0.85rem",
+    fontWeight: 600,
   },
 };
 

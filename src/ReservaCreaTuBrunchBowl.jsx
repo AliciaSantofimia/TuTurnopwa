@@ -65,6 +65,7 @@ export default function ReservaCreaTuBrunchBowl() {
 
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -100,6 +101,24 @@ export default function ReservaCreaTuBrunchBowl() {
     };
 
     cargarConfiguracionClase();
+  }, []);
+
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
   }, []);
 
   useEffect(() => {
@@ -167,6 +186,17 @@ export default function ReservaCreaTuBrunchBowl() {
     return getNombreMetodo(metodo);
   }, [metodo]);
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fecha) return null;
+
+    const bloqueo = fechasBloqueadas?.[fecha];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fecha, fechasBloqueadas]);
+
   const handleMetodoChange = (valor) => {
     setMetodo(valor);
     setTurno("");
@@ -183,6 +213,15 @@ export default function ReservaCreaTuBrunchBowl() {
 
     if (!fecha || !turno || !metodo) {
       alert("Selecciona fecha, turno y método.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fecha}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -287,6 +326,14 @@ export default function ReservaCreaTuBrunchBowl() {
                     setTurno("");
                   }}
                 />
+                {fechaBloqueada && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Este día no está disponible para reservar.
+                    {fechaBloqueada.motivo
+                      ? ` Motivo: ${fechaBloqueada.motivo}.`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -393,6 +440,7 @@ export default function ReservaCreaTuBrunchBowl() {
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
                 disabled={
+                  !!fechaBloqueada ||
                   !metodo ||
                   !turno ||
                   plazasNum > plazasDisponibles ||

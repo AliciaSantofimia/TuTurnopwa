@@ -13,11 +13,34 @@ const AdminUsuariosNuevo = () => {
   useEffect(() => {
     const cargarUsuarios = async () => {
       try {
-        const snapshot = await get(ref(dbRealtime, "usuarios"));
+        const [usuariosSnap, usuariosNotasSnap] = await Promise.all([
+          get(ref(dbRealtime, "usuarios")),
+          get(ref(dbRealtime, "usuariosNotas")),
+        ]);
+
+        const mapaNotas = {};
+
+        if (usuariosNotasSnap.exists()) {
+          usuariosNotasSnap.forEach((usuarioNotaSnap) => {
+            const uid = usuarioNotaSnap.key;
+            const notasInternas = usuarioNotaSnap.child("notasInternas");
+
+            let totalNotas = 0;
+
+            if (notasInternas.exists()) {
+              notasInternas.forEach(() => {
+                totalNotas += 1;
+              });
+            }
+
+            mapaNotas[uid] = totalNotas;
+          });
+        }
+
         const datos = [];
 
-        if (snapshot.exists()) {
-          snapshot.forEach((usuarioSnap) => {
+        if (usuariosSnap.exists()) {
+          usuariosSnap.forEach((usuarioSnap) => {
             const uid = usuarioSnap.key;
             const data = usuarioSnap.val() || {};
 
@@ -34,6 +57,7 @@ const AdminUsuariosNuevo = () => {
               email: data.email || "Sin email",
               telefono: data.telefono || data.phoneNumber || "",
               reservas: reservasUsuario,
+              notasInternas: mapaNotas[uid] || 0,
             });
           });
         }
@@ -115,9 +139,19 @@ const AdminUsuariosNuevo = () => {
                     <p style={styles.email}>{usuario.email}</p>
                   </div>
 
-                  <span style={styles.badge}>
-                    {usuario.reservas} reserva{usuario.reservas !== 1 ? "s" : ""}
-                  </span>
+                  <div style={styles.badgesCol}>
+                    <span style={styles.badge}>
+                      {usuario.reservas} reserva{usuario.reservas !== 1 ? "s" : ""}
+                    </span>
+
+                    {usuario.notasInternas > 0 ? (
+                      <span style={styles.badgeNotas}>
+                        {usuario.notasInternas} nota{usuario.notasInternas !== 1 ? "s" : ""}
+                      </span>
+                    ) : (
+                      <span style={styles.badgeNotasVacio}>Sin notas</span>
+                    )}
+                  </div>
                 </div>
 
                 <div style={styles.infoBox}>
@@ -232,6 +266,12 @@ const styles = {
     fontSize: "0.92rem",
     wordBreak: "break-word",
   },
+  badgesCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    alignItems: "flex-end",
+  },
   badge: {
     backgroundColor: "#fff8da",
     color: "#7a6331",
@@ -239,6 +279,26 @@ const styles = {
     borderRadius: 999,
     padding: "8px 12px",
     fontSize: "0.88rem",
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+  badgeNotas: {
+    backgroundColor: "#f4f7ff",
+    color: "#415a9c",
+    border: "1px solid #d8e1ff",
+    borderRadius: 999,
+    padding: "8px 12px",
+    fontSize: "0.85rem",
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+  badgeNotasVacio: {
+    backgroundColor: "#fafafa",
+    color: "#888",
+    border: "1px solid #e5e5e5",
+    borderRadius: 999,
+    padding: "8px 12px",
+    fontSize: "0.85rem",
     fontWeight: 600,
     whiteSpace: "nowrap",
   },

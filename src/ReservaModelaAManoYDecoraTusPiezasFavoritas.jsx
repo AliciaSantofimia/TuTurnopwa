@@ -47,6 +47,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
 
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,6 +87,24 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     cargarConfiguracionClase();
   }, []);
 
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
+  }, []);
+
   const turnosDisponibles = useMemo(() => {
     return normalizarTurnos(claseConfig?.turnos);
   }, [claseConfig]);
@@ -101,6 +120,17 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   const modalidad = claseConfig?.modalidad || "modelado a mano";
   const subtipo = claseConfig?.subtipo || "4_clases_3h_mes";
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fechaInicio) return null;
+
+    const bloqueo = fechasBloqueadas?.[fechaInicio];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fechaInicio, fechasBloqueadas]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -111,6 +141,15 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
 
     if (!fechaInicio || !turno) {
       alert("Selecciona la fecha de inicio y el turno.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fechaInicio}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -225,6 +264,14 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                   value={fechaInicio}
                   onChange={(e) => setFechaInicio(e.target.value)}
                 />
+                {fechaBloqueada && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Este día no está disponible para reservar.
+                    {fechaBloqueada.motivo
+                      ? ` Motivo: ${fechaBloqueada.motivo}.`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -284,7 +331,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
-                disabled={!fechaInicio || !turno}
+                disabled={!!fechaBloqueada || !fechaInicio || !turno}
               >
                 Confirmar y pagar
               </button>

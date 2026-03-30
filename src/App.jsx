@@ -112,7 +112,8 @@ import AdminDetalleClaseNuevo from "./AdminDetalleClaseNuevo";
 import RutaAdmin from "./RutaAdmin";
 import AdminTarjetasRegalo from "./AdminTarjetasRegalo";
 import AdminReservasGrupos from "./AdminReservasGrupos";
-
+import AdminDetalleTarjetaRegaloNuevo from "./AdminDetalleTarjetaRegaloNuevo";
+import AdminBloqueosFechas from "./AdminBloqueosFechas";
 
 function App() {
   return (
@@ -388,7 +389,22 @@ function App() {
   }
   
 />
-
+<Route
+  path="/admin-detalle-tarjeta-regalo"
+  element={
+    <RutaAdmin>
+      <AdminDetalleTarjetaRegaloNuevo />
+    </RutaAdmin>
+  }
+/>
+<Route
+  path="/admin-bloqueos-fechas"
+  element={
+    <RutaAdmin>
+      <AdminBloqueosFechas />
+    </RutaAdmin>
+  }
+/>
 <Route
   path="/admin-tarjetas-regalo"
   element={

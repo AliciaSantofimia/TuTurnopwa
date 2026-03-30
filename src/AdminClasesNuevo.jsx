@@ -6,6 +6,7 @@ import BotonVolver from "./BotonVolver";
 
 const AdminClasesNuevo = () => {
   const navigate = useNavigate();
+  const [notasPorClase, setNotasPorClase] = useState({});
 
   const [clases, setClases] = useState([]);
   const [resumen, setResumen] = useState({});
@@ -14,13 +15,23 @@ const AdminClasesNuevo = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [clasesSnap, reservasSnap] = await Promise.all([
+        const [clasesSnap, reservasSnap, clasesNotasSnap] = await Promise.all([
           get(ref(dbRealtime, "clases")),
           get(ref(dbRealtime, "reservas")),
+          get(ref(dbRealtime, "clasesNotas")),
         ]);
 
         const listaClases = [];
         const mapaResumen = {};
+        const mapaNotas = {};
+
+        if (clasesNotasSnap.exists()) {
+          clasesNotasSnap.forEach((claseNotaSnap) => {
+            const claseId = claseNotaSnap.key;
+            const notasInternas = claseNotaSnap.child("notasInternas").val() || {};
+            mapaNotas[claseId] = Object.keys(notasInternas).length;
+          });
+        }
 
         if (clasesSnap.exists()) {
           clasesSnap.forEach((claseSnap) => {
@@ -116,10 +127,12 @@ const AdminClasesNuevo = () => {
 
         setClases(listaClases);
         setResumen(mapaResumen);
+        setNotasPorClase(mapaNotas);
       } catch (error) {
         console.error("Error al cargar clases:", error);
         setClases([]);
         setResumen({});
+        setNotasPorClase({});
       } finally {
         setCargando(false);
       }
@@ -171,6 +184,12 @@ const AdminClasesNuevo = () => {
                   <div>
                     <h2 style={styles.nombre}>{clase.nombre}</h2>
                     <p style={styles.categoria}>{clase.categoria}</p>
+
+                    {notasPorClase[clase.id] > 0 && (
+                      <span style={styles.badgeNotas}>
+                        {notasPorClase[clase.id]} nota{notasPorClase[clase.id] !== 1 ? "s" : ""}
+                      </span>
+                    )}
                   </div>
 
                   <span style={styles.badge}>
@@ -295,6 +314,18 @@ const styles = {
     fontSize: "0.88rem",
     fontWeight: 600,
     whiteSpace: "nowrap",
+  },
+  badgeNotas: {
+    backgroundColor: "#eef3ff",
+    color: "#4d63b3",
+    border: "1px solid #cfd9ff",
+    borderRadius: 999,
+    padding: "6px 10px",
+    fontSize: "0.82rem",
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+    display: "inline-block",
+    marginTop: 8,
   },
   infoBox: {
     display: "grid",

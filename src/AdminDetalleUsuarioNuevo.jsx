@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, push, remove } from "firebase/database";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
+
+function formatearFechaNota(fecha) {
+  if (!fecha) return "Sin fecha";
+
+  const fechaParseada = new Date(fecha);
+
+  if (!isNaN(fechaParseada.getTime())) {
+    return fechaParseada.toLocaleString("es-ES");
+  }
+
+  return fecha;
+}
 
 const AdminDetalleUsuarioNuevo = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +24,11 @@ const AdminDetalleUsuarioNuevo = () => {
   const [usuario, setUsuario] = useState(null);
   const [reservasUsuario, setReservasUsuario] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  const [notasInternas, setNotasInternas] = useState([]);
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [guardandoNota, setGuardandoNota] = useState(false);
+  const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
 
   useEffect(() => {
     const cargarUsuario = async () => {
@@ -72,6 +89,105 @@ const AdminDetalleUsuarioNuevo = () => {
     cargarUsuario();
   }, [uid]);
 
+  useEffect(() => {
+    const cargarNotasInternas = async () => {
+      try {
+        if (!uid) return;
+
+        const notasSnap = await get(
+          ref(dbRealtime, `usuariosNotas/${uid}/notasInternas`)
+        );
+
+        const listaNotas = [];
+
+        if (notasSnap.exists()) {
+          notasSnap.forEach((notaSnap) => {
+            const nota = notaSnap.val();
+            if (nota) {
+              listaNotas.push({
+                id: notaSnap.key,
+                texto: nota.texto || "",
+                fecha: nota.fecha || "Sin fecha",
+              });
+            }
+          });
+        }
+
+        listaNotas.sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0);
+          const fechaB = new Date(b.fecha || 0);
+          return fechaB - fechaA;
+        });
+
+        setNotasInternas(listaNotas);
+      } catch (error) {
+        console.error("Error al cargar notas internas del usuario:", error);
+        setNotasInternas([]);
+      }
+    };
+
+    cargarNotasInternas();
+  }, [uid]);
+
+  const guardarNotaInterna = async () => {
+    const texto = nuevaNota.trim();
+
+    if (!texto) {
+      alert("Escribe una nota antes de guardar.");
+      return;
+    }
+
+    try {
+      setGuardandoNota(true);
+
+      const nota = {
+        texto,
+        fecha: new Date().toISOString(),
+      };
+
+      const nuevaNotaRef = await push(
+        ref(dbRealtime, `usuariosNotas/${uid}/notasInternas`),
+        nota
+      );
+
+      setNotasInternas((prev) => [
+        {
+          id: nuevaNotaRef.key,
+          ...nota,
+        },
+        ...prev,
+      ]);
+
+      setNuevaNota("");
+    } catch (error) {
+      console.error("Error al guardar nota interna del usuario:", error);
+      alert(`No se pudo guardar la nota interna: ${error.message}`);
+    } finally {
+      setGuardandoNota(false);
+    }
+  };
+
+  const eliminarNotaInterna = async (notaId) => {
+    const confirmar = window.confirm(
+      "¿Seguro que quieres borrar esta nota interna?"
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setEliminandoNotaId(notaId);
+
+      await remove(ref(dbRealtime, `usuariosNotas/${uid}/notasInternas/${notaId}`));
+
+      setNotasInternas((prev) => prev.filter((nota) => nota.id !== notaId));
+    } catch (error) {
+      console.error("Error al borrar nota interna del usuario:", error);
+      alert("No se pudo borrar la nota interna.");
+    } finally {
+      setEliminandoNotaId(null);
+    }
+  };
+
   if (cargando) {
     return <p style={styles.mensaje}>Cargando usuario...</p>;
   }
@@ -93,6 +209,53 @@ const AdminDetalleUsuarioNuevo = () => {
           <p><strong>Teléfono:</strong> {usuario.telefono || "—"}</p>
           <p><strong>UID:</strong> {usuario.uid}</p>
           <p><strong>Total reservas guardadas:</strong> {reservasUsuario.length}</p>
+        </div>
+
+        <div style={styles.bloque}>
+          <h2 style={styles.subtitulo}>Notas internas del usuario</h2>
+
+          {notasInternas.length === 0 ? (
+            <p style={styles.textoVacio}>Aún no hay notas internas para este usuario.</p>
+          ) : (
+            <div style={styles.listaNotas}>
+              {notasInternas.map((nota) => (
+                <div key={nota.id} style={styles.notaItem}>
+                  <div style={styles.notaHeader}>
+                    <div>
+                      <p style={styles.notaTexto}>{nota.texto}</p>
+                      <p style={styles.notaFecha}>
+                        {formatearFechaNota(nota.fecha)}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => eliminarNotaInterna(nota.id)}
+                      style={styles.botonEliminar}
+                      disabled={eliminandoNotaId === nota.id}
+                    >
+                      {eliminandoNotaId === nota.id ? "Borrando..." : "Eliminar"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <textarea
+            value={nuevaNota}
+            onChange={(e) => setNuevaNota(e.target.value)}
+            placeholder="Escribe aquí una nota interna sobre este usuario..."
+            style={styles.textarea}
+            rows={4}
+          />
+
+          <button
+            onClick={guardarNotaInterna}
+            style={styles.botonGuardar}
+            disabled={guardandoNota}
+          >
+            {guardandoNota ? "Guardando..." : "Guardar nota interna"}
+          </button>
         </div>
 
         <div style={styles.bloque}>
@@ -184,6 +347,7 @@ const styles = {
     border: "1px solid #f0e5cf",
     borderRadius: 20,
     padding: 20,
+    marginBottom: 20,
   },
   lista: {
     display: "grid",
@@ -201,6 +365,64 @@ const styles = {
     margin: "4px 0",
     color: "#333",
     fontSize: "0.94rem",
+  },
+  listaNotas: {
+    display: "grid",
+    gap: 10,
+    marginBottom: 14,
+  },
+  notaItem: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    border: "1px solid #eee",
+  },
+  notaHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  notaTexto: {
+    margin: 0,
+    color: "#333",
+    whiteSpace: "pre-wrap",
+  },
+  notaFecha: {
+    margin: "6px 0 0 0",
+    fontSize: "0.82rem",
+    color: "#777",
+  },
+  textarea: {
+    width: "100%",
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    fontSize: "0.95rem",
+    fontFamily: "'Segoe UI', sans-serif",
+    resize: "vertical",
+    boxSizing: "border-box",
+  },
+  botonGuardar: {
+    marginTop: 10,
+    padding: "10px 14px",
+    border: "1px solid #e5d8b8",
+    backgroundColor: "#fff8da",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  botonEliminar: {
+    padding: "8px 12px",
+    border: "1px solid #e7c9c9",
+    backgroundColor: "#fff1f1",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#8a3b3b",
+    flexShrink: 0,
   },
   textoVacio: {
     margin: 0,

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, push, remove } from "firebase/database";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleClaseNuevo = () => {
-  
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const claseId = searchParams.get("clase");
@@ -14,6 +13,11 @@ const AdminDetalleClaseNuevo = () => {
   const [clase, setClase] = useState(null);
   const [reservas, setReservas] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  const [notasInternas, setNotasInternas] = useState([]);
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [guardandoNota, setGuardandoNota] = useState(false);
+  const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
 
   useEffect(() => {
     const cargarDetalleClase = async () => {
@@ -28,40 +32,41 @@ const AdminDetalleClaseNuevo = () => {
           get(ref(dbRealtime, "reservas")),
         ]);
 
-       let claseEncontrada = null;
-let claseIdReal = claseId;
+        let claseEncontrada = null;
+        let claseIdReal = claseId;
 
-if (claseSnap.exists()) {
-  const data = claseSnap.val() || {};
-  claseEncontrada = {
-    id: claseId,
-    nombre: data.nombre || claseId,
-    categoria: data.categoria || "Sin categoría",
-    precioDesde: data.precioDesde || "",
-  };
-} else {
-  const todasLasClasesSnap = await get(ref(dbRealtime, "clases"));
+        if (claseSnap.exists()) {
+          const data = claseSnap.val() || {};
+          claseEncontrada = {
+            id: claseId,
+            nombre: data.nombre || claseId,
+            categoria: data.categoria || "Sin categoría",
+            precioDesde: data.precioDesde || "",
+          };
+        } else {
+          const todasLasClasesSnap = await get(ref(dbRealtime, "clases"));
 
-  if (todasLasClasesSnap.exists()) {
-    todasLasClasesSnap.forEach((itemSnap) => {
-      const data = itemSnap.val() || {};
-      const nombre = (data.nombre || "").trim().toLowerCase();
-      const nombreBuscado = nombreClase.trim().toLowerCase();
+          if (todasLasClasesSnap.exists()) {
+            todasLasClasesSnap.forEach((itemSnap) => {
+              const data = itemSnap.val() || {};
+              const nombre = (data.nombre || "").trim().toLowerCase();
+              const nombreBuscado = nombreClase.trim().toLowerCase();
 
-      if (!claseEncontrada && nombre && nombre === nombreBuscado) {
-        claseIdReal = itemSnap.key;
-        claseEncontrada = {
-          id: itemSnap.key,
-          nombre: data.nombre || itemSnap.key,
-          categoria: data.categoria || "Sin categoría",
-          precioDesde: data.precioDesde || "",
-        };
-      }
-    });
-  }
-}
+              if (!claseEncontrada && nombre && nombre === nombreBuscado) {
+                claseIdReal = itemSnap.key;
+                claseEncontrada = {
+                  id: itemSnap.key,
+                  nombre: data.nombre || itemSnap.key,
+                  categoria: data.categoria || "Sin categoría",
+                  precioDesde: data.precioDesde || "",
+                };
+              }
+            });
+          }
+        }
 
-setClase(claseEncontrada);
+        setClase(claseEncontrada);
+
         const datos = [];
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
@@ -84,7 +89,7 @@ setClase(claseEncontrada);
                     if (!reserva || typeof reserva !== "object") return;
 
                     const claseReal = reserva.claseId || claseKey;
-if (claseReal !== (clase?.id || claseId)) return;
+                    if (claseReal !== (clase?.id || claseId)) return;
 
                     if (reserva.estado !== "Confirmada") return;
 
@@ -156,6 +161,119 @@ if (claseReal !== (clase?.id || claseId)) return;
     cargarDetalleClase();
   }, [claseId]);
 
+  useEffect(() => {
+    const cargarNotasInternasClase = async () => {
+      try {
+        if (!claseId) return;
+
+        const notasSnap = await get(
+          ref(dbRealtime, `clasesNotas/${claseId}/notasInternas`)
+        );
+
+        const listaNotas = [];
+
+        if (notasSnap.exists()) {
+          notasSnap.forEach((notaSnap) => {
+            const nota = notaSnap.val();
+            if (nota) {
+              listaNotas.push({
+                id: notaSnap.key,
+                texto: nota.texto || "",
+                fecha: nota.fecha || "Sin fecha",
+              });
+            }
+          });
+        }
+
+        listaNotas.sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0);
+          const fechaB = new Date(b.fecha || 0);
+          return fechaB - fechaA;
+        });
+
+        setNotasInternas(listaNotas);
+      } catch (error) {
+        console.error("Error al cargar notas internas de la clase:", error);
+        setNotasInternas([]);
+      }
+    };
+
+    cargarNotasInternasClase();
+  }, [claseId]);
+
+  const guardarNotaInterna = async () => {
+    const texto = nuevaNota.trim();
+
+    if (!texto) {
+      alert("Escribe una nota antes de guardar.");
+      return;
+    }
+
+    try {
+      setGuardandoNota(true);
+
+      const nota = {
+        texto,
+        fecha: new Date().toISOString(),
+      };
+
+      const nuevaNotaRef = await push(
+        ref(dbRealtime, `clasesNotas/${claseId}/notasInternas`),
+        nota
+      );
+
+      setNotasInternas((prev) => [
+        ...prev,
+        {
+          id: nuevaNotaRef.key,
+          ...nota,
+        },
+      ]);
+
+      setNuevaNota("");
+    } catch (error) {
+      console.error("Error al guardar nota interna de la clase:", error);
+      alert("No se pudo guardar la nota interna.");
+    } finally {
+      setGuardandoNota(false);
+    }
+  };
+
+  const eliminarNotaInterna = async (notaId) => {
+    const confirmar = window.confirm(
+      "¿Seguro que quieres borrar esta nota interna?"
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setEliminandoNotaId(notaId);
+
+      await remove(
+        ref(dbRealtime, `clasesNotas/${claseId}/notasInternas/${notaId}`)
+      );
+
+      setNotasInternas((prev) => prev.filter((nota) => nota.id !== notaId));
+    } catch (error) {
+      console.error("Error al borrar nota interna de la clase:", error);
+      alert("No se pudo borrar la nota interna.");
+    } finally {
+      setEliminandoNotaId(null);
+    }
+  };
+
+  const formatearFechaNota = (fecha) => {
+    if (!fecha) return "Sin fecha";
+
+    const fechaParseada = new Date(fecha);
+
+    if (!isNaN(fechaParseada.getTime())) {
+      return fechaParseada.toLocaleString("es-ES");
+    }
+
+    return fecha;
+  };
+
   if (cargando) {
     return <p style={styles.mensaje}>Cargando clase...</p>;
   }
@@ -177,6 +295,51 @@ if (claseReal !== (clase?.id || claseId)) return;
           <p><strong>Categoría:</strong> {clase.categoria}</p>
           <p><strong>Precio base:</strong> {clase.precioDesde ? `${clase.precioDesde}€` : "—"}</p>
           <p><strong>Reservas futuras:</strong> {reservas.length}</p>
+        </div>
+
+        <div style={styles.bloque}>
+          <h2 style={styles.subtitulo}>Notas internas de la clase</h2>
+
+          {notasInternas.length > 0 ? (
+            <div style={styles.listaNotas}>
+              {notasInternas.map((nota) => (
+                <div key={nota.id} style={styles.notaItem}>
+                  <div style={styles.notaHeader}>
+                    <div>
+                      <p style={styles.notaTexto}>{nota.texto}</p>
+                      <p style={styles.notaFecha}>{formatearFechaNota(nota.fecha)}</p>
+                    </div>
+
+                    <button
+                      onClick={() => eliminarNotaInterna(nota.id)}
+                      style={styles.botonEliminar}
+                      disabled={eliminandoNotaId === nota.id}
+                    >
+                      {eliminandoNotaId === nota.id ? "Borrando..." : "Eliminar"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={styles.textoVacio}>Aún no hay notas internas para esta clase.</p>
+          )}
+
+          <textarea
+            value={nuevaNota}
+            onChange={(e) => setNuevaNota(e.target.value)}
+            placeholder="Escribe aquí una nota interna sobre esta clase..."
+            style={styles.textarea}
+            rows={4}
+          />
+
+          <button
+            onClick={guardarNotaInterna}
+            style={styles.botonGuardar}
+            disabled={guardandoNota}
+          >
+            {guardandoNota ? "Guardando..." : "Guardar nota interna"}
+          </button>
         </div>
 
         <div style={styles.bloque}>
@@ -271,6 +434,7 @@ const styles = {
     border: "1px solid #f0e5cf",
     borderRadius: 20,
     padding: 20,
+    marginBottom: 20,
   },
   lista: {
     display: "grid",
@@ -297,6 +461,64 @@ const styles = {
     textAlign: "center",
     padding: 40,
     color: "#7a7a7a",
+  },
+  listaNotas: {
+    display: "grid",
+    gap: 10,
+    marginBottom: 14,
+  },
+  notaItem: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    border: "1px solid #eee",
+  },
+  notaHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  notaTexto: {
+    margin: 0,
+    color: "#333",
+    whiteSpace: "pre-wrap",
+  },
+  notaFecha: {
+    margin: "6px 0 0 0",
+    fontSize: "0.82rem",
+    color: "#777",
+  },
+  textarea: {
+    width: "100%",
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    fontSize: "0.95rem",
+    fontFamily: "'Segoe UI', sans-serif",
+    resize: "vertical",
+    boxSizing: "border-box",
+  },
+  botonGuardar: {
+    marginTop: 10,
+    padding: "10px 14px",
+    border: "1px solid #e5d8b8",
+    backgroundColor: "#fff8da",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  botonEliminar: {
+    padding: "8px 12px",
+    border: "1px solid #e7c9c9",
+    backgroundColor: "#fff1f1",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#8a3b3b",
+    flexShrink: 0,
   },
 };
 

@@ -38,6 +38,7 @@ export default function ReservaEspecialPintaTuPieza() {
 
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,6 +76,24 @@ export default function ReservaEspecialPintaTuPieza() {
     cargarConfiguracionClase();
   }, []);
 
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
+  }, []);
+
   const turnosDisponibles = useMemo(() => {
     return normalizarTurnos(claseConfig?.turnos);
   }, [claseConfig]);
@@ -92,6 +111,17 @@ export default function ReservaEspecialPintaTuPieza() {
     turnosDisponibles.length === 1 &&
     turnosDisponibles[0].toLowerCase().includes("consultar");
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fecha) return null;
+
+    const bloqueo = fechasBloqueadas?.[fecha];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fecha, fechasBloqueadas]);
+
   useEffect(() => {
     if (esTurnoConsulta && turnosDisponibles.length === 1 && !turno) {
       setTurno(turnosDisponibles[0]);
@@ -108,6 +138,15 @@ export default function ReservaEspecialPintaTuPieza() {
 
     if (!fecha || !turno) {
       alert("Selecciona la fecha y el turno.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fecha}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -216,6 +255,14 @@ export default function ReservaEspecialPintaTuPieza() {
                     if (!esTurnoConsulta) setTurno("");
                   }}
                 />
+                {fechaBloqueada && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Este día no está disponible para reservar.
+                    {fechaBloqueada.motivo
+                      ? ` Motivo: ${fechaBloqueada.motivo}.`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -281,7 +328,12 @@ export default function ReservaEspecialPintaTuPieza() {
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
-                disabled={!turno || plazasNum < 1 || plazasNum > maxTotales}
+                disabled={
+                  !!fechaBloqueada ||
+                  !turno ||
+                  plazasNum < 1 ||
+                  plazasNum > maxTotales
+                }
               >
                 Confirmar y pagar
               </button>

@@ -47,6 +47,7 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
 
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,6 +85,24 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
     cargarConfiguracionClase();
   }, []);
 
+  useEffect(() => {
+    const cargarFechasBloqueadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "bloqueosFechas"));
+        if (snap.exists()) {
+          setFechasBloqueadas(snap.val() || {});
+        } else {
+          setFechasBloqueadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas bloqueadas:", error);
+        setFechasBloqueadas({});
+      }
+    };
+
+    cargarFechasBloqueadas();
+  }, []);
+
   const turnosDisponibles = useMemo(() => {
     return normalizarTurnos(claseConfig?.turnos);
   }, [claseConfig]);
@@ -97,6 +116,17 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
   const subtipo = claseConfig?.subtipo || "6_clases_3h_torno";
   const incluyeDecoracion = Boolean(claseConfig?.incluyeDecoracion ?? false);
 
+  const fechaBloqueada = useMemo(() => {
+    if (!fechaInicio) return null;
+
+    const bloqueo = fechasBloqueadas?.[fechaInicio];
+    if (bloqueo?.bloqueado) {
+      return bloqueo;
+    }
+
+    return null;
+  }, [fechaInicio, fechasBloqueadas]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -107,6 +137,15 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
 
     if (!fechaInicio || !turno) {
       alert("Selecciona la fecha de inicio y el turno.");
+      return;
+    }
+
+    if (fechaBloqueada) {
+      alert(
+        `No se puede reservar el día ${fechaInicio}. Motivo: ${
+          fechaBloqueada.motivo || "día bloqueado"
+        }.`
+      );
       return;
     }
 
@@ -221,6 +260,14 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
                   value={fechaInicio}
                   onChange={(e) => setFechaInicio(e.target.value)}
                 />
+                {fechaBloqueada && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Este día no está disponible para reservar.
+                    {fechaBloqueada.motivo
+                      ? ` Motivo: ${fechaBloqueada.motivo}.`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -278,7 +325,7 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
-                disabled={!fechaInicio || !turno}
+                disabled={!!fechaBloqueada || !fechaInicio || !turno}
               >
                 Confirmar y pagar
               </button>
