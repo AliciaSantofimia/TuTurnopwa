@@ -333,16 +333,21 @@ export default function ResumenPago() {
 
     await update(ref(dbRealtime), updates);
 
-    if (tarjetaRegaloId) {
-      await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+        if (tarjetaRegaloId) {
+      const ahora = new Date().toISOString();
+
+      const datosActualizacionTarjeta = {
         usado: true,
-        fechaUso: new Date().toISOString(),
+        fechaUso: ahora,
         usadoPorUID: uid,
         canjeado: true,
         canjeadoPorUID: uid,
         estadoCanje: "usada",
-        actualizadoEn: new Date().toISOString(),
-      });
+        actualizadoEn: ahora,
+      };
+
+      await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), datosActualizacionTarjeta);
+      await update(ref(dbRealtime, `usuarios/${uid}/tarjetasRegalo/${tarjetaRegaloId}`), datosActualizacionTarjeta);
     }
 
     await guardarReservaEnPerfilUsuario(uid, {
