@@ -252,7 +252,8 @@ export default function ReservaPintaTuPieza() {
           turnoReserva: turno,
         });
 
-        navigate("/confirmacion-pago", {
+     
+                 navigate("/pago/exito", {
           state: {
             desdeTarjeta: true,
             clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
