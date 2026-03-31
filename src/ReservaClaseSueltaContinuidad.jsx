@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -63,6 +63,7 @@ const getTurnosDesdeHorarios = (horarios, fechaISO) => {
 
   return normalizarTurnos(turnosDia);
 };
+
 const mapearPrecioDesdeFirebase = (tipoClase, precios) => {
   if (!tipoClase || !precios) return 0;
 
@@ -171,8 +172,8 @@ export default function ReservaClaseSueltaContinuidad() {
   }, [fecha]);
 
   const turnosDisponibles = useMemo(() => {
-  return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
-}, [claseConfig, fecha]);
+    return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
+  }, [claseConfig, fecha]);
 
   const precios = useMemo(() => {
     return claseConfig?.precios || {};
@@ -228,7 +229,6 @@ export default function ReservaClaseSueltaContinuidad() {
   const fechaBloqueada = useMemo(() => {
     if (!fecha) return null;
 
-
     const bloqueo = fechasBloqueadas?.[fecha];
     if (bloqueo?.bloqueado) {
       return bloqueo;
@@ -236,10 +236,11 @@ export default function ReservaClaseSueltaContinuidad() {
 
     return null;
   }, [fecha, fechasBloqueadas]);
-const diaNoDisponible = useMemo(() => {
-  if (!fecha) return false;
-  return turnosDisponibles.length === 0;
-}, [fecha, turnosDisponibles]);
+
+  const diaNoDisponible = useMemo(() => {
+    if (!fecha) return false;
+    return turnosDisponibles.length === 0;
+  }, [fecha, turnosDisponibles]);
 
   const handleTipoClaseChange = (valor) => {
     setTipoClase(valor);
@@ -261,7 +262,10 @@ const diaNoDisponible = useMemo(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!user) return;
+    if (!user) {
+      alert("Debes iniciar sesión para reservar.");
+      return;
+    }
 
     if (!fecha || !turno || !metodo || !tipoClase) {
       alert("Selecciona tipo de clase, fecha y turno.");
@@ -276,10 +280,11 @@ const diaNoDisponible = useMemo(() => {
       );
       return;
     }
+
     if (diaNoDisponible) {
-  alert("Esta clase no se imparte el día seleccionado.");
-  return;
-}
+      alert("Esta clase no se imparte el día seleccionado.");
+      return;
+    }
 
     const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
@@ -288,13 +293,19 @@ const diaNoDisponible = useMemo(() => {
       return;
     }
 
-    if (!(precioUnitario > 0)) {
+    if (!(precioUnitario > 0) && !desdeTarjeta) {
       alert("No se ha podido calcular el precio de la clase.");
+      return;
+    }
+
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
       return;
     }
 
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Clase suelta con continuidad",
@@ -309,17 +320,70 @@ const diaNoDisponible = useMemo(() => {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const reservaRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(reservaRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(reservaRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          tipoClaseReserva: tipoClase,
+          nombreTipoClaseReserva: nombreTipoClase,
+        });
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Clase suelta con continuidad",
+            claseId: CLASE_ID,
+            subtipo: nombreTipoClase,
+            tipoClase,
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            precioUnitario: 0,
+            precioTotal: 0,
+            orderId,
+            codigoTarjeta,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -422,11 +486,11 @@ const diaNoDisponible = useMemo(() => {
                   </p>
                 )}
                 {fecha && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Elige martes, miércoles, jueves o sábado.
-  </p>
-)}
-
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Elige martes,
+                    miércoles, jueves o sábado.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -463,11 +527,11 @@ const diaNoDisponible = useMemo(() => {
                 />
               </div>
 
-             {metodo && fecha && !diaNoDisponible && (
-  <div className="text-sm text-gray-600">
-    Quedan {plazasDisponibles} plazas disponibles para este método.
-  </div>
-)}
+              {metodo && fecha && !diaNoDisponible && (
+                <div className="text-sm text-gray-600">
+                  Quedan {plazasDisponibles} plazas disponibles para este método.
+                </div>
+              )}
 
               <div>
                 <label className="block font-bold text-sm mb-2">
@@ -496,11 +560,11 @@ const diaNoDisponible = useMemo(() => {
                   </button>
                 </div>
 
-               <p className="text-xs text-gray-500 mt-1">
-  {diaNoDisponible
-    ? "No hay plazas porque esta clase no se imparte ese día."
-    : `Máximo ${plazasDisponibles} plazas disponibles.`}
-</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {diaNoDisponible
+                    ? "No hay plazas porque esta clase no se imparte ese día."
+                    : `Máximo ${plazasDisponibles} plazas disponibles.`}
+                </p>
               </div>
 
               {tipoClase && (
@@ -509,10 +573,12 @@ const diaNoDisponible = useMemo(() => {
                     <strong>Clase elegida:</strong> {nombreTipoClase}
                   </p>
                   <p>
-                    <strong>Precio unitario:</strong> {precioUnitario}€
+                    <strong>Precio unitario:</strong>{" "}
+                    {desdeTarjeta ? "Tarjeta regalo" : `${precioUnitario}€`}
                   </p>
                   <p>
-                    <strong>Precio total:</strong> {precioTotal}€
+                    <strong>Precio total:</strong>{" "}
+                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
                   </p>
                 </div>
               )}
@@ -526,16 +592,16 @@ const diaNoDisponible = useMemo(() => {
                 transition-all duration-200"
                 disabled={
                   !!fechaBloqueada ||
-diaNoDisponible ||
-!tipoClase ||
-!turno ||
-!metodo ||
-plazasNum > plazasDisponibles ||
-plazasDisponibles <= 0 ||
-!(precioUnitario > 0)
+                  diaNoDisponible ||
+                  !tipoClase ||
+                  !turno ||
+                  !metodo ||
+                  plazasNum > plazasDisponibles ||
+                  plazasDisponibles <= 0 ||
+                  (!desdeTarjeta && !(precioUnitario > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

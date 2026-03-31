@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -289,13 +289,19 @@ export default function ReservaCreaTuSetMatcha() {
       return;
     }
 
-    if (!(precioUnitario > 0)) {
+    if (!(precioUnitario > 0) && !desdeTarjeta) {
       alert("No se ha podido calcular el precio de la clase.");
+      return;
+    }
+
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
       return;
     }
 
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
       const fechaDisponibleSegundaSesion = sumar28Dias(fecha);
 
       const reserva = {
@@ -312,8 +318,8 @@ export default function ReservaCreaTuSetMatcha() {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
         segundaSesion: {
           habilitada: false,
@@ -321,14 +327,65 @@ export default function ReservaCreaTuSetMatcha() {
           reservada: false,
           fechaReserva: null,
         },
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          nombreTipoClaseReserva: nombreMetodo,
+          fechaDisponibleSegundaSesion,
+        });
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Crea tu set de matcha",
+            claseId: CLASE_ID,
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            precioUnitario: 0,
+            precioTotal: 0,
+            orderId,
+            codigoTarjeta,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -517,8 +574,14 @@ export default function ReservaCreaTuSetMatcha() {
               {fecha && (
                 <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                   <p><strong>Método elegido:</strong> {nombreMetodo || "—"}</p>
-                  <p><strong>Precio unitario:</strong> {precioUnitario}€</p>
-                  <p><strong>Precio total:</strong> {precioTotal}€</p>
+                  <p>
+                    <strong>Precio unitario:</strong>{" "}
+                    {desdeTarjeta ? "Tarjeta regalo" : `${precioUnitario}€`}
+                  </p>
+                  <p>
+                    <strong>Precio total:</strong>{" "}
+                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
+                  </p>
                   <p>
                     <strong>Segunda sesión disponible a partir de:</strong>{" "}
                     {sumar28Dias(fecha)}
@@ -540,10 +603,10 @@ export default function ReservaCreaTuSetMatcha() {
                   !turno ||
                   plazasNum > plazasDisponibles ||
                   plazasDisponibles <= 0 ||
-                  !(precioUnitario > 0)
+                  (!desdeTarjeta && !(precioUnitario > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

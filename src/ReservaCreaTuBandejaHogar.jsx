@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -42,6 +42,7 @@ const getNombreDiaSemana = (fechaISO) => {
 
   const [year, month, day] = fechaISO.split("-").map(Number);
   const fechaLocal = new Date(year, month - 1, day);
+
   const dias = [
     "domingo",
     "lunes",
@@ -104,13 +105,12 @@ export default function ReservaCreaTuBandejaHogar() {
   const desdeTarjeta =
     location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
 
-  const codigoTarjeta = location.state?.codigoTarjeta || "";
-
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -202,7 +202,6 @@ export default function ReservaCreaTuBandejaHogar() {
     maxTorno,
     maxTotales,
     ocupadasTorno,
-    ocupadasModelado,
     plazasTotalesOcupadas,
   ]);
 
@@ -280,8 +279,14 @@ export default function ReservaCreaTuBandejaHogar() {
       return;
     }
 
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
+      return;
+    }
+
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Crea tu bandeja de hogar",
@@ -292,52 +297,89 @@ export default function ReservaCreaTuBandejaHogar() {
         nombreTipoClase: nombreMetodo,
         plazas: plazasNum,
         desdeTarjeta,
-        precio: desdeTarjeta ? 0 : precioTotal,
-        precioUnitario: desdeTarjeta ? 0 : precioUnitario,
-        precioTotal: desdeTarjeta ? 0 : precioTotal,
+        precio: precioTotal,
+        precioUnitario,
+        precioTotal,
         estado: desdeTarjeta ? "Confirmada" : "Pendiente",
-        estadoPago: desdeTarjeta ? "pagado_con_tarjeta_regalo" : "pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
 
-      if (desdeTarjeta && codigoTarjeta) {
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, {
+        uid: user.uid,
+        ...reserva,
+      });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          nombreTipoClaseReserva: nombreMetodo,
+        });
+
         navigate("/pago/exito", {
           state: {
+            desdeTarjeta: true,
             clase: claseConfig?.nombre || "Crea tu bandeja de hogar",
+            claseId: CLASE_ID,
             fecha,
             turno,
             metodo,
             plazas: plazasNum,
             precio: 0,
-            usandoTarjetaRegalo: true,
+            precioUnitario: 0,
+            precioTotal: 0,
             codigoTarjeta,
             orderId,
           },
         });
-      } else {
-        navigate("/resumen-pago", {
-          state: {
-            tipo: "clase",
-            clase: claseConfig?.nombre || "Crea tu bandeja de hogar",
-            claseId: CLASE_ID,
-            precio: precioTotal,
-            precioUnitario,
-            precioTotal,
-            fecha,
-            turno,
-            metodo,
-            plazas: plazasNum,
-            orderId,
-          },
-        });
+
+        return;
       }
+
+      navigate("/resumen-pago", {
+        state: {
+          tipo: "clase",
+          clase: claseConfig?.nombre || "Crea tu bandeja de hogar",
+          claseId: CLASE_ID,
+          precio: precioTotal,
+          precioUnitario,
+          precioTotal,
+          fecha,
+          turno,
+          metodo,
+          plazas: plazasNum,
+          orderId,
+        },
+      });
     } catch (err) {
       console.error("Error al guardar la reserva:", err);
       alert("No se pudo guardar la reserva.");
@@ -422,7 +464,10 @@ export default function ReservaCreaTuBandejaHogar() {
               </div>
 
               <div>
-                <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+                <label
+                  htmlFor="metodo"
+                  className="block font-bold text-sm mb-1"
+                >
                   Método:
                 </label>
                 <select

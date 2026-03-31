@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, update, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
@@ -104,11 +104,21 @@ export default function ReservaCreaTuGranCentroMesa() {
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [claseConfig, setClaseConfig] = useState(null);
   const [cargandoConfig, setCargandoConfig] = useState(true);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
+
   const desdeTarjeta =
     location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const cargarConfiguracionClase = async () => {
@@ -177,15 +187,28 @@ export default function ReservaCreaTuGranCentroMesa() {
 
   const plazasTotalesOcupadas = ocupadasTorno + ocupadasModelado;
 
-  const plazasDisponibles =
-    metodo === "torno"
-      ? Math.max(
-          Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
-          0
-        )
-      : metodo === "modelado a mano"
-      ? Math.max(maxTotales - plazasTotalesOcupadas, 0)
-      : 0;
+  const plazasDisponibles = useMemo(() => {
+    if (!metodo) return 0;
+
+    if (metodo === "torno") {
+      return Math.max(
+        Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
+        0
+      );
+    }
+
+    if (metodo === "modelado a mano") {
+      return Math.max(maxTotales - plazasTotalesOcupadas, 0);
+    }
+
+    return 0;
+  }, [
+    metodo,
+    maxTorno,
+    maxTotales,
+    ocupadasTorno,
+    plazasTotalesOcupadas,
+  ]);
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
@@ -220,11 +243,8 @@ export default function ReservaCreaTuGranCentroMesa() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const auth = getAuth();
-    const user = auth.currentUser;
-
     if (!user) {
-      console.error("Usuario no autenticado.");
+      alert("Debes iniciar sesión para reservar.");
       return;
     }
 
@@ -252,13 +272,19 @@ export default function ReservaCreaTuGranCentroMesa() {
       return;
     }
 
-    if (!(precioUnitario > 0)) {
+    if (!(precioUnitario > 0) && !desdeTarjeta) {
       alert("No se ha podido calcular el precio de la clase.");
+      return;
+    }
+
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
       return;
     }
 
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Crea tu gran centro mesa",
@@ -272,22 +298,69 @@ export default function ReservaCreaTuGranCentroMesa() {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
 
-      const userListaReservasRef = ref(
-        dbRealtime,
-        `usuarios/${user.uid}/listaReservas`
-      );
-      await push(userListaReservasRef, reserva);
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          nombreTipoClaseReserva: nombreMetodo,
+        });
+
+        await actualizarContadorReservas(user.uid);
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Crea tu gran centro mesa",
+            claseId: CLASE_ID,
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            precioUnitario: 0,
+            precioTotal: 0,
+            codigoTarjeta,
+            orderId,
+          },
+        });
+
+        return;
+      }
 
       await actualizarContadorReservas(user.uid);
 
@@ -464,10 +537,12 @@ export default function ReservaCreaTuGranCentroMesa() {
                   <strong>Método elegido:</strong> {nombreMetodo || "—"}
                 </p>
                 <p>
-                  <strong>Precio unitario:</strong> {precioUnitario}€
+                  <strong>Precio unitario:</strong>{" "}
+                  {desdeTarjeta ? "Tarjeta regalo" : `${precioUnitario}€`}
                 </p>
                 <p>
-                  <strong>Precio total:</strong> {precioTotal}€
+                  <strong>Precio total:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${precioTotal}€`}
                 </p>
               </div>
 
@@ -485,10 +560,10 @@ export default function ReservaCreaTuGranCentroMesa() {
                   !turno ||
                   plazasNum > plazasDisponibles ||
                   plazasDisponibles <= 0 ||
-                  !(precioUnitario > 0)
+                  (!desdeTarjeta && !(precioUnitario > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

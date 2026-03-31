@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
@@ -191,8 +191,19 @@ export default function ReservaTornoAlfareroYDecoracion() {
       return;
     }
 
+    if (!(precioBase > 0) && !desdeTarjeta) {
+      alert("No se ha podido calcular el precio del bono.");
+      return;
+    }
+
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
+      return;
+    }
+
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Torno alfarero y decoración",
@@ -211,19 +222,75 @@ export default function ReservaTornoAlfareroYDecoracion() {
         precio: precioTotal,
         precioBase,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
         clasesConsumidas: 0,
         clasesRestantes: numeroClases,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fechaInicio,
+          turnoReserva: turno,
+          subtipoReserva: subtipo,
+          numeroClasesReserva: numeroClases,
+          modalidadReserva: modalidad,
+          distribucionClasesReserva: distribucionClases,
+        });
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            tipo: "bono",
+            clase: claseConfig?.nombre || "Torno alfarero y decoración",
+            claseId: CLASE_ID,
+            fechaInicio,
+            fechaFinMes: sumarUnMes(fechaInicio),
+            fechaCaducidadBono: sumarTresMeses(fechaInicio),
+            turno,
+            numeroClases,
+            duracionClase,
+            distribucionClases,
+            precio: 0,
+            precioBase: 0,
+            precioTotal: 0,
+            codigoTarjeta,
+            orderId,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -353,7 +420,10 @@ export default function ReservaTornoAlfareroYDecoracion() {
 
               {fechaInicio && (
                 <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                  <p><strong>Precio total:</strong> {precioTotal}€</p>
+                  <p>
+                    <strong>Precio total:</strong>{" "}
+                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
+                  </p>
                   <p>
                     <strong>Fin del bono mensual:</strong>{" "}
                     {sumarUnMes(fechaInicio)}
@@ -376,10 +446,11 @@ export default function ReservaTornoAlfareroYDecoracion() {
                   !!fechaBloqueada ||
                   diaNoDisponible ||
                   !fechaInicio ||
-                  !turno
+                  !turno ||
+                  (!desdeTarjeta && !(precioBase > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

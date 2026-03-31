@@ -159,7 +159,7 @@ export default function PerfilUsuario() {
         </div>
 
         <div className="bg-white rounded-2xl border border-[#efe7db] px-4 py-4 shadow-sm mb-5">
-          <h2 className="text-base font-semibold mb-3">Tu próxima reserva</h2>
+          <h2 className="text-base font-semibold mb-3">Tu  reserva</h2>
 
           {reservaActiva ? (
             <div className="space-y-1 text-sm">

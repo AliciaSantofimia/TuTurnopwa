@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -273,13 +273,19 @@ export default function ReservaCreaTuJarraJarronGrande() {
       return;
     }
 
-    if (!(precioUnitario > 0)) {
+    if (!(precioUnitario > 0) && !desdeTarjeta) {
       alert("No se ha podido calcular el precio de la clase.");
+      return;
+    }
+
+    if (desdeTarjeta && !location.state?.tarjetaRegaloId) {
+      alert("No se ha encontrado la tarjeta regalo asociada.");
       return;
     }
 
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Crea tu jarra / jarrón grande",
@@ -293,17 +299,67 @@ export default function ReservaCreaTuJarraJarronGrande() {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          nombreTipoClaseReserva: nombreMetodo,
+        });
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Crea tu jarra / jarrón grande",
+            claseId: CLASE_ID,
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            precioUnitario: 0,
+            precioTotal: 0,
+            codigoTarjeta,
+            orderId,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -474,10 +530,12 @@ export default function ReservaCreaTuJarraJarronGrande() {
                   <strong>Método elegido:</strong> {nombreMetodo || "—"}
                 </p>
                 <p>
-                  <strong>Precio unitario:</strong> {precioUnitario}€
+                  <strong>Precio unitario:</strong>{" "}
+                  {desdeTarjeta ? "Tarjeta regalo" : `${precioUnitario}€`}
                 </p>
                 <p>
-                  <strong>Precio total:</strong> {precioTotal}€
+                  <strong>Precio total:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${precioTotal}€`}
                 </p>
               </div>
 
@@ -495,10 +553,10 @@ export default function ReservaCreaTuJarraJarronGrande() {
                   !turno ||
                   plazasNum > plazasDisponibles ||
                   plazasDisponibles <= 0 ||
-                  !(precioUnitario > 0)
+                  (!desdeTarjeta && !(precioUnitario > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BloqueoReserva from "./BloqueoReserva";
@@ -103,6 +103,8 @@ export default function ReservaCreaTuBrunchBowl() {
 
   const desdeTarjeta =
     location.state?.desdeTarjeta || location.state?.desdeTarjetaRegalo || false;
+  const codigoTarjeta = location.state?.codigoTarjeta || "";
+  const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
 
   useEffect(() => {
     const auth = getAuth();
@@ -273,13 +275,14 @@ export default function ReservaCreaTuBrunchBowl() {
       return;
     }
 
-    if (!(precioUnitario > 0)) {
+    if (!(precioUnitario > 0) && !desdeTarjeta) {
       alert("No se ha podido calcular el precio de la clase.");
       return;
     }
 
     try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Crea tu Brunch Bowl",
@@ -293,17 +296,69 @@ export default function ReservaCreaTuBrunchBowl() {
         precio: precioTotal,
         precioUnitario,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}/${metodo}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        if (!tarjetaRegaloId) {
+          alert("No se ha encontrado la tarjeta regalo asociada.");
+          return;
+        }
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+          metodoReserva: metodo,
+          nombreTipoClaseReserva: nombreMetodo,
+        });
+
+        navigate("/pago/exito", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Crea tu Brunch Bowl",
+            claseId: CLASE_ID,
+            fecha,
+            turno,
+            metodo,
+            plazas: plazasNum,
+            precio: 0,
+            precioUnitario: 0,
+            precioTotal: 0,
+            codigoTarjeta,
+            orderId,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -474,10 +529,12 @@ export default function ReservaCreaTuBrunchBowl() {
                   <strong>Método elegido:</strong> {nombreMetodo || "—"}
                 </p>
                 <p>
-                  <strong>Precio unitario:</strong> {precioUnitario}€
+                  <strong>Precio unitario:</strong>{" "}
+                  {desdeTarjeta ? "Tarjeta regalo" : `${precioUnitario}€`}
                 </p>
                 <p>
-                  <strong>Precio total:</strong> {precioTotal}€
+                  <strong>Precio total:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${precioTotal}€`}
                 </p>
               </div>
 
@@ -495,10 +552,10 @@ export default function ReservaCreaTuBrunchBowl() {
                   !turno ||
                   plazasNum > plazasDisponibles ||
                   plazasDisponibles <= 0 ||
-                  !(precioUnitario > 0)
+                  (!desdeTarjeta && !(precioUnitario > 0))
                 }
               >
-                Confirmar y pagar
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>
