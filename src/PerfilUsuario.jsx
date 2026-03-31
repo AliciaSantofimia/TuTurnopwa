@@ -193,9 +193,13 @@ export default function PerfilUsuario() {
                       <strong>Código:</strong> {tarjeta.codigo || "—"}
                     </p>
                     <p>
-                      <strong>Estado:</strong>{" "}
-                      {tarjeta.estadoCanje || "pendiente"}
-                    </p>
+  <strong>Estado:</strong>{" "}
+  {tarjeta.estadoCanje === "usada"
+    ? "usada"
+    : tarjeta.estadoCanje === "canjeado"
+    ? "canjeada"
+    : "pendiente"}
+</p>
                   </li>
                 ))}
               </ul>
