@@ -112,10 +112,24 @@ function generarCodigoTarjetaRegalo() {
   return codigo;
 }
 
+async function generarCodigoTarjetaRegaloUnico() {
+  let codigo = "";
+  let existe = true;
+
+  while (existe) {
+    codigo = generarCodigoTarjetaRegalo();
+    const snap = await adminDb.ref(`codigosTarjetaRegalo/${codigo}`).get();
+    existe = snap.exists();
+  }
+
+  return codigo;
+}
+
 async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
-  const codigo = generarCodigoTarjetaRegalo();
+  const codigo = await generarCodigoTarjetaRegaloUnico();
 
   const tarjetaData = {
+    id: orderId,
     orderId,
     codigo,
     uidComprador: pedido.uid || "",
@@ -140,6 +154,7 @@ async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
   };
 
   await adminDb.ref(`tarjetasRegalo/${orderId}`).set(tarjetaData);
+  await adminDb.ref(`codigosTarjetaRegalo/${codigo}`).set(orderId);
 
   if (pedido.uid) {
     await adminDb.ref(`usuarios/${pedido.uid}/tarjetasRegalo/${orderId}`).set(tarjetaData);
