@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
@@ -191,8 +191,9 @@ export default function ReservaPintaTuPieza() {
       return;
     }
 
-    try {
+       try {
       const orderId = Date.now().toString().slice(-12);
+      const timestamp = new Date().toISOString();
 
       const reserva = {
         clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
@@ -206,17 +207,70 @@ export default function ReservaPintaTuPieza() {
         precio: precioTotal,
         precioBase,
         precioTotal,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
+        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
         orderId,
-        timestamp: new Date().toISOString(),
+        timestamp,
       };
 
       const generalRef = ref(
         dbRealtime,
         `reservas/${RESERVAS_PATH_KEY}/${fecha}/${turno}`
       );
-      await push(generalRef, { uid: user.uid, ...reserva });
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
+      if (desdeTarjeta) {
+        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+        const codigoTarjeta = location.state?.codigoTarjeta || "";
+
+        if (!tarjetaRegaloId) {
+          alert("No se ha encontrado la tarjeta regalo asociada.");
+          return;
+        }
+
+        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+          ...reserva,
+          uid: user.uid,
+          tarjetaRegaloId,
+          codigoTarjeta,
+          creadaDesde: "tarjeta_regalo",
+        });
+
+        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+          canjeado: true,
+          usado: true,
+          estadoCanje: "canjeado",
+          canjeadoPorUID: user.uid,
+          usadoPorUID: user.uid,
+          fechaCanje: timestamp,
+          fechaUso: timestamp,
+          actualizadoEn: timestamp,
+          reservaId: nuevaReservaRef.key || "",
+          fechaReserva: fecha,
+          turnoReserva: turno,
+        });
+
+        navigate("/confirmacion-pago", {
+          state: {
+            desdeTarjeta: true,
+            clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
+            claseId: CLASE_ID,
+            fecha,
+            turno,
+            plazas: plazasNum,
+            precio: 0,
+            precioBase: 0,
+            precioTotal: 0,
+            duracion,
+            orderId,
+            codigoTarjeta,
+          },
+        });
+
+        return;
+      }
 
       navigate("/resumen-pago", {
         state: {
@@ -370,7 +424,7 @@ export default function ReservaPintaTuPieza() {
                   plazasNum > maxTotales
                 }
               >
-                Confirmar y pagar
+                                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>
