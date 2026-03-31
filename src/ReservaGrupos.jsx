@@ -57,7 +57,7 @@ const TODAS_LAS_CLASES = [
   { nombre: "Modela a mano y decora tus piezas favoritas — 4 clases", precio: 79 },
   { nombre: "Torno alfarero y decoración — 4 clases", precio: 99 },
   { nombre: "Torno alfarero empezar desde cero — 4 clases", precio: 120 },
-  { nombre: "Torno alfarero perfecciona lo que ya sabes — 6 clases", price: 145 },
+  { nombre: "Torno alfarero perfecciona lo que ya sabes — 6 clases", precio: 145 },
   { nombre: "Pinta tu pieza de cerámica", precio: 25 },
   { nombre: "Especial pinta tu pieza de cerámica", precio: 35 },
 ];

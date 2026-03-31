@@ -27,7 +27,38 @@ const normalizarTurnos = (turnosRaw) => {
       .filter(Boolean);
   }
 
+  if (typeof turnosRaw === "string") {
+    return [turnosRaw.trim()].filter(Boolean);
+  }
+
   return [];
+};
+
+const getNombreDiaSemana = (fechaISO) => {
+  if (!fechaISO) return "";
+
+  const [year, month, day] = fechaISO.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day);
+  const dias = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
+
+  return dias[fechaLocal.getDay()] || "";
+};
+
+const getTurnosDesdeHorarios = (horarios, fechaISO) => {
+  if (!horarios || !fechaISO) return [];
+
+  const nombreDia = getNombreDiaSemana(fechaISO);
+  const turnosDia = horarios[nombreDia];
+
+  return normalizarTurnos(turnosDia);
 };
 
 export default function ReservaEspecialPintaTuPieza() {
@@ -95,8 +126,8 @@ export default function ReservaEspecialPintaTuPieza() {
   }, []);
 
   const turnosDisponibles = useMemo(() => {
-    return normalizarTurnos(claseConfig?.turnos);
-  }, [claseConfig]);
+    return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
+  }, [claseConfig, fecha]);
 
   const precioBase = Number(claseConfig?.precio || 35);
   const duracion = claseConfig?.duracion || "2 horas y media";
@@ -121,6 +152,11 @@ export default function ReservaEspecialPintaTuPieza() {
 
     return null;
   }, [fecha, fechasBloqueadas]);
+
+  const diaNoDisponible = useMemo(() => {
+    if (!fecha) return false;
+    return turnosDisponibles.length === 0;
+  }, [fecha, turnosDisponibles]);
 
   useEffect(() => {
     if (esTurnoConsulta && turnosDisponibles.length === 1 && !turno) {
@@ -147,6 +183,11 @@ export default function ReservaEspecialPintaTuPieza() {
           fechaBloqueada.motivo || "día bloqueado"
         }.`
       );
+      return;
+    }
+
+    if (diaNoDisponible) {
+      alert("Esta clase no se imparte el día seleccionado.");
       return;
     }
 
@@ -263,6 +304,12 @@ export default function ReservaEspecialPintaTuPieza() {
                       : ""}
                   </p>
                 )}
+                {fecha && !fechaBloqueada && diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Elige martes,
+                    miércoles, jueves o sábado.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -285,6 +332,7 @@ export default function ReservaEspecialPintaTuPieza() {
                     onChange={(e) => setTurno(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
                     required
+                    disabled={!fecha || diaNoDisponible}
                   >
                     <option value="">-- Elige turno --</option>
                     {turnosDisponibles.map((turnoItem) => (
@@ -312,10 +360,17 @@ export default function ReservaEspecialPintaTuPieza() {
                 />
               </div>
 
-              {fecha && (
+              {fecha && !diaNoDisponible && (
                 <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                   <p><strong>Precio por plaza:</strong> {precioBase}€</p>
                   <p><strong>Precio total:</strong> {precioTotal}€</p>
+                  <p><strong>Duración:</strong> {duracion}</p>
+                  <p><strong>Máximo plazas:</strong> {maxTotales}</p>
+                </div>
+              )}
+
+              {fecha && diaNoDisponible && (
+                <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                   <p><strong>Duración:</strong> {duracion}</p>
                   <p><strong>Máximo plazas:</strong> {maxTotales}</p>
                 </div>
@@ -330,6 +385,7 @@ export default function ReservaEspecialPintaTuPieza() {
                 transition-all duration-200"
                 disabled={
                   !!fechaBloqueada ||
+                  diaNoDisponible ||
                   !turno ||
                   plazasNum < 1 ||
                   plazasNum > maxTotales

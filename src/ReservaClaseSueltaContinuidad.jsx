@@ -30,9 +30,39 @@ const normalizarTurnos = (turnosRaw) => {
       .filter(Boolean);
   }
 
+  if (typeof turnosRaw === "string") {
+    return [turnosRaw.trim()].filter(Boolean);
+  }
+
   return [];
 };
 
+const getNombreDiaSemana = (fechaISO) => {
+  if (!fechaISO) return "";
+
+  const [year, month, day] = fechaISO.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day);
+  const dias = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
+
+  return dias[fechaLocal.getDay()] || "";
+};
+
+const getTurnosDesdeHorarios = (horarios, fechaISO) => {
+  if (!horarios || !fechaISO) return [];
+
+  const nombreDia = getNombreDiaSemana(fechaISO);
+  const turnosDia = horarios[nombreDia];
+
+  return normalizarTurnos(turnosDia);
+};
 const mapearPrecioDesdeFirebase = (tipoClase, precios) => {
   if (!tipoClase || !precios) return 0;
 
@@ -141,8 +171,8 @@ export default function ReservaClaseSueltaContinuidad() {
   }, [fecha]);
 
   const turnosDisponibles = useMemo(() => {
-    return normalizarTurnos(claseConfig?.turnos);
-  }, [claseConfig]);
+  return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
+}, [claseConfig, fecha]);
 
   const precios = useMemo(() => {
     return claseConfig?.precios || {};
@@ -198,6 +228,7 @@ export default function ReservaClaseSueltaContinuidad() {
   const fechaBloqueada = useMemo(() => {
     if (!fecha) return null;
 
+
     const bloqueo = fechasBloqueadas?.[fecha];
     if (bloqueo?.bloqueado) {
       return bloqueo;
@@ -205,6 +236,10 @@ export default function ReservaClaseSueltaContinuidad() {
 
     return null;
   }, [fecha, fechasBloqueadas]);
+const diaNoDisponible = useMemo(() => {
+  if (!fecha) return false;
+  return turnosDisponibles.length === 0;
+}, [fecha, turnosDisponibles]);
 
   const handleTipoClaseChange = (valor) => {
     setTipoClase(valor);
@@ -241,6 +276,10 @@ export default function ReservaClaseSueltaContinuidad() {
       );
       return;
     }
+    if (diaNoDisponible) {
+  alert("Esta clase no se imparte el día seleccionado.");
+  return;
+}
 
     const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
 
@@ -382,6 +421,12 @@ export default function ReservaClaseSueltaContinuidad() {
                       : ""}
                   </p>
                 )}
+                {fecha && !fechaBloqueada && diaNoDisponible && (
+  <p className="mt-2 text-sm text-red-600 font-medium">
+    Esta clase no se imparte el día seleccionado. Elige martes, miércoles, jueves o sábado.
+  </p>
+)}
+
               </div>
 
               <div>
@@ -394,7 +439,7 @@ export default function ReservaClaseSueltaContinuidad() {
                   onChange={(e) => setTurno(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
                   required
-                  disabled={!tipoClase}
+                  disabled={!tipoClase || !fecha || diaNoDisponible}
                 >
                   <option value="">-- Elige turno --</option>
                   {turnosDisponibles.map((turnoItem) => (
@@ -418,11 +463,11 @@ export default function ReservaClaseSueltaContinuidad() {
                 />
               </div>
 
-              {metodo && fecha && (
-                <div className="text-sm text-gray-600">
-                  Quedan {plazasDisponibles} plazas disponibles para este método.
-                </div>
-              )}
+             {metodo && fecha && !diaNoDisponible && (
+  <div className="text-sm text-gray-600">
+    Quedan {plazasDisponibles} plazas disponibles para este método.
+  </div>
+)}
 
               <div>
                 <label className="block font-bold text-sm mb-2">
@@ -451,9 +496,11 @@ export default function ReservaClaseSueltaContinuidad() {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-1">
-                  Máximo {plazasDisponibles} plazas disponibles.
-                </p>
+               <p className="text-xs text-gray-500 mt-1">
+  {diaNoDisponible
+    ? "No hay plazas porque esta clase no se imparte ese día."
+    : `Máximo ${plazasDisponibles} plazas disponibles.`}
+</p>
               </div>
 
               {tipoClase && (
@@ -479,12 +526,13 @@ export default function ReservaClaseSueltaContinuidad() {
                 transition-all duration-200"
                 disabled={
                   !!fechaBloqueada ||
-                  !tipoClase ||
-                  !turno ||
-                  !metodo ||
-                  plazasNum > plazasDisponibles ||
-                  plazasDisponibles <= 0 ||
-                  !(precioUnitario > 0)
+diaNoDisponible ||
+!tipoClase ||
+!turno ||
+!metodo ||
+plazasNum > plazasDisponibles ||
+plazasDisponibles <= 0 ||
+!(precioUnitario > 0)
                 }
               >
                 Confirmar y pagar

@@ -30,7 +30,38 @@ const normalizarTurnos = (turnosRaw) => {
       .filter(Boolean);
   }
 
+  if (typeof turnosRaw === "string") {
+    return [turnosRaw.trim()].filter(Boolean);
+  }
+
   return [];
+};
+
+const getNombreDiaSemana = (fechaISO) => {
+  if (!fechaISO) return "";
+
+  const [year, month, day] = fechaISO.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day);
+  const dias = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
+
+  return dias[fechaLocal.getDay()] || "";
+};
+
+const getTurnosDesdeHorarios = (horarios, fechaISO) => {
+  if (!horarios || !fechaISO) return [];
+
+  const nombreDia = getNombreDiaSemana(fechaISO);
+  const turnosDia = horarios[nombreDia];
+
+  return normalizarTurnos(turnosDia);
 };
 
 const mapearPrecioDesdeFirebase = (metodo, precios) => {
@@ -137,8 +168,8 @@ export default function ReservaCreaTuBandejaHogar() {
   }, [fecha]);
 
   const turnosDisponibles = useMemo(() => {
-    return normalizarTurnos(claseConfig?.turnos);
-  }, [claseConfig]);
+    return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
+  }, [claseConfig, fecha]);
 
   const precios = useMemo(() => {
     return claseConfig?.precios || {};
@@ -199,6 +230,11 @@ export default function ReservaCreaTuBandejaHogar() {
     return null;
   }, [fecha, fechasBloqueadas]);
 
+  const diaNoDisponible = useMemo(() => {
+    if (!fecha) return false;
+    return turnosDisponibles.length === 0;
+  }, [fecha, turnosDisponibles]);
+
   const handleMetodoChange = (valor) => {
     setMetodo(valor);
     setTurno("");
@@ -224,6 +260,11 @@ export default function ReservaCreaTuBandejaHogar() {
           fechaBloqueada.motivo || "día bloqueado"
         }.`
       );
+      return;
+    }
+
+    if (diaNoDisponible) {
+      alert("Esta clase no se imparte el día seleccionado.");
       return;
     }
 
@@ -351,6 +392,12 @@ export default function ReservaCreaTuBandejaHogar() {
                       : ""}
                   </p>
                 )}
+                {fecha && !fechaBloqueada && diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Elige martes,
+                    miércoles, jueves o sábado.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -363,7 +410,7 @@ export default function ReservaCreaTuBandejaHogar() {
                   onChange={(e) => setTurno(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
                   required
-                  disabled={!metodo}
+                  disabled={!metodo || !fecha || diaNoDisponible}
                 >
                   <option value="">-- Elige turno --</option>
                   {turnosDisponibles.map((turnoItem) => (
@@ -395,7 +442,7 @@ export default function ReservaCreaTuBandejaHogar() {
                 </select>
               </div>
 
-              {metodo && fecha && (
+              {metodo && fecha && !diaNoDisponible && (
                 <p className="text-sm text-green-700">
                   Quedan {plazasDisponibles} plazas disponibles para este método.
                 </p>
@@ -433,7 +480,9 @@ export default function ReservaCreaTuBandejaHogar() {
                 </div>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  Máximo {plazasDisponibles} plazas disponibles.
+                  {diaNoDisponible
+                    ? "No hay plazas porque esta clase no se imparte ese día."
+                    : `Máximo ${plazasDisponibles} plazas disponibles.`}
                 </p>
               </div>
 
@@ -460,6 +509,7 @@ export default function ReservaCreaTuBandejaHogar() {
                 transition-all duration-200"
                 disabled={
                   !!fechaBloqueada ||
+                  diaNoDisponible ||
                   !metodo ||
                   !turno ||
                   plazasNum > plazasDisponibles ||

@@ -1,4 +1,4 @@
-import { ref, set, get } from "firebase/database";
+import { ref, set, get, push } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
 const generarCodigoAleatorio = (longitud = 8) => {
@@ -20,7 +20,9 @@ const generarCodigoUnico = async () => {
 
   while (existe) {
     codigo = generarCodigoAleatorio();
-    const snapshot = await get(ref(dbRealtime, `tarjetas_regalo/${codigo}`));
+    const snapshot = await get(
+      ref(dbRealtime, `codigosTarjetaRegalo/${codigo}`)
+    );
     existe = snapshot.exists();
   }
 
@@ -49,7 +51,15 @@ export const crearTarjetaRegalo = async ({
   const codigo = await generarCodigoUnico();
   const ahora = new Date().toISOString();
 
+  const nuevaTarjetaRef = push(ref(dbRealtime, "tarjetasRegalo"));
+  const id = nuevaTarjetaRef.key;
+
+  if (!id) {
+    throw new Error("No se pudo generar el ID de la tarjeta regalo");
+  }
+
   const tarjeta = {
+    id,
     codigo,
     tipo: "tarjeta_regalo",
 
@@ -89,7 +99,8 @@ export const crearTarjetaRegalo = async ({
     fechaUso: null,
   };
 
-  await set(ref(dbRealtime, `tarjetas_regalo/${codigo}`), tarjeta);
+  await set(ref(dbRealtime, `tarjetasRegalo/${id}`), tarjeta);
+  await set(ref(dbRealtime, `codigosTarjetaRegalo/${codigo}`), id);
 
   return codigo;
 };

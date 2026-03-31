@@ -37,7 +37,38 @@ const normalizarTurnos = (turnosRaw) => {
       .filter(Boolean);
   }
 
+  if (typeof turnosRaw === "string") {
+    return [turnosRaw.trim()].filter(Boolean);
+  }
+
   return [];
+};
+
+const getNombreDiaSemana = (fechaISO) => {
+  if (!fechaISO) return "";
+
+  const [year, month, day] = fechaISO.split("-").map(Number);
+  const fechaLocal = new Date(year, month - 1, day);
+  const dias = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
+
+  return dias[fechaLocal.getDay()] || "";
+};
+
+const getTurnosDesdeHorarios = (horarios, fechaISO) => {
+  if (!horarios || !fechaISO) return [];
+
+  const nombreDia = getNombreDiaSemana(fechaISO);
+  const turnosDia = horarios[nombreDia];
+
+  return normalizarTurnos(turnosDia);
 };
 
 export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
@@ -106,8 +137,8 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   }, []);
 
   const turnosDisponibles = useMemo(() => {
-    return normalizarTurnos(claseConfig?.turnos);
-  }, [claseConfig]);
+    return getTurnosDesdeHorarios(claseConfig?.horarios, fechaInicio);
+  }, [claseConfig, fechaInicio]);
 
   const precioBase = Number(claseConfig?.precio || 79);
   const extraTorno = convertirTorno
@@ -131,6 +162,11 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     return null;
   }, [fechaInicio, fechasBloqueadas]);
 
+  const diaNoDisponible = useMemo(() => {
+    if (!fechaInicio) return false;
+    return turnosDisponibles.length === 0;
+  }, [fechaInicio, turnosDisponibles]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -150,6 +186,11 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
           fechaBloqueada.motivo || "día bloqueado"
         }.`
       );
+      return;
+    }
+
+    if (diaNoDisponible) {
+      alert("Esta clase no se imparte el día seleccionado.");
       return;
     }
 
@@ -262,7 +303,10 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                 <DateInputReserva
                   id="fechaInicio"
                   value={fechaInicio}
-                  onChange={(e) => setFechaInicio(e.target.value)}
+                  onChange={(e) => {
+                    setFechaInicio(e.target.value);
+                    setTurno("");
+                  }}
                 />
                 {fechaBloqueada && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
@@ -270,6 +314,12 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                     {fechaBloqueada.motivo
                       ? ` Motivo: ${fechaBloqueada.motivo}.`
                       : ""}
+                  </p>
+                )}
+                {fechaInicio && !fechaBloqueada && diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Elige martes,
+                    miércoles, jueves o sábado.
                   </p>
                 )}
               </div>
@@ -284,6 +334,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                   onChange={(e) => setTurno(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
                   required
+                  disabled={!fechaInicio || diaNoDisponible}
                 >
                   <option value="">-- Elige turno --</option>
                   {turnosDisponibles.map((turnoItem) => (
@@ -331,7 +382,12 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
-                disabled={!!fechaBloqueada || !fechaInicio || !turno}
+                disabled={
+                  !!fechaBloqueada ||
+                  diaNoDisponible ||
+                  !fechaInicio ||
+                  !turno
+                }
               >
                 Confirmar y pagar
               </button>
