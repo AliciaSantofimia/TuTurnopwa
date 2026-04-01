@@ -26,6 +26,7 @@ export default function PerfilUsuario() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [reservaActiva, setReservaActiva] = useState(null);
   const [reservasActivas, setReservasActivas] = useState([]);
   const [reservasPasadas, setReservasPasadas] = useState([]);
@@ -38,7 +39,12 @@ export default function PerfilUsuario() {
 
         const userRef = ref(dbRealtime, "usuarios/" + user.uid);
         const snapshot = await get(userRef);
-        if (snapshot.exists()) setNombre(snapshot.val().nombre);
+
+        if (snapshot.exists()) {
+          const datosUsuario = snapshot.val();
+          setNombre(datosUsuario.nombre || "");
+          setTelefono(datosUsuario.telefono || "");
+        }
 
         const refListaReservas = ref(
           dbRealtime,
@@ -137,8 +143,11 @@ export default function PerfilUsuario() {
           <p className="text-sm mb-2">
             <span className="font-semibold">Nombre:</span> {nombre || "—"}
           </p>
-          <p className="text-sm">
+          <p className="text-sm mb-2">
             <span className="font-semibold">Email:</span> {email || "—"}
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold">Teléfono:</span> {telefono || "—"}
           </p>
         </div>
 

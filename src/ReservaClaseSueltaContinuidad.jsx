@@ -506,10 +506,10 @@ export default function ReservaClaseSueltaContinuidad() {
                       : ""}
                   </p>
                 )}
-                {fecha && !fechaBloqueada && diaNoDisponible && (
+                               {fecha && !fechaBloqueada && diaNoDisponible && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
-                    Esta clase no se imparte el día seleccionado. Elige martes,
-                    miércoles, jueves o sábado.
+                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
                   </p>
                 )}
               </div>

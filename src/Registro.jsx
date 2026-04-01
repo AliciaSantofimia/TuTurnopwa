@@ -2,20 +2,32 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set } from "firebase/database";
-import { auth, dbRealtime } from "./firebase"; //  sin Firestore
+import { auth, dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
-
 
 export default function Registro() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [error, setError] = useState("");
 
+  const normalizarTelefono = (valor) => {
+    return valor.replace(/\s+/g, "").trim();
+  };
+
   const handleRegistro = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const telefonoLimpio = normalizarTelefono(telefono);
+
+    if (!telefonoLimpio) {
+      setError("El teléfono es obligatorio.");
+      return;
+    }
 
     if (password !== confirmar) {
       setError("Las contraseñas no coinciden.");
@@ -23,21 +35,26 @@ export default function Registro() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       const uid = userCredential.user.uid;
 
       await updateProfile(userCredential.user, {
-        displayName: nombre
+        displayName: nombre,
       });
 
-      // Guardar en Realtime Database
       await set(ref(dbRealtime, `usuarios/${uid}`), {
         uid,
         nombre,
+        telefono: telefonoLimpio,
         email,
         fechaRegistro: new Date().toISOString(),
         reservas: 0,
-        bonos: []
+        bonos: [],
       });
 
       navigate("/perfil");
@@ -49,7 +66,6 @@ export default function Registro() {
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex flex-col items-center justify-center px-4 text-[#333]">
       <BotonVolver volverA="/" />
-
 
       <img
         src="/img/logoPCsin.png"
@@ -78,6 +94,21 @@ export default function Registro() {
             placeholder="Tu nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="telefono" className="block font-bold text-sm mb-1">
+            Teléfono
+          </label>
+          <input
+            type="tel"
+            id="telefono"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-base"
+            placeholder="Tu teléfono"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
             required
           />
         </div>

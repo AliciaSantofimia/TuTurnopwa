@@ -362,12 +362,12 @@ export default function ReservaPintaTuPieza() {
                       : ""}
                   </p>
                 )}
-                {fecha && !fechaBloqueada && diaNoDisponible && (
-                  <p className="mt-2 text-sm text-red-600 font-medium">
-                    Esta clase no se imparte el día seleccionado. Elige martes,
-                    miércoles, jueves o sábado.
-                  </p>
-                )}
+              {fecha && !fechaBloqueada && diaNoDisponible && (
+  <p className="mt-2 text-sm text-red-600 font-medium">
+    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+  </p>
+)}
               </div>
 
               <div>

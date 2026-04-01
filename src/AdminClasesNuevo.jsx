@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import BotonVolver from "./BotonVolver";
@@ -8,9 +8,15 @@ const AdminClasesNuevo = () => {
   const navigate = useNavigate();
   const [notasPorClase, setNotasPorClase] = useState({});
 
-  const [clases, setClases] = useState([]);
+    const [clases, setClases] = useState([]);
   const [resumen, setResumen] = useState({});
-  const [cargando, setCargando] = useState(true);
+   const [cargando, setCargando] = useState(true);
+  const [editandoPrecios, setEditandoPrecios] = useState({});
+  const [guardandoPrecios, setGuardandoPrecios] = useState({});
+   const [editandoPlazas, setEditandoPlazas] = useState({});
+  const [guardandoPlazas, setGuardandoPlazas] = useState({});
+  const [editandoHorarios, setEditandoHorarios] = useState({});
+  const [guardandoHorarios, setGuardandoHorarios] = useState({});
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -42,12 +48,17 @@ const AdminClasesNuevo = () => {
 
             const nombre = claseData.nombre || claseId;
 
-            listaClases.push({
-              id: claseId,
-              nombre,
-              categoria: claseData.categoria || "Sin categoría",
-              precioDesde: claseData.precioDesde || "",
-            });
+           listaClases.push({
+  id: claseId,
+  nombre,
+  categoria: claseData.categoria || "Sin categoría",
+  precioDesde: claseData.precioDesde || "",
+  precio: claseData.precio ?? "",
+  precios: claseData.precios || {},
+  plazas: claseData.plazas || {},
+  turnos: claseData.turnos || [],
+  horarios: claseData.horarios || claseData.horario || {},
+});
 
             mapaResumen[claseId] = {
               reservasTotales: 0,
@@ -141,7 +152,7 @@ const AdminClasesNuevo = () => {
     cargarDatos();
   }, []);
 
-  const clasesConResumen = useMemo(() => {
+   const clasesConResumen = useMemo(() => {
     return clases.map((clase) => ({
       ...clase,
       ...(resumen[clase.id] || {
@@ -154,6 +165,273 @@ const AdminClasesNuevo = () => {
     }));
   }, [clases, resumen]);
 
+  const formatearPrecios = (clase) => {
+    if (clase.precios && Object.keys(clase.precios).length > 0) {
+      return Object.entries(clase.precios)
+        .map(([key, value]) => `${key}: ${value}€`)
+        .join(" · ");
+    }
+
+    if (clase.precioDesde) return `Desde ${clase.precioDesde}€`;
+    if (clase.precio) return `${clase.precio}€`;
+
+    return "—";
+  };
+
+  const formatearPlazas = (clase) => {
+    const maxTorno = clase.plazas?.maxTorno;
+    const maxTotales =
+      clase.plazas?.maxTotales ?? clase.plazas?.plazasTotales;
+
+    if (maxTorno && maxTotales) {
+      return `Torno: ${maxTorno} · Totales: ${maxTotales}`;
+    }
+
+    if (maxTotales) {
+      return `Totales: ${maxTotales}`;
+    }
+
+    return "—";
+  };
+
+  const formatearTurnos = (turnos) => {
+    if (!turnos) return "—";
+
+    if (Array.isArray(turnos)) {
+      return turnos.join(" · ") || "—";
+    }
+
+    if (typeof turnos === "object") {
+      return Object.values(turnos).join(" · ") || "—";
+    }
+
+    return "—";
+  };
+
+    const formatearHorarios = (horarios) => {
+    if (!horarios || typeof horarios !== "object") return "—";
+
+    const dias = Object.keys(horarios);
+    if (dias.length === 0) return "—";
+
+    return dias.join(" · ");
+  };
+
+  const iniciarEdicionPrecios = (clase) => {
+    setEditandoPrecios((prev) => ({
+      ...prev,
+      [clase.id]: { ...(clase.precios || {}) },
+    }));
+  };
+
+  const cambiarPrecioEditado = (claseId, campo, valor) => {
+    setEditandoPrecios((prev) => ({
+      ...prev,
+      [claseId]: {
+        ...(prev[claseId] || {}),
+        [campo]: valor,
+      },
+    }));
+  };
+
+  const guardarPrecios = async (claseId) => {
+    const preciosEditados = editandoPrecios[claseId];
+    if (!preciosEditados) return;
+
+    try {
+      setGuardandoPrecios((prev) => ({ ...prev, [claseId]: true }));
+
+      const preciosLimpios = {};
+      Object.entries(preciosEditados).forEach(([key, value]) => {
+        const numero = Number(value);
+        if (!Number.isNaN(numero) && value !== "") {
+          preciosLimpios[key] = numero;
+        }
+      });
+
+      await update(ref(dbRealtime, `clases/${claseId}`), {
+        precios: preciosLimpios,
+      });
+
+      setClases((prev) =>
+        prev.map((clase) =>
+          clase.id === claseId
+            ? { ...clase, precios: preciosLimpios }
+            : clase
+        )
+      );
+
+      setEditandoPrecios((prev) => {
+        const copia = { ...prev };
+        delete copia[claseId];
+        return copia;
+      });
+
+      alert("Precios guardados correctamente");
+    } catch (error) {
+      console.error("Error al guardar precios:", error);
+      alert("Hubo un error al guardar los precios");
+    } finally {
+      setGuardandoPrecios((prev) => ({ ...prev, [claseId]: false }));
+    }
+  };
+
+    const cancelarEdicionPrecios = (claseId) => {
+    setEditandoPrecios((prev) => {
+      const copia = { ...prev };
+      delete copia[claseId];
+      return copia;
+    });
+  };
+
+  const iniciarEdicionPlazas = (clase) => {
+    setEditandoPlazas((prev) => ({
+      ...prev,
+      [clase.id]: { ...(clase.plazas || {}) },
+    }));
+  };
+
+  const cambiarPlazaEditada = (claseId, campo, valor) => {
+    setEditandoPlazas((prev) => ({
+      ...prev,
+      [claseId]: {
+        ...(prev[claseId] || {}),
+        [campo]: valor,
+      },
+    }));
+  };
+
+  const guardarPlazas = async (claseId) => {
+    const plazasEditadas = editandoPlazas[claseId];
+    if (!plazasEditadas) return;
+
+    try {
+      setGuardandoPlazas((prev) => ({ ...prev, [claseId]: true }));
+
+      const plazasLimpias = {};
+      Object.entries(plazasEditadas).forEach(([key, value]) => {
+        const numero = Number(value);
+        if (!Number.isNaN(numero) && value !== "") {
+          plazasLimpias[key] = numero;
+        }
+      });
+
+      await update(ref(dbRealtime, `clases/${claseId}`), {
+        plazas: plazasLimpias,
+      });
+
+      setClases((prev) =>
+        prev.map((clase) =>
+          clase.id === claseId
+            ? { ...clase, plazas: plazasLimpias }
+            : clase
+        )
+      );
+
+      setEditandoPlazas((prev) => {
+        const copia = { ...prev };
+        delete copia[claseId];
+        return copia;
+      });
+
+      alert("Plazas guardadas correctamente");
+    } catch (error) {
+      console.error("Error al guardar plazas:", error);
+      alert("Hubo un error al guardar las plazas");
+    } finally {
+      setGuardandoPlazas((prev) => ({ ...prev, [claseId]: false }));
+    }
+  };
+
+   const cancelarEdicionPlazas = (claseId) => {
+    setEditandoPlazas((prev) => {
+      const copia = { ...prev };
+      delete copia[claseId];
+      return copia;
+    });
+  };
+
+  const iniciarEdicionHorarios = (clase) => {
+    const horariosActuales = clase.horarios || {};
+    const horariosTexto = {};
+
+    Object.entries(horariosActuales).forEach(([dia, turnos]) => {
+      if (Array.isArray(turnos)) {
+        horariosTexto[dia] = turnos.join(", ");
+      } else if (typeof turnos === "string") {
+        horariosTexto[dia] = turnos;
+      } else {
+        horariosTexto[dia] = "";
+      }
+    });
+
+    setEditandoHorarios((prev) => ({
+      ...prev,
+      [clase.id]: horariosTexto,
+    }));
+  };
+
+  const cambiarHorarioEditado = (claseId, dia, valor) => {
+    setEditandoHorarios((prev) => ({
+      ...prev,
+      [claseId]: {
+        ...(prev[claseId] || {}),
+        [dia]: valor,
+      },
+    }));
+  };
+
+  const guardarHorarios = async (claseId) => {
+    const horariosEditados = editandoHorarios[claseId];
+    if (!horariosEditados) return;
+
+    try {
+      setGuardandoHorarios((prev) => ({ ...prev, [claseId]: true }));
+
+      const horariosLimpios = {};
+      Object.entries(horariosEditados).forEach(([dia, valor]) => {
+        const listaTurnos = String(valor || "")
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+        horariosLimpios[dia] = listaTurnos;
+      });
+
+      await update(ref(dbRealtime, `clases/${claseId}`), {
+        horarios: horariosLimpios,
+      });
+
+      setClases((prev) =>
+        prev.map((clase) =>
+          clase.id === claseId
+            ? { ...clase, horarios: horariosLimpios }
+            : clase
+        )
+      );
+
+      setEditandoHorarios((prev) => {
+        const copia = { ...prev };
+        delete copia[claseId];
+        return copia;
+      });
+
+      alert("Horarios guardados correctamente");
+    } catch (error) {
+      console.error("Error al guardar horarios:", error);
+      alert("Hubo un error al guardar los horarios");
+    } finally {
+      setGuardandoHorarios((prev) => ({ ...prev, [claseId]: false }));
+    }
+  };
+
+  const cancelarEdicionHorarios = (claseId) => {
+    setEditandoHorarios((prev) => {
+      const copia = { ...prev };
+      delete copia[claseId];
+      return copia;
+    });
+  };
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -219,9 +497,26 @@ const AdminClasesNuevo = () => {
                     <strong>Precio base:</strong>{" "}
                     {clase.precioDesde ? `${clase.precioDesde}€` : "—"}
                   </p>
+                                    <p style={styles.linea}>
+                    <strong>Precios configurados:</strong>{" "}
+                    {formatearPrecios(clase)}
+                  </p>
+                  <p style={styles.linea}>
+                    <strong>Plazas configuradas:</strong>{" "}
+                    {formatearPlazas(clase)}
+                  </p>
+                  <p style={styles.linea}>
+                    <strong>Turnos:</strong>{" "}
+                    {formatearTurnos(clase.turnos)}
+                  </p>
+                  <p style={styles.linea}>
+                    <strong>Días con horario:</strong>{" "}
+                    {formatearHorarios(clase.horarios)}
+                  </p>
                 </div>
 
-                <div style={styles.acciones}>
+               
+                                 <div style={styles.acciones}>
                   <button
                     style={styles.boton}
                     onClick={(e) => {
@@ -231,6 +526,169 @@ const AdminClasesNuevo = () => {
                   >
                     Ver reservas
                   </button>
+
+                                   {!editandoPrecios[clase.id] ? (
+                    <button
+                      style={{ ...styles.boton, marginLeft: 10 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        iniciarEdicionPrecios(clase);
+                      }}
+                    >
+                      Editar precios
+                    </button>
+                  ) : (
+                    <div
+                      style={styles.editorPrecios}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {Object.keys(clase.precios || {}).map((campo) => (
+                        <div key={campo} style={styles.campoPrecio}>
+                          <label style={styles.labelPrecio}>{campo}</label>
+                          <input
+                            type="number"
+                            value={editandoPrecios[clase.id]?.[campo] ?? ""}
+                            onChange={(e) =>
+                              cambiarPrecioEditado(
+                                clase.id,
+                                campo,
+                                e.target.value
+                              )
+                            }
+                            style={styles.inputPrecio}
+                          />
+                        </div>
+                      ))}
+
+                      <div style={styles.botonesEditor}>
+                        <button
+                          style={styles.botonGuardar}
+                          onClick={() => guardarPrecios(clase.id)}
+                          disabled={guardandoPrecios[clase.id]}
+                        >
+                          {guardandoPrecios[clase.id]
+                            ? "Guardando..."
+                            : "Guardar precios"}
+                        </button>
+
+                        <button
+                          style={styles.botonCancelar}
+                          onClick={() => cancelarEdicionPrecios(clase.id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                                   {!editandoPlazas[clase.id] ? (
+                    <button
+                      style={{ ...styles.boton, marginLeft: 10 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        iniciarEdicionPlazas(clase);
+                      }}
+                    >
+                      Editar plazas
+                    </button>
+                  ) : (
+                    <div
+                      style={styles.editorPrecios}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {Object.keys(clase.plazas || {}).map((campo) => (
+                        <div key={campo} style={styles.campoPrecio}>
+                          <label style={styles.labelPrecio}>{campo}</label>
+                          <input
+                            type="number"
+                            value={editandoPlazas[clase.id]?.[campo] ?? ""}
+                            onChange={(e) =>
+                              cambiarPlazaEditada(
+                                clase.id,
+                                campo,
+                                e.target.value
+                              )
+                            }
+                            style={styles.inputPrecio}
+                          />
+                        </div>
+                      ))}
+
+                      <div style={styles.botonesEditor}>
+                        <button
+                          style={styles.botonGuardar}
+                          onClick={() => guardarPlazas(clase.id)}
+                          disabled={guardandoPlazas[clase.id]}
+                        >
+                          {guardandoPlazas[clase.id]
+                            ? "Guardando..."
+                            : "Guardar plazas"}
+                        </button>
+
+                        <button
+                          style={styles.botonCancelar}
+                          onClick={() => cancelarEdicionPlazas(clase.id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!editandoHorarios[clase.id] ? (
+                    <button
+                      style={{ ...styles.boton, marginLeft: 10 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        iniciarEdicionHorarios(clase);
+                      }}
+                    >
+                      Editar horarios
+                    </button>
+                  ) : (
+                    <div
+                      style={styles.editorPrecios}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {Object.keys(clase.horarios || {}).map((dia) => (
+                        <div key={dia} style={styles.campoPrecio}>
+                          <label style={styles.labelPrecio}>{dia}</label>
+                          <input
+                            type="text"
+                            value={editandoHorarios[clase.id]?.[dia] ?? ""}
+                            onChange={(e) =>
+                              cambiarHorarioEditado(
+                                clase.id,
+                                dia,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Ej: 17:30-20:30, 18:00-21:00"
+                            style={styles.inputPrecio}
+                          />
+                        </div>
+                      ))}
+
+                      <div style={styles.botonesEditor}>
+                        <button
+                          style={styles.botonGuardar}
+                          onClick={() => guardarHorarios(clase.id)}
+                          disabled={guardandoHorarios[clase.id]}
+                        >
+                          {guardandoHorarios[clase.id]
+                            ? "Guardando..."
+                            : "Guardar horarios"}
+                        </button>
+
+                        <button
+                          style={styles.botonCancelar}
+                          onClick={() => cancelarEdicionHorarios(clase.id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -350,6 +808,56 @@ const styles = {
     fontSize: "0.96rem",
     cursor: "pointer",
     boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+  },
+    editorPrecios: {
+    marginTop: 14,
+    padding: 14,
+    backgroundColor: "#fffaf3",
+    border: "1px solid #eadfbe",
+    borderRadius: 16,
+    display: "grid",
+    gap: 10,
+  },
+  campoPrecio: {
+    display: "grid",
+    gap: 6,
+  },
+  labelPrecio: {
+    fontSize: "0.9rem",
+    color: "#5b4a3a",
+    fontWeight: 600,
+    textTransform: "capitalize",
+  },
+  inputPrecio: {
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #d9c9a8",
+    fontSize: "0.95rem",
+    outline: "none",
+  },
+  botonesEditor: {
+    display: "flex",
+    gap: 10,
+    marginTop: 6,
+    flexWrap: "wrap",
+  },
+  botonGuardar: {
+    padding: "10px 14px",
+    backgroundColor: "#e9f7e9",
+    color: "#2f5a2f",
+    border: "1px solid #bdddbd",
+    borderRadius: 12,
+    fontSize: "0.94rem",
+    cursor: "pointer",
+  },
+  botonCancelar: {
+    padding: "10px 14px",
+    backgroundColor: "#fff1f1",
+    color: "#8a3d3d",
+    border: "1px solid #e3bcbc",
+    borderRadius: 12,
+    fontSize: "0.94rem",
+    cursor: "pointer",
   },
 };
 
