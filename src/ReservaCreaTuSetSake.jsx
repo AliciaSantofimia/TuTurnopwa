@@ -339,33 +339,47 @@ export default function ReservaCreaTuSetSake() {
       await update(nuevaReservaRef, { uid: user.uid, ...reserva });
 
       if (desdeTarjeta) {
-        const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
-        const codigoTarjeta = location.state?.codigoTarjeta || "";
+       const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
+const codigoTarjeta = location.state?.codigoTarjeta || "";
 
-        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
-          ...reserva,
-          uid: user.uid,
-          tarjetaRegaloId,
-          codigoTarjeta,
-          creadaDesde: "tarjeta_regalo",
-        });
+await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
+  ...reserva,
+  uid: user.uid,
+  tarjetaRegaloId,
+  codigoTarjeta,
+  creadaDesde: "tarjeta_regalo",
+});
 
-        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
-          canjeado: true,
-          usado: true,
-          estadoCanje: "canjeado",
-          canjeadoPorUID: user.uid,
-          usadoPorUID: user.uid,
-          fechaCanje: timestamp,
-          fechaUso: timestamp,
-          actualizadoEn: timestamp,
-          reservaId: nuevaReservaRef.key || "",
-          fechaReserva: fecha,
-          turnoReserva: turno,
-          metodoReserva: metodo,
-          nombreTipoClaseReserva: nombreMetodo,
-          fechaDisponibleSegundaSesion,
-        });
+const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
+const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+const uidComprador = tarjetaGlobal?.uidComprador || "";
+
+const datosActualizacionTarjeta = {
+  canjeado: true,
+  usado: true,
+  estadoCanje: "canjeado",
+  canjeadoPorUID: user.uid,
+  usadoPorUID: user.uid,
+  fechaCanje: timestamp,
+  fechaUso: timestamp,
+  actualizadoEn: timestamp,
+  reservaId: nuevaReservaRef.key || "",
+  fechaReserva: fecha,
+  turnoReserva: turno,
+  metodoReserva: metodo,
+  nombreTipoClaseReserva: nombreMetodo,
+  fechaDisponibleSegundaSesion,
+};
+
+await update(tarjetaGlobalRef, datosActualizacionTarjeta);
+
+if (uidComprador) {
+  await update(
+    ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+    datosActualizacionTarjeta
+  );
+}
 
         navigate("/pago/exito", {
           state: {

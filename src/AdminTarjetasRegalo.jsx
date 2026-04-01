@@ -133,8 +133,8 @@ const AdminTarjetasRegalo = () => {
   ).length;
 
   const totalCanjeadas = tarjetasRegalo.filter(
-    (t) => String(t.estado).toLowerCase() === "canjeada"
-  ).length;
+  (t) => String(t.estado).toLowerCase() === "canjeado"
+).length;
 
   const ingresosEstimados = tarjetasRegalo.reduce((acc, t) => {
     if (String(t.estadoPago).toLowerCase() === "pagado") {
@@ -204,7 +204,7 @@ const AdminTarjetasRegalo = () => {
               >
                 <option value="">Todos</option>
                 <option value="pendiente">Pendiente</option>
-                <option value="canjeada">Canjeada</option>
+                <option value="canjeado">Canjeada</option>
                 <option value="caducada">Caducada</option>
               </select>
             </div>
