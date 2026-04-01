@@ -346,7 +346,17 @@ export default function ReservaClaseSueltaContinuidad() {
           creadaDesde: "tarjeta_regalo",
         });
 
-        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
+        const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
+        const uidComprador = tarjetaGlobal?.uidComprador || "";
+
+        const datosActualizacionTarjeta = {
           canjeado: true,
           usado: true,
           estadoCanje: "canjeado",
@@ -359,9 +369,20 @@ export default function ReservaClaseSueltaContinuidad() {
           fechaReserva: fecha,
           turnoReserva: turno,
           metodoReserva: metodo,
-          tipoClaseReserva: tipoClase,
           nombreTipoClaseReserva: nombreTipoClase,
-        });
+        };
+
+        await update(tarjetaGlobalRef, datosActualizacionTarjeta);
+
+        if (uidComprador) {
+          await update(
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
+            datosActualizacionTarjeta
+          );
+        }
 
         navigate("/pago/exito", {
           state: {

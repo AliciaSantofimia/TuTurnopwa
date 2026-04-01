@@ -191,7 +191,7 @@ export default function ReservaPintaTuPieza() {
       return;
     }
 
-       try {
+    try {
       const orderId = Date.now().toString().slice(-12);
       const timestamp = new Date().toISOString();
 
@@ -238,7 +238,12 @@ export default function ReservaPintaTuPieza() {
           creadaDesde: "tarjeta_regalo",
         });
 
-        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+        const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+        const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
+        const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+        const uidComprador = tarjetaGlobal?.uidComprador || "";
+
+        const datosActualizacionTarjeta = {
           canjeado: true,
           usado: true,
           estadoCanje: "canjeado",
@@ -250,10 +255,18 @@ export default function ReservaPintaTuPieza() {
           reservaId: nuevaReservaRef.key || "",
           fechaReserva: fecha,
           turnoReserva: turno,
-        });
+        };
 
-     
-                 navigate("/pago/exito", {
+        await update(tarjetaGlobalRef, datosActualizacionTarjeta);
+
+        if (uidComprador) {
+          await update(
+            ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+            datosActualizacionTarjeta
+          );
+        }
+
+        navigate("/pago/exito", {
           state: {
             desdeTarjeta: true,
             clase: claseConfig?.nombre || "Pinta tu pieza de cerámica",
@@ -396,8 +409,14 @@ export default function ReservaPintaTuPieza() {
 
               {fecha && !diaNoDisponible && (
                 <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                  <p><strong>Precio por plaza:</strong> {precioBase}€</p>
-                  <p><strong>Precio total:</strong> {precioTotal}€</p>
+                  <p>
+                    <strong>Precio por plaza:</strong>{" "}
+                    {desdeTarjeta ? "Tarjeta regalo" : `${precioBase}€`}
+                  </p>
+                  <p>
+                    <strong>Precio total:</strong>{" "}
+                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
+                  </p>
                   <p><strong>Duración:</strong> {duracion}</p>
                   <p><strong>Máximo plazas:</strong> {maxTotales}</p>
                 </div>
@@ -425,7 +444,7 @@ export default function ReservaPintaTuPieza() {
                   plazasNum > maxTotales
                 }
               >
-                                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
+                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
           </BloqueoReserva>

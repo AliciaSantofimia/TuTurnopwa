@@ -325,7 +325,17 @@ export default function ReservaCreaTuCuencoRamen() {
           creadaDesde: "tarjeta_regalo",
         });
 
-        await update(ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`), {
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
+        const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
+        const uidComprador = tarjetaGlobal?.uidComprador || "";
+
+        const datosActualizacionTarjeta = {
           canjeado: true,
           usado: true,
           estadoCanje: "canjeado",
@@ -339,7 +349,19 @@ export default function ReservaCreaTuCuencoRamen() {
           turnoReserva: turno,
           metodoReserva: metodo,
           nombreTipoClaseReserva: nombreMetodo,
-        });
+        };
+
+        await update(tarjetaGlobalRef, datosActualizacionTarjeta);
+
+        if (uidComprador) {
+          await update(
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
+            datosActualizacionTarjeta
+          );
+        }
 
         navigate("/pago/exito", {
           state: {
