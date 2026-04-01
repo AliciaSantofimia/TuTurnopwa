@@ -13,11 +13,21 @@ const AdminReservasNuevo = () => {
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [clasesValidas, setClasesValidas] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [esMovil, setEsMovil] = useState(() => window.innerWidth <= 768);
 
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroClase, setFiltroClase] = useState(claseInicial);
   const [filtroEstado, setFiltroEstado] = useState("");
   const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+
+  useEffect(() => {
+    const handleResize = () => {
+      setEsMovil(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (claseInicial) {
@@ -331,6 +341,26 @@ const AdminReservasNuevo = () => {
     return styles.trClickable;
   };
 
+  const getCardStyle = (r) => {
+    if (mostrandoTarjetas) return styles.cardMovil;
+
+    if (r.cancelada) {
+      return {
+        ...styles.cardMovil,
+        ...styles.cardCancelada,
+      };
+    }
+
+    if (r.reprogramada) {
+      return {
+        ...styles.cardMovil,
+        ...styles.cardReprogramada,
+      };
+    }
+
+    return styles.cardMovil;
+  };
+
   const renderEstado = (r) => {
     const estadoVisible = getEstadoVisible(r);
 
@@ -347,6 +377,18 @@ const AdminReservasNuevo = () => {
     }
 
     return <span>{estadoVisible}</span>;
+  };
+
+  const renderNotas = (r) => {
+    if (r.notasInternas > 0) {
+      return (
+        <span style={styles.badgeNotas}>
+          {r.notasInternas} {r.notasInternas === 1 ? "nota" : "notas"}
+        </span>
+      );
+    }
+
+    return <span style={styles.textoSuave}>—</span>;
   };
 
   return (
@@ -444,6 +486,60 @@ const AdminReservasNuevo = () => {
           <p style={styles.mensaje}>Cargando reservas...</p>
         ) : reservasFiltradas.length === 0 ? (
           <p style={styles.mensaje}>No hay reservas para mostrar.</p>
+        ) : esMovil ? (
+          <div style={styles.cardsWrapper}>
+            {reservasFiltradas.map((r) => (
+              <div
+                key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
+                onClick={() =>
+                  navigate(
+                    r.tipoRegistro === "tarjeta_regalo"
+                      ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
+                      : `/admin-detalle-reserva?id=${r.orderId}`
+                  )
+                }
+                style={getCardStyle(r)}
+              >
+                <div style={styles.cardTop}>
+                  <div>
+                    <p style={styles.cardFecha}>{r.fecha}</p>
+                    <p style={styles.cardTurno}>
+                      {mostrandoTarjetas ? r.codigo || "—" : r.turno}
+                    </p>
+                  </div>
+                  <div>{renderEstado(r)}</div>
+                </div>
+
+                <div style={styles.cardBloque}>
+                  <p style={styles.cardTitulo}>{r.clase}</p>
+
+                  <p style={styles.cardTexto}>
+                    <strong>
+                      {mostrandoTarjetas ? "Destinatario / Info:" : "Método:"}
+                    </strong>{" "}
+                    {mostrandoTarjetas
+                      ? r.nombreDestinatario || r.emailDestinatario || "—"
+                      : r.metodo}
+                  </p>
+
+                  <div style={styles.cardGrid}>
+                    <p style={styles.cardTexto}>
+                      <strong>Plazas:</strong> {r.plazas}
+                    </p>
+                    <p style={styles.cardTexto}>
+                      <strong>Pago:</strong> {r.estadoPago}
+                    </p>
+                    <p style={styles.cardTexto}>
+                      <strong>Precio:</strong> {r.precioTotal}€
+                    </p>
+                    <p style={styles.cardTexto}>
+                      <strong>Notas:</strong> {renderNotas(r)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div style={styles.tablaWrapper}>
             <table style={styles.table}>
@@ -492,16 +588,7 @@ const AdminReservasNuevo = () => {
                     <td style={styles.td}>{r.plazas}</td>
                     <td style={styles.td}>{renderEstado(r)}</td>
                     <td style={styles.td}>{r.estadoPago}</td>
-                    <td style={styles.td}>
-                      {r.notasInternas > 0 ? (
-                        <span style={styles.badgeNotas}>
-                          {r.notasInternas}{" "}
-                          {r.notasInternas === 1 ? "nota" : "notas"}
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
+                    <td style={styles.td}>{renderNotas(r)}</td>
                     <td style={styles.td}>{r.precioTotal}€</td>
                   </tr>
                 ))}
@@ -657,6 +744,68 @@ const styles = {
   trReprogramada: {
     backgroundColor: "#fff4d6",
   },
+  cardsWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+  },
+  cardMovil: {
+    backgroundColor: "#fffdf7",
+    border: "1px solid #f0e5cf",
+    borderRadius: 18,
+    padding: 16,
+    cursor: "pointer",
+    boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+  },
+  cardCancelada: {
+    backgroundColor: "#fff3f3",
+    border: "1px solid #efcaca",
+  },
+  cardReprogramada: {
+    backgroundColor: "#fff6df",
+    border: "1px solid #ead9a2",
+  },
+  cardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10,
+    marginBottom: 12,
+  },
+  cardFecha: {
+    margin: 0,
+    fontWeight: 700,
+    color: "#4b3a2a",
+    fontSize: "1rem",
+  },
+  cardTurno: {
+    margin: "4px 0 0 0",
+    color: "#7a6a58",
+    fontSize: "0.9rem",
+  },
+  cardBloque: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  cardTitulo: {
+    margin: 0,
+    color: "#2f2f2f",
+    fontWeight: 700,
+    fontSize: "1rem",
+  },
+  cardTexto: {
+    margin: 0,
+    color: "#4a4a4a",
+    fontSize: "0.93rem",
+    lineHeight: 1.45,
+  },
+  cardGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 8,
+    marginTop: 4,
+  },
   badgeNotas: {
     display: "inline-block",
     padding: "4px 10px",
@@ -688,6 +837,9 @@ const styles = {
     fontSize: "0.85rem",
     fontWeight: 700,
     whiteSpace: "nowrap",
+  },
+  textoSuave: {
+    color: "#8a8a8a",
   },
 };
 
