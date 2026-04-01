@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { ref, get, push, remove } from "firebase/database";
+import React, { useEffect, useMemo, useState } from "react";
+import { ref, get, push, remove, update } from "firebase/database";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
+import { contarPlazasPorMetodo } from "./utils/contarPlazasDia";
 import BotonVolver from "./BotonVolver";
 
 const AdminDetalleReservaNuevo = () => {
@@ -16,6 +17,14 @@ const AdminDetalleReservaNuevo = () => {
   const [cargando, setCargando] = useState(true);
   const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
 
+  const [claseConfig, setClaseConfig] = useState(null);
+  const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [nuevaFecha, setNuevaFecha] = useState("");
+  const [nuevoTurno, setNuevoTurno] = useState("");
+  const [ocupadasTornoNuevaFecha, setOcupadasTornoNuevaFecha] = useState(0);
+  const [ocupadasModeladoNuevaFecha, setOcupadasModeladoNuevaFecha] = useState(0);
+  const [guardandoReprogramacion, setGuardandoReprogramacion] = useState(false);
+
   useEffect(() => {
     const buscarReserva = async () => {
       try {
@@ -24,27 +33,30 @@ const AdminDetalleReservaNuevo = () => {
           get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
         ]);
 
-        if (!reservasSnap.exists()) {
-          setReserva(null);
-        } else {
-          let encontrada = null;
+        let encontrada = null;
 
+        if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
             const claseKey = claseSnap.key;
+            if (encontrada) return;
 
             claseSnap.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
+              if (encontrada) return;
 
               fechaSnap.forEach((turnoSnap) => {
                 const turnoKey = turnoSnap.key;
+                if (encontrada) return;
 
                 turnoSnap.forEach((nivelSnap) => {
                   const nivelKey = nivelSnap.key;
                   const nivelVal = nivelSnap.val();
 
-                  if (!nivelVal || typeof nivelVal !== "object") return;
+                  if (!nivelVal || typeof nivelVal !== "object" || encontrada) {
+                    return;
+                  }
 
-                  const construirReserva = (r) => {
+                  const construirReserva = (r, reservaKey) => {
                     if (!r || typeof r !== "object") return null;
 
                     return {
@@ -53,13 +65,16 @@ const AdminDetalleReservaNuevo = () => {
                       clase: r.clase || claseKey,
                       fecha: r.fecha || fechaKey,
                       turno: r.turno || turnoKey,
-                      metodo: r.metodo || r.tipoClase || nivelKey || "—",
+                      metodo:
+                        r.metodo ||
+                        r.tipoClase ||
+                        r.nombreTipoClase ||
+                        (nivelKey && !String(nivelKey).startsWith("-") ? nivelKey : "") ||
+                        "—",
                       plazas: Number(r.plazas || 1),
                       estado: r.estado || "—",
                       estadoPago: r.estadoPago || "—",
-                      precioUnitario: Number(
-                        r.precioUnitario || r.precio || 0
-                      ),
+                      precioUnitario: Number(r.precioUnitario || r.precio || 0),
                       precioTotal: Number(
                         r.precioTotal || r.precioUnitario || r.precio || 0
                       ),
@@ -68,15 +83,12 @@ const AdminDetalleReservaNuevo = () => {
                       desdeTarjeta: r.desdeTarjeta ?? false,
                       timestamp: r.timestamp || r.creadoEn || "—",
                       procesado: r.procesado ?? false,
+                      rutaClase: claseKey,
+                      rutaFecha: fechaKey,
+                      rutaTurno: turnoKey,
+                      rutaMetodo: nivelKey,
+                      reservaKey: reservaKey || "",
                     };
-                  };
-
-                  const comprobarReserva = (r) => {
-                    if (!r || typeof r !== "object") return;
-
-                    if (r.orderId === orderId) {
-                      encontrada = construirReserva(r);
-                    }
                   };
 
                   const pareceReservaDirecta =
@@ -86,19 +98,48 @@ const AdminDetalleReservaNuevo = () => {
                     "estadoPago" in nivelVal;
 
                   if (pareceReservaDirecta) {
-                    comprobarReserva(nivelVal);
+                    if (nivelVal.orderId === orderId) {
+                      encontrada = construirReserva(nivelVal, nivelSnap.key);
+                    }
                     return;
                   }
 
                   nivelSnap.forEach((reservaSnap) => {
-                    comprobarReserva(reservaSnap.val());
+                    const reservaVal = reservaSnap.val();
+
+                    if (
+                      reservaVal &&
+                      typeof reservaVal === "object" &&
+                      reservaVal.orderId === orderId
+                    ) {
+                      encontrada = construirReserva(reservaVal, reservaSnap.key);
+                    }
                   });
                 });
               });
             });
           });
+        }
 
-          setReserva(encontrada);
+        setReserva(encontrada);
+
+        if (encontrada?.claseId) {
+          const [claseConfigSnap, bloqueosSnap] = await Promise.all([
+            get(ref(dbRealtime, `clases/${encontrada.claseId}`)),
+            get(ref(dbRealtime, "bloqueosFechas")),
+          ]);
+
+          setClaseConfig(claseConfigSnap.exists() ? claseConfigSnap.val() : null);
+          setFechasBloqueadas(
+            bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
+          );
+          setNuevaFecha(encontrada.fecha || "");
+          setNuevoTurno(encontrada.turno || "");
+        } else {
+          setClaseConfig(null);
+          setFechasBloqueadas({});
+          setNuevaFecha("");
+          setNuevoTurno("");
         }
 
         const listaNotas = [];
@@ -119,6 +160,8 @@ const AdminDetalleReservaNuevo = () => {
         console.error("Error al buscar reserva:", error);
         setReserva(null);
         setNotasInternas([]);
+        setClaseConfig(null);
+        setFechasBloqueadas({});
       } finally {
         setCargando(false);
       }
@@ -126,6 +169,25 @@ const AdminDetalleReservaNuevo = () => {
 
     buscarReserva();
   }, [orderId]);
+
+  useEffect(() => {
+    if (!nuevaFecha) {
+      setOcupadasTornoNuevaFecha(0);
+      setOcupadasModeladoNuevaFecha(0);
+      return;
+    }
+
+    contarPlazasPorMetodo(nuevaFecha)
+      .then(({ torno, modelado }) => {
+        setOcupadasTornoNuevaFecha(torno);
+        setOcupadasModeladoNuevaFecha(modelado);
+      })
+      .catch((error) => {
+        console.error("Error al contar plazas para reprogramación:", error);
+        setOcupadasTornoNuevaFecha(0);
+        setOcupadasModeladoNuevaFecha(0);
+      });
+  }, [nuevaFecha]);
 
   const guardarNotaInterna = async () => {
     const texto = nuevaNota.trim();
@@ -188,6 +250,302 @@ const AdminDetalleReservaNuevo = () => {
     }
   };
 
+  const normalizarTurnos = (turnosRaw) => {
+    if (!turnosRaw) return [];
+
+    if (Array.isArray(turnosRaw)) {
+      return turnosRaw.map((t) => String(t || "").trim()).filter(Boolean);
+    }
+
+    if (typeof turnosRaw === "object") {
+      return Object.values(turnosRaw)
+        .map((t) => String(t || "").trim())
+        .filter(Boolean);
+    }
+
+    if (typeof turnosRaw === "string") {
+      return [turnosRaw.trim()].filter(Boolean);
+    }
+
+    return [];
+  };
+
+  const getNombreDiaSemana = (fechaISO) => {
+    if (!fechaISO) return "";
+
+    const [year, month, day] = fechaISO.split("-").map(Number);
+    const fechaLocal = new Date(year, month - 1, day);
+
+    const dias = [
+      "domingo",
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+    ];
+
+    return dias[fechaLocal.getDay()] || "";
+  };
+
+  const horariosClase = claseConfig?.horarios || claseConfig?.horario || {};
+  const metodoOriginal = (reserva?.metodo || "").toLowerCase();
+
+  const turnosDisponiblesReprogramacion = useMemo(() => {
+    if (!nuevaFecha) return [];
+
+    const nombreDia = getNombreDiaSemana(nuevaFecha);
+    return normalizarTurnos(horariosClase[nombreDia]);
+  }, [horariosClase, nuevaFecha]);
+
+  const fechaBloqueadaReprogramacion = useMemo(() => {
+    if (!nuevaFecha) return null;
+    const bloqueo = fechasBloqueadas?.[nuevaFecha];
+    return bloqueo?.bloqueado ? bloqueo : null;
+  }, [nuevaFecha, fechasBloqueadas]);
+
+  const diaNoDisponibleReprogramacion = useMemo(() => {
+    if (!nuevaFecha) return false;
+    return turnosDisponiblesReprogramacion.length === 0;
+  }, [nuevaFecha, turnosDisponiblesReprogramacion]);
+
+  const maxTornoReprogramacion = Number(claseConfig?.plazas?.maxTorno || 12);
+  const maxTotalesReprogramacion = Number(
+    claseConfig?.plazas?.maxTotales || claseConfig?.plazas?.plazasTotales || 45
+  );
+
+  const plazasTotalesOcupadasNuevaFecha =
+    ocupadasTornoNuevaFecha + ocupadasModeladoNuevaFecha;
+
+  const plazasPropiasSiMismaFecha =
+    nuevaFecha === reserva?.fecha ? Number(reserva?.plazas || 1) : 0;
+
+  const ocupadasTornoAjustadas =
+    metodoOriginal === "torno"
+      ? Math.max(ocupadasTornoNuevaFecha - plazasPropiasSiMismaFecha, 0)
+      : ocupadasTornoNuevaFecha;
+
+  const ocupadasTotalesAjustadas = Math.max(
+    plazasTotalesOcupadasNuevaFecha - plazasPropiasSiMismaFecha,
+    0
+  );
+
+  const plazasDisponiblesReprogramacion = useMemo(() => {
+    if (!metodoOriginal) return 0;
+
+    if (metodoOriginal === "torno") {
+      return Math.max(
+        Math.min(
+          maxTornoReprogramacion - ocupadasTornoAjustadas,
+          maxTotalesReprogramacion - ocupadasTotalesAjustadas
+        ),
+        0
+      );
+    }
+
+    return Math.max(
+      maxTotalesReprogramacion - ocupadasTotalesAjustadas,
+      0
+    );
+  }, [
+    metodoOriginal,
+    maxTornoReprogramacion,
+    maxTotalesReprogramacion,
+    ocupadasTornoAjustadas,
+    ocupadasTotalesAjustadas,
+  ]);
+
+  const hayCambiosReales =
+    nuevaFecha !== reserva?.fecha || nuevoTurno !== reserva?.turno;
+
+  const reprogramacionValida =
+    !!nuevaFecha &&
+    !!nuevoTurno &&
+    !fechaBloqueadaReprogramacion &&
+    !diaNoDisponibleReprogramacion &&
+    plazasDisponiblesReprogramacion >= Number(reserva?.plazas || 1) &&
+    hayCambiosReales;
+
+  const buscarReservaUsuarioPorOrderId = async (uid, orderIdBuscado) => {
+    if (!uid || !orderIdBuscado) return null;
+
+    const listaSnap = await get(ref(dbRealtime, `usuarios/${uid}/listaReservas`));
+    if (!listaSnap.exists()) return null;
+
+    let encontrada = null;
+
+    listaSnap.forEach((itemSnap) => {
+      const item = itemSnap.val();
+      if (
+        item &&
+        typeof item === "object" &&
+        item.orderId === orderIdBuscado &&
+        !encontrada
+      ) {
+        encontrada = {
+          key: itemSnap.key,
+          data: item,
+        };
+      }
+    });
+
+    return encontrada;
+  };
+
+  const obtenerRutaReservaActual = () => {
+    if (!reserva) return null;
+
+    const rutaBase = `reservas/${reserva.rutaClase}/${reserva.rutaFecha}/${reserva.rutaTurno}`;
+
+    const metodoEsDirecto =
+      reserva.rutaMetodo === reserva.reservaKey ||
+      String(reserva.rutaMetodo || "").startsWith("-");
+
+    if (metodoEsDirecto) {
+      return `${rutaBase}/${reserva.rutaMetodo}`;
+    }
+
+    return `${rutaBase}/${reserva.rutaMetodo}/${reserva.reservaKey}`;
+  };
+
+  const guardarReprogramacion = async () => {
+    if (!reprogramacionValida || !reserva) return;
+
+    const confirmar = window.confirm(
+      `¿Seguro que quieres reprogramar esta reserva del ${reserva.fecha} (${reserva.turno}) al ${nuevaFecha} (${nuevoTurno})?`
+    );
+
+    if (!confirmar) return;
+
+    setGuardandoReprogramacion(true);
+
+    try {
+      const ahora = new Date();
+      const fechaReprogramacionTexto = ahora.toLocaleString("es-ES");
+
+      const metodoNormalizado = (reserva.metodo || "general").trim();
+      const rutaActual = obtenerRutaReservaActual();
+
+      if (!rutaActual) {
+        throw new Error("No se pudo calcular la ruta actual de la reserva.");
+      }
+
+      const nuevaReservaPayload = {
+        ...reserva,
+        fecha: nuevaFecha,
+        turno: nuevoTurno,
+        metodo: metodoNormalizado,
+        reprogramada: true,
+        fechaOriginal: reserva.fechaOriginal || reserva.fecha,
+        turnoOriginal: reserva.turnoOriginal || reserva.turno,
+        ultimaFechaAnterior: reserva.fecha,
+        ultimoTurnoAnterior: reserva.turno,
+        fechaReprogramada: nuevaFecha,
+        turnoReprogramado: nuevoTurno,
+        reprogramadaEn: fechaReprogramacionTexto,
+        reprogramadaPor: "Berto",
+        avisoPerfil:
+          "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
+      };
+
+      const nuevaReservaRef = await push(
+        ref(
+          dbRealtime,
+          `reservas/${reserva.rutaClase}/${nuevaFecha}/${nuevoTurno}/${metodoNormalizado}`
+        ),
+        nuevaReservaPayload
+      );
+
+      await remove(ref(dbRealtime, rutaActual));
+
+      if (reserva.uid) {
+  const reservaUsuario = await buscarReservaUsuarioPorOrderId(
+    reserva.uid,
+    reserva.orderId
+  );
+
+  const datosActualizadosUsuario = {
+    ...reserva,
+    fecha: nuevaFecha,
+    turno: nuevoTurno,
+    metodo: metodoNormalizado,
+    reprogramada: true,
+    fechaOriginal:
+      reservaUsuario?.data?.fechaOriginal || reserva.fechaOriginal || reserva.fecha,
+    turnoOriginal:
+      reservaUsuario?.data?.turnoOriginal || reserva.turnoOriginal || reserva.turno,
+    ultimaFechaAnterior: reserva.fecha,
+    ultimoTurnoAnterior: reserva.turno,
+    fechaReprogramada: nuevaFecha,
+    turnoReprogramado: nuevoTurno,
+    reprogramadaEn: fechaReprogramacionTexto,
+    reprogramadaPor: "Berto",
+    avisoPerfil:
+      "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
+  };
+
+  if (reservaUsuario?.key) {
+    await update(
+      ref(
+        dbRealtime,
+        `usuarios/${reserva.uid}/listaReservas/${reservaUsuario.key}`
+      ),
+      datosActualizadosUsuario
+    );
+  } else {
+    await push(
+      ref(dbRealtime, `usuarios/${reserva.uid}/listaReservas`),
+      datosActualizadosUsuario
+    );
+  }
+}
+
+      await push(ref(dbRealtime, `reservasNotas/${orderId}/reprogramaciones`), {
+        fechaAnterior: reserva.fecha,
+        turnoAnterior: reserva.turno,
+        fechaNueva: nuevaFecha,
+        turnoNuevo: nuevoTurno,
+        fechaCambio: fechaReprogramacionTexto,
+        realizadoPor: "Berto",
+      });
+
+      const notaAutomatica = {
+        texto: `Reserva reprogramada por Berto. Antes: ${reserva.fecha} - ${reserva.turno}. Ahora: ${nuevaFecha} - ${nuevoTurno}.`,
+        fecha: fechaReprogramacionTexto,
+      };
+
+      await push(
+        ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`),
+        notaAutomatica
+      );
+
+      setNotasInternas((prev) => [
+        ...prev,
+        {
+          id: `local-${Date.now()}`,
+          ...notaAutomatica,
+        },
+      ]);
+
+      setReserva((prev) => ({
+        ...prev,
+        ...nuevaReservaPayload,
+        rutaFecha: nuevaFecha,
+        rutaTurno: nuevoTurno,
+        rutaMetodo: metodoNormalizado,
+        reservaKey: nuevaReservaRef.key,
+      }));
+
+      alert("Reserva reprogramada correctamente.");
+    } catch (error) {
+      console.error("Error al reprogramar la reserva:", error);
+      alert("No se pudo guardar la reprogramación.");
+    } finally {
+      setGuardandoReprogramacion(false);
+    }
+  };
+
   if (cargando) {
     return <p style={styles.mensaje}>Cargando reserva...</p>;
   }
@@ -225,6 +583,24 @@ const AdminDetalleReservaNuevo = () => {
           <p><strong>Método:</strong> {reserva.metodo}</p>
           <p><strong>Plazas:</strong> {reserva.plazas}</p>
 
+          {reserva.reprogramada && (
+            <>
+              <hr style={styles.hr} />
+              <p style={styles.reprogramadaInfo}>
+                <strong>Reserva reprogramada:</strong> Sí
+              </p>
+              <p>
+                <strong>Fecha original:</strong> {reserva.fechaOriginal || "—"}
+              </p>
+              <p>
+                <strong>Turno original:</strong> {reserva.turnoOriginal || "—"}
+              </p>
+              <p>
+                <strong>Último cambio:</strong> {reserva.reprogramadaEn || "—"}
+              </p>
+            </>
+          )}
+
           <hr style={styles.hr} />
 
           <p><strong>Estado:</strong> {reserva.estado}</p>
@@ -256,6 +632,86 @@ const AdminDetalleReservaNuevo = () => {
 
           <p><strong>Creado:</strong> {reserva.timestamp}</p>
           <p><strong>Procesado:</strong> {reserva.procesado ? "Sí" : "No"}</p>
+        </div>
+
+        <div style={styles.notasBox}>
+          <h2 style={styles.subtituloBloque}>Reprogramar reserva</h2>
+
+          <div style={styles.campoReprogramacion}>
+            <label style={styles.label}>Nueva fecha</label>
+            <input
+              type="date"
+              value={nuevaFecha}
+              onChange={(e) => {
+                setNuevaFecha(e.target.value);
+                setNuevoTurno("");
+              }}
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.campoReprogramacion}>
+            <label style={styles.label}>Nuevo turno</label>
+            <select
+              value={nuevoTurno}
+              onChange={(e) => setNuevoTurno(e.target.value)}
+              style={styles.input}
+              disabled={!nuevaFecha || diaNoDisponibleReprogramacion}
+            >
+              <option value="">-- Elige turno --</option>
+              {turnosDisponiblesReprogramacion.map((turno) => (
+                <option key={turno} value={turno}>
+                  {turno}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {fechaBloqueadaReprogramacion && (
+            <p style={styles.textoError}>
+              La fecha elegida está bloqueada.
+              {fechaBloqueadaReprogramacion.motivo
+                ? ` Motivo: ${fechaBloqueadaReprogramacion.motivo}.`
+                : ""}
+            </p>
+          )}
+
+          {nuevaFecha &&
+            !fechaBloqueadaReprogramacion &&
+            diaNoDisponibleReprogramacion && (
+              <p style={styles.textoError}>
+                Esta clase no se imparte ese día. Días disponibles:{" "}
+                {Object.keys(horariosClase).join(", ")}.
+              </p>
+            )}
+
+          {!fechaBloqueadaReprogramacion &&
+            !diaNoDisponibleReprogramacion &&
+            nuevaFecha && (
+              <p style={styles.textoVacio}>
+                Plazas disponibles para esa fecha y turno:{" "}
+                {plazasDisponiblesReprogramacion}
+              </p>
+            )}
+
+          <p style={styles.textoVacio}>
+            Al confirmar, se moverá la reserva en Firebase y también se
+            actualizará en el perfil del usuario.
+          </p>
+
+          <button
+            onClick={guardarReprogramacion}
+            style={{
+              ...styles.botonGuardar,
+              opacity: reprogramacionValida ? 1 : 0.6,
+              cursor: reprogramacionValida ? "pointer" : "not-allowed",
+            }}
+            disabled={!reprogramacionValida || guardandoReprogramacion}
+          >
+            {guardandoReprogramacion
+              ? "Guardando cambio..."
+              : "Confirmar reprogramación"}
+          </button>
         </div>
 
         <div style={styles.notasBox}>
@@ -417,6 +873,33 @@ const styles = {
     fontWeight: 600,
     color: "#8a3b3b",
     flexShrink: 0,
+  },
+  campoReprogramacion: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: "0.92rem",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  input: {
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid #e5d8b8",
+    fontSize: "0.95rem",
+    backgroundColor: "#fffaf0",
+  },
+  textoError: {
+    color: "#b33a3a",
+    fontWeight: 500,
+    marginTop: 6,
+  },
+  reprogramadaInfo: {
+    color: "#8a6a2f",
+    fontWeight: 600,
   },
 };
 

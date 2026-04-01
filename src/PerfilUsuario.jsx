@@ -22,6 +22,68 @@ function obtenerFechaReserva(reserva) {
   return isNaN(fechaHora.getTime()) ? null : fechaHora;
 }
 
+function esReservaReprogramada(reserva) {
+  if (!reserva) return false;
+
+  return (
+    reserva.reprogramada === true ||
+    reserva.reprogramada === "true" ||
+    !!reserva.fechaOriginal ||
+    !!reserva.turnoOriginal ||
+    !!reserva.reprogramadaEn ||
+    !!reserva.avisoPerfil ||
+    !!reserva.fechaReprogramada ||
+    !!reserva.turnoReprogramado ||
+    !!reserva.ultimaFechaAnterior ||
+    !!reserva.ultimoTurnoAnterior
+  );
+}
+
+function AvisoReprogramacion({ reserva }) {
+  const reprogramada = esReservaReprogramada(reserva);
+
+  if (!reprogramada) return null;
+
+  const fechaAnterior =
+    reserva.fechaOriginal || reserva.ultimaFechaAnterior || "—";
+  const turnoAnterior =
+    reserva.turnoOriginal || reserva.ultimoTurnoAnterior || "";
+
+  return (
+    <div className="mt-2 rounded-xl border border-[#ecd8a6] bg-[#fffaf0] px-3 py-2">
+      <p className="text-sm text-[#7a5a1f]">
+        <span className="font-semibold">Reserva reprogramada.</span>{" "}
+        Antes: {fechaAnterior}
+        {turnoAnterior ? ` · ${turnoAnterior}` : ""}. Ahora: {reserva.fecha}
+        {reserva.turno ? ` · ${reserva.turno}` : ""}.
+      </p>
+    </div>
+  );
+}
+
+function TarjetaReserva({ reserva }) {
+  return (
+    <div className="space-y-1 text-sm">
+      <p>
+        <strong>Clase:</strong> {reserva.clase}
+      </p>
+      <p>
+        <strong>Fecha:</strong> {reserva.fecha}
+      </p>
+      <p>
+        <strong>Turno:</strong> {reserva.turno}
+      </p>
+      {reserva.ubicacion && (
+        <p>
+          <strong>Ubicación:</strong> {reserva.ubicacion}
+        </p>
+      )}
+
+      <AvisoReprogramacion reserva={reserva} />
+    </div>
+  );
+}
+
 export default function PerfilUsuario() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
@@ -168,25 +230,10 @@ export default function PerfilUsuario() {
         </div>
 
         <div className="bg-white rounded-2xl border border-[#efe7db] px-4 py-4 shadow-sm mb-5">
-          <h2 className="text-base font-semibold mb-3">Tu  reserva</h2>
+          <h2 className="text-base font-semibold mb-3">Tu reserva</h2>
 
           {reservaActiva ? (
-            <div className="space-y-1 text-sm">
-              <p>
-                <strong>Clase:</strong> {reservaActiva.clase}
-              </p>
-              <p>
-                <strong>Fecha:</strong> {reservaActiva.fecha}
-              </p>
-              <p>
-                <strong>Turno:</strong> {reservaActiva.turno}
-              </p>
-              {reservaActiva.ubicacion && (
-                <p>
-                  <strong>Ubicación:</strong> {reservaActiva.ubicacion}
-                </p>
-              )}
-            </div>
+            <TarjetaReserva reserva={reservaActiva} />
           ) : (
             <p className="text-sm text-[#7b6d62]">
               No tienes reservas activas.
@@ -207,8 +254,12 @@ export default function PerfilUsuario() {
                     key={i}
                     className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]"
                   >
-                    <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
-                    {r.ubicacion ? ` en ${r.ubicacion}` : ""}
+                    <p>
+                      <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
+                      {r.ubicacion ? ` en ${r.ubicacion}` : ""}
+                    </p>
+
+                    <AvisoReprogramacion reserva={r} />
                   </li>
                 ))}
               </ul>
@@ -233,8 +284,12 @@ export default function PerfilUsuario() {
                     key={i}
                     className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]"
                   >
-                    <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
-                    {r.ubicacion ? ` en ${r.ubicacion}` : ""}
+                    <p>
+                      <strong>{r.fecha}</strong> — {r.clase} ({r.turno})
+                      {r.ubicacion ? ` en ${r.ubicacion}` : ""}
+                    </p>
+
+                    <AvisoReprogramacion reserva={r} />
                   </li>
                 ))}
               </ul>
