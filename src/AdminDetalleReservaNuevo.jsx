@@ -25,6 +25,9 @@ const AdminDetalleReservaNuevo = () => {
   const [ocupadasModeladoNuevaFecha, setOcupadasModeladoNuevaFecha] = useState(0);
   const [guardandoReprogramacion, setGuardandoReprogramacion] = useState(false);
 
+  const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [guardandoCancelacion, setGuardandoCancelacion] = useState(false);
+
   useEffect(() => {
     const buscarReserva = async () => {
       try {
@@ -344,10 +347,7 @@ const AdminDetalleReservaNuevo = () => {
       );
     }
 
-    return Math.max(
-      maxTotalesReprogramacion - ocupadasTotalesAjustadas,
-      0
-    );
+    return Math.max(maxTotalesReprogramacion - ocupadasTotalesAjustadas, 0);
   }, [
     metodoOriginal,
     maxTornoReprogramacion,
@@ -359,13 +359,17 @@ const AdminDetalleReservaNuevo = () => {
   const hayCambiosReales =
     nuevaFecha !== reserva?.fecha || nuevoTurno !== reserva?.turno;
 
+  const reservaYaCancelada =
+    reserva?.cancelada === true || reserva?.estado === "Cancelada";
+
   const reprogramacionValida =
     !!nuevaFecha &&
     !!nuevoTurno &&
     !fechaBloqueadaReprogramacion &&
     !diaNoDisponibleReprogramacion &&
     plazasDisponiblesReprogramacion >= Number(reserva?.plazas || 1) &&
-    hayCambiosReales;
+    hayCambiosReales &&
+    !reservaYaCancelada;
 
   const buscarReservaUsuarioPorOrderId = async (uid, orderIdBuscado) => {
     if (!uid || !orderIdBuscado) return null;
@@ -460,46 +464,50 @@ const AdminDetalleReservaNuevo = () => {
       await remove(ref(dbRealtime, rutaActual));
 
       if (reserva.uid) {
-  const reservaUsuario = await buscarReservaUsuarioPorOrderId(
-    reserva.uid,
-    reserva.orderId
-  );
+        const reservaUsuario = await buscarReservaUsuarioPorOrderId(
+          reserva.uid,
+          reserva.orderId
+        );
 
-  const datosActualizadosUsuario = {
-    ...reserva,
-    fecha: nuevaFecha,
-    turno: nuevoTurno,
-    metodo: metodoNormalizado,
-    reprogramada: true,
-    fechaOriginal:
-      reservaUsuario?.data?.fechaOriginal || reserva.fechaOriginal || reserva.fecha,
-    turnoOriginal:
-      reservaUsuario?.data?.turnoOriginal || reserva.turnoOriginal || reserva.turno,
-    ultimaFechaAnterior: reserva.fecha,
-    ultimoTurnoAnterior: reserva.turno,
-    fechaReprogramada: nuevaFecha,
-    turnoReprogramado: nuevoTurno,
-    reprogramadaEn: fechaReprogramacionTexto,
-    reprogramadaPor: "Berto",
-    avisoPerfil:
-      "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
-  };
+        const datosActualizadosUsuario = {
+          ...reserva,
+          fecha: nuevaFecha,
+          turno: nuevoTurno,
+          metodo: metodoNormalizado,
+          reprogramada: true,
+          fechaOriginal:
+            reservaUsuario?.data?.fechaOriginal ||
+            reserva.fechaOriginal ||
+            reserva.fecha,
+          turnoOriginal:
+            reservaUsuario?.data?.turnoOriginal ||
+            reserva.turnoOriginal ||
+            reserva.turno,
+          ultimaFechaAnterior: reserva.fecha,
+          ultimoTurnoAnterior: reserva.turno,
+          fechaReprogramada: nuevaFecha,
+          turnoReprogramado: nuevoTurno,
+          reprogramadaEn: fechaReprogramacionTexto,
+          reprogramadaPor: "Berto",
+          avisoPerfil:
+            "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
+        };
 
-  if (reservaUsuario?.key) {
-    await update(
-      ref(
-        dbRealtime,
-        `usuarios/${reserva.uid}/listaReservas/${reservaUsuario.key}`
-      ),
-      datosActualizadosUsuario
-    );
-  } else {
-    await push(
-      ref(dbRealtime, `usuarios/${reserva.uid}/listaReservas`),
-      datosActualizadosUsuario
-    );
-  }
-}
+        if (reservaUsuario?.key) {
+          await update(
+            ref(
+              dbRealtime,
+              `usuarios/${reserva.uid}/listaReservas/${reservaUsuario.key}`
+            ),
+            datosActualizadosUsuario
+          );
+        } else {
+          await push(
+            ref(dbRealtime, `usuarios/${reserva.uid}/listaReservas`),
+            datosActualizadosUsuario
+          );
+        }
+      }
 
       await push(ref(dbRealtime, `reservasNotas/${orderId}/reprogramaciones`), {
         fechaAnterior: reserva.fecha,
@@ -543,6 +551,98 @@ const AdminDetalleReservaNuevo = () => {
       alert("No se pudo guardar la reprogramación.");
     } finally {
       setGuardandoReprogramacion(false);
+    }
+  };
+
+  const cancelarReserva = async () => {
+    if (!reserva || reservaYaCancelada) return;
+
+    const confirmar = window.confirm(
+      "¿Seguro que quieres cancelar esta reserva? La reserva quedará guardada en la base de datos como cancelada."
+    );
+
+    if (!confirmar) return;
+
+    setGuardandoCancelacion(true);
+
+    try {
+      const ahora = new Date();
+      const fechaCancelacionTexto = ahora.toLocaleString("es-ES");
+      const rutaActual = obtenerRutaReservaActual();
+
+      if (!rutaActual) {
+        throw new Error("No se pudo calcular la ruta actual de la reserva.");
+      }
+
+      const datosCancelacion = {
+        estado: "Cancelada",
+        cancelada: true,
+        canceladaPor: "Berto",
+        canceladaEn: fechaCancelacionTexto,
+        motivoCancelacion: motivoCancelacion.trim() || "",
+        avisoPerfil:
+          "Tu reserva ha sido cancelada. Si lo necesitas, contacta con el taller.",
+      };
+
+      await update(ref(dbRealtime, rutaActual), datosCancelacion);
+
+      if (reserva.uid) {
+        const reservaUsuario = await buscarReservaUsuarioPorOrderId(
+          reserva.uid,
+          reserva.orderId
+        );
+
+        if (reservaUsuario?.key) {
+          await update(
+            ref(
+              dbRealtime,
+              `usuarios/${reserva.uid}/listaReservas/${reservaUsuario.key}`
+            ),
+            datosCancelacion
+          );
+        } else {
+          await push(ref(dbRealtime, `usuarios/${reserva.uid}/listaReservas`), {
+            ...reserva,
+            ...datosCancelacion,
+          });
+        }
+      }
+
+      const textoMotivo = motivoCancelacion.trim()
+        ? ` Motivo: ${motivoCancelacion.trim()}.`
+        : "";
+
+      const notaAutomatica = {
+        texto: `Reserva cancelada por Berto.${textoMotivo}`,
+        fecha: fechaCancelacionTexto,
+      };
+
+      await push(
+        ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`),
+        notaAutomatica
+      );
+
+      setNotasInternas((prev) => [
+        ...prev,
+        {
+          id: `cancelacion-${Date.now()}`,
+          ...notaAutomatica,
+        },
+      ]);
+
+      setReserva((prev) => ({
+        ...prev,
+        ...datosCancelacion,
+      }));
+
+      setMotivoCancelacion("");
+
+      alert("Reserva cancelada correctamente.");
+    } catch (error) {
+      console.error("Error al cancelar la reserva:", error);
+      alert("No se pudo cancelar la reserva.");
+    } finally {
+      setGuardandoCancelacion(false);
     }
   };
 
@@ -601,6 +701,24 @@ const AdminDetalleReservaNuevo = () => {
             </>
           )}
 
+          {reservaYaCancelada && (
+            <>
+              <hr style={styles.hr} />
+              <p style={styles.canceladaInfo}>
+                <strong>Reserva cancelada:</strong> Sí
+              </p>
+              <p>
+                <strong>Cancelada por:</strong> {reserva.canceladaPor || "—"}
+              </p>
+              <p>
+                <strong>Fecha cancelación:</strong> {reserva.canceladaEn || "—"}
+              </p>
+              <p>
+                <strong>Motivo:</strong> {reserva.motivoCancelacion || "—"}
+              </p>
+            </>
+          )}
+
           <hr style={styles.hr} />
 
           <p><strong>Estado:</strong> {reserva.estado}</p>
@@ -647,6 +765,7 @@ const AdminDetalleReservaNuevo = () => {
                 setNuevoTurno("");
               }}
               style={styles.input}
+              disabled={reservaYaCancelada}
             />
           </div>
 
@@ -656,7 +775,9 @@ const AdminDetalleReservaNuevo = () => {
               value={nuevoTurno}
               onChange={(e) => setNuevoTurno(e.target.value)}
               style={styles.input}
-              disabled={!nuevaFecha || diaNoDisponibleReprogramacion}
+              disabled={
+                !nuevaFecha || diaNoDisponibleReprogramacion || reservaYaCancelada
+              }
             >
               <option value="">-- Elige turno --</option>
               {turnosDisponiblesReprogramacion.map((turno) => (
@@ -694,6 +815,12 @@ const AdminDetalleReservaNuevo = () => {
               </p>
             )}
 
+          {reservaYaCancelada && (
+            <p style={styles.textoError}>
+              Esta reserva está cancelada y ya no se puede reprogramar.
+            </p>
+          )}
+
           <p style={styles.textoVacio}>
             Al confirmar, se moverá la reserva en Firebase y también se
             actualizará en el perfil del usuario.
@@ -711,6 +838,45 @@ const AdminDetalleReservaNuevo = () => {
             {guardandoReprogramacion
               ? "Guardando cambio..."
               : "Confirmar reprogramación"}
+          </button>
+        </div>
+
+        <div style={styles.cancelacionBox}>
+          <h2 style={styles.subtituloBloque}>Cancelar reserva</h2>
+
+          <div style={styles.campoReprogramacion}>
+            <label style={styles.label}>Motivo de cancelación (opcional)</label>
+            <textarea
+              value={motivoCancelacion}
+              onChange={(e) => setMotivoCancelacion(e.target.value)}
+              placeholder="Escribe aquí el motivo si quieres dejarlo registrado..."
+              style={styles.textarea}
+              rows={3}
+              disabled={reservaYaCancelada}
+            />
+          </div>
+
+          {reservaYaCancelada ? (
+            <p style={styles.textoError}>
+              Esta reserva ya está cancelada.
+            </p>
+          ) : (
+            <p style={styles.textoVacio}>
+              La reserva no se borrará. Quedará guardada como cancelada en admin
+              y en el perfil del usuario.
+            </p>
+          )}
+
+          <button
+            onClick={cancelarReserva}
+            style={{
+              ...styles.botonCancelar,
+              opacity: reservaYaCancelada ? 0.6 : 1,
+              cursor: reservaYaCancelada ? "not-allowed" : "pointer",
+            }}
+            disabled={reservaYaCancelada || guardandoCancelacion}
+          >
+            {guardandoCancelacion ? "Cancelando reserva..." : "Cancelar reserva"}
           </button>
         </div>
 
@@ -813,6 +979,13 @@ const styles = {
     border: "1px solid #f0e5cf",
     borderRadius: 16,
   },
+  cancelacionBox: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: "#fff5f5",
+    border: "1px solid #f0cccc",
+    borderRadius: 16,
+  },
   subtituloBloque: {
     marginTop: 0,
     marginBottom: 12,
@@ -864,6 +1037,16 @@ const styles = {
     fontWeight: 600,
     color: "#5b4a2d",
   },
+  botonCancelar: {
+    marginTop: 10,
+    padding: "10px 14px",
+    border: "1px solid #e7c9c9",
+    backgroundColor: "#fff1f1",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 700,
+    color: "#8a3b3b",
+  },
   botonEliminar: {
     padding: "8px 12px",
     border: "1px solid #e7c9c9",
@@ -899,6 +1082,10 @@ const styles = {
   },
   reprogramadaInfo: {
     color: "#8a6a2f",
+    fontWeight: 600,
+  },
+  canceladaInfo: {
+    color: "#8a3b3b",
     fontWeight: 600,
   },
 };

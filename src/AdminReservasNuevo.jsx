@@ -13,7 +13,6 @@ const AdminReservasNuevo = () => {
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [clasesValidas, setClasesValidas] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [mapaNotas, setMapaNotas] = useState({});
 
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroClase, setFiltroClase] = useState(claseInicial);
@@ -32,32 +31,30 @@ const AdminReservasNuevo = () => {
 
       try {
         const [clasesSnap, notasSnap] = await Promise.all([
-  get(ref(dbRealtime, "clases")),
-  get(ref(dbRealtime, "reservasNotas")),
-]);
+          get(ref(dbRealtime, "clases")),
+          get(ref(dbRealtime, "reservasNotas")),
+        ]);
 
         const mapaClases = {};
         const listaClases = [];
         const mapaNotasTemp = {};
 
-if (notasSnap.exists()) {
-  notasSnap.forEach((notaReservaSnap) => {
-    const orderId = notaReservaSnap.key;
-    const notasInternas = notaReservaSnap.child("notasInternas");
+        if (notasSnap.exists()) {
+          notasSnap.forEach((notaReservaSnap) => {
+            const orderId = notaReservaSnap.key;
+            const notasInternas = notaReservaSnap.child("notasInternas");
 
-    let totalNotas = 0;
+            let totalNotas = 0;
 
-    if (notasInternas.exists()) {
-      notasInternas.forEach(() => {
-        totalNotas += 1;
-      });
-    }
+            if (notasInternas.exists()) {
+              notasInternas.forEach(() => {
+                totalNotas += 1;
+              });
+            }
 
-    mapaNotasTemp[orderId] = totalNotas;
-  });
-}
-
-setMapaNotas(mapaNotasTemp);
+            mapaNotasTemp[orderId] = totalNotas;
+          });
+        }
 
         if (clasesSnap.exists()) {
           clasesSnap.forEach((claseSnap) => {
@@ -76,7 +73,6 @@ setMapaNotas(mapaNotasTemp);
           });
         }
 
-        // Opción fija para admin
         listaClases.push({
           id: "tarjeta_regalo",
           nombre: "Tarjeta regalo",
@@ -90,7 +86,6 @@ setMapaNotas(mapaNotasTemp);
           })
         );
 
-        // ---------- RESERVAS NORMALES ----------
         try {
           const reservasSnap = await get(ref(dbRealtime, "reservas"));
           const datosReservas = [];
@@ -154,6 +149,16 @@ setMapaNotas(mapaNotasTemp);
                         orderId: reserva.orderId || "",
                         procesado: reserva.procesado ?? false,
                         notasInternas: mapaNotasTemp[reserva.orderId || ""] || 0,
+                        reprogramada:
+                          reserva.reprogramada === true ||
+                          reserva.reprogramada === "true" ||
+                          !!reserva.fechaOriginal ||
+                          !!reserva.turnoOriginal ||
+                          !!reserva.reprogramadaEn,
+                        cancelada:
+                          reserva.cancelada === true ||
+                          reserva.cancelada === "true" ||
+                          reserva.estado === "Cancelada",
                       };
                     };
 
@@ -198,7 +203,6 @@ setMapaNotas(mapaNotasTemp);
           setReservas([]);
         }
 
-        // ---------- TARJETAS REGALO ----------
         try {
           const tarjetasSnap = await get(ref(dbRealtime, "tarjetasRegalo"));
           const datosTarjetas = [];
@@ -229,7 +233,10 @@ setMapaNotas(mapaNotasTemp);
                 codigo: tarjeta.codigo || "",
                 nombreDestinatario: tarjeta.nombreDestinatario || "",
                 emailDestinatario: tarjeta.emailDestinatario || "",
-                notasInternas: mapaNotasTemp[(tarjeta.orderId || tarjetaSnap.key) || ""] || 0,
+                notasInternas:
+                  mapaNotasTemp[(tarjeta.orderId || tarjetaSnap.key) || ""] || 0,
+                reprogramada: false,
+                cancelada: false,
               });
             });
           }
@@ -269,11 +276,25 @@ setMapaNotas(mapaNotasTemp);
     return reservas;
   }, [filtroClase, reservas, tarjetasRegalo]);
 
+  const getEstadoVisible = (r) => {
+    if (r.tipoRegistro === "tarjeta_regalo") {
+      return r.estado || "pendiente";
+    }
+
+    if (r.cancelada) return "Cancelada";
+    if (r.reprogramada) return "Reprogramada";
+    if (r.estado && r.estado !== "—") return r.estado;
+
+    return "Confirmada";
+  };
+
   const reservasFiltradas = useMemo(() => {
     return datosActivos.filter((r) => {
+      const estadoVisible = getEstadoVisible(r);
+
       const cumpleFecha = !filtroFecha || r.fecha === filtroFecha;
       const cumpleClase = !filtroClase || r.claseId === filtroClase;
-      const cumpleEstado = !filtroEstado || r.estado === filtroEstado;
+      const cumpleEstado = !filtroEstado || estadoVisible === filtroEstado;
       const cumpleEstadoPago =
         !filtroEstadoPago || r.estadoPago === filtroEstadoPago;
 
@@ -289,6 +310,44 @@ setMapaNotas(mapaNotasTemp);
   };
 
   const mostrandoTarjetas = filtroClase === "tarjeta_regalo";
+
+  const getRowStyle = (r) => {
+    if (mostrandoTarjetas) return styles.trClickable;
+
+    if (r.cancelada) {
+      return {
+        ...styles.trClickable,
+        ...styles.trCancelada,
+      };
+    }
+
+    if (r.reprogramada) {
+      return {
+        ...styles.trClickable,
+        ...styles.trReprogramada,
+      };
+    }
+
+    return styles.trClickable;
+  };
+
+  const renderEstado = (r) => {
+    const estadoVisible = getEstadoVisible(r);
+
+    if (mostrandoTarjetas) {
+      return <span>{estadoVisible}</span>;
+    }
+
+    if (estadoVisible === "Cancelada") {
+      return <span style={styles.badgeCancelada}>Cancelada</span>;
+    }
+
+    if (estadoVisible === "Reprogramada") {
+      return <span style={styles.badgeReprogramada}>Reprogramada</span>;
+    }
+
+    return <span>{estadoVisible}</span>;
+  };
 
   return (
     <div style={styles.body}>
@@ -347,6 +406,7 @@ setMapaNotas(mapaNotasTemp);
                 ) : (
                   <>
                     <option value="Confirmada">Confirmada</option>
+                    <option value="Reprogramada">Reprogramada</option>
                     <option value="Cancelada">Cancelada</option>
                   </>
                 )}
@@ -411,37 +471,37 @@ setMapaNotas(mapaNotasTemp);
                   <tr
                     key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
                     onClick={() =>
-  navigate(
-    r.tipoRegistro === "tarjeta_regalo"
-      ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
-      : `/admin-detalle-reserva?id=${r.orderId}`
-  )
-}
-                    style={styles.trClickable}
+                      navigate(
+                        r.tipoRegistro === "tarjeta_regalo"
+                          ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
+                          : `/admin-detalle-reserva?id=${r.orderId}`
+                      )
+                    }
+                    style={getRowStyle(r)}
                   >
                     <td style={styles.td}>{r.fecha}</td>
                     <td style={styles.td}>
                       {mostrandoTarjetas ? r.codigo || "—" : r.turno}
                     </td>
-                    <td style={styles.td}>{r.clase}</td>
-                    <td style={styles.td}>
+                    <td style={styles.tdClase}>{r.clase}</td>
+                    <td style={styles.tdMetodo}>
                       {mostrandoTarjetas
                         ? r.nombreDestinatario || r.emailDestinatario || "—"
                         : r.metodo}
                     </td>
                     <td style={styles.td}>{r.plazas}</td>
-                    <td style={styles.td}>{r.estado}</td>
+                    <td style={styles.td}>{renderEstado(r)}</td>
                     <td style={styles.td}>{r.estadoPago}</td>
                     <td style={styles.td}>
-  {r.notasInternas > 0 ? (
-    <span style={styles.badgeNotas}>
-      {r.notasInternas} {r.notasInternas === 1 ? "nota" : "notas"}
-    </span>
-  ) : (
-    "—"
-  )}
-</td>
-                    
+                      {r.notasInternas > 0 ? (
+                        <span style={styles.badgeNotas}>
+                          {r.notasInternas}{" "}
+                          {r.notasInternas === 1 ? "nota" : "notas"}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td style={styles.td}>{r.precioTotal}€</td>
                   </tr>
                 ))}
@@ -487,17 +547,22 @@ const styles = {
     borderRadius: 20,
     padding: 18,
     marginBottom: 18,
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
   },
   filtrosGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 14,
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 16,
     marginBottom: 14,
+    alignItems: "end",
   },
   campo: {
     display: "flex",
     flexDirection: "column",
     gap: 6,
+    minWidth: 0,
   },
   label: {
     fontSize: "0.92rem",
@@ -505,11 +570,15 @@ const styles = {
     color: "#5b4a2d",
   },
   input: {
+    width: "100%",
+    minHeight: "44px",
     padding: "10px 12px",
     borderRadius: 12,
     border: "1px solid #e5d8b8",
     fontSize: "0.95rem",
     backgroundColor: "#fffaf0",
+    boxSizing: "border-box",
+    appearance: "auto",
   },
   botonSecundario: {
     padding: "10px 14px",
@@ -519,6 +588,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: 600,
     color: "#5b4a2d",
+    alignSelf: "flex-start",
   },
   resumen: {
     marginBottom: 14,
@@ -535,30 +605,57 @@ const styles = {
   tablaWrapper: {
     overflowX: "auto",
     borderRadius: 18,
+    border: "1px solid #f0e5cf",
+    backgroundColor: "#fffdf7",
   },
   table: {
     width: "100%",
+    minWidth: "1100px",
     borderCollapse: "collapse",
     backgroundColor: "#fffdf7",
     overflow: "hidden",
   },
   th: {
     textAlign: "left",
-    padding: 14,
+    padding: "14px 16px",
     backgroundColor: "#fff8da",
     color: "#5b4a2d",
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
+    whiteSpace: "nowrap",
   },
   td: {
-    padding: 14,
+    padding: "14px 16px",
     borderBottom: "1px solid #f3ead7",
     color: "#333",
     fontSize: "0.95rem",
+    verticalAlign: "middle",
+  },
+  tdClase: {
+    padding: "14px 16px",
+    borderBottom: "1px solid #f3ead7",
+    color: "#333",
+    fontSize: "0.95rem",
+    verticalAlign: "middle",
+    minWidth: "170px",
+  },
+  tdMetodo: {
+    padding: "14px 16px",
+    borderBottom: "1px solid #f3ead7",
+    color: "#333",
+    fontSize: "0.95rem",
+    verticalAlign: "middle",
+    minWidth: "170px",
   },
   trClickable: {
     cursor: "pointer",
-    transition: "0.2s",
+    transition: "background-color 0.2s ease",
+  },
+  trCancelada: {
+    backgroundColor: "#fff1f1",
+  },
+  trReprogramada: {
+    backgroundColor: "#fff4d6",
   },
   badgeNotas: {
     display: "inline-block",
@@ -569,6 +666,28 @@ const styles = {
     color: "#5b4a2d",
     fontSize: "0.85rem",
     fontWeight: 600,
+  },
+  badgeCancelada: {
+    display: "inline-block",
+    padding: "5px 10px",
+    borderRadius: 999,
+    backgroundColor: "#fbe1e1",
+    border: "1px solid #e7b7b7",
+    color: "#8a3b3b",
+    fontSize: "0.85rem",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+  badgeReprogramada: {
+    display: "inline-block",
+    padding: "5px 10px",
+    borderRadius: 999,
+    backgroundColor: "#f6df9c",
+    border: "1px solid #ddb85c",
+    color: "#7a5a1f",
+    fontSize: "0.85rem",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
   },
 };
 

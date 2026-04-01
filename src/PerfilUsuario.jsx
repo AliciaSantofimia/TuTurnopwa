@@ -39,6 +39,16 @@ function esReservaReprogramada(reserva) {
   );
 }
 
+function esReservaCancelada(reserva) {
+  if (!reserva) return false;
+
+  return (
+    reserva.cancelada === true ||
+    reserva.cancelada === "true" ||
+    reserva.estado === "Cancelada"
+  );
+}
+
 function AvisoReprogramacion({ reserva }) {
   const reprogramada = esReservaReprogramada(reserva);
 
@@ -50,13 +60,60 @@ function AvisoReprogramacion({ reserva }) {
     reserva.turnoOriginal || reserva.ultimoTurnoAnterior || "";
 
   return (
-    <div className="mt-2 rounded-xl border border-[#ecd8a6] bg-[#fffaf0] px-3 py-2">
-      <p className="text-sm text-[#7a5a1f]">
-        <span className="font-semibold">Reserva reprogramada.</span>{" "}
-        Antes: {fechaAnterior}
-        {turnoAnterior ? ` · ${turnoAnterior}` : ""}. Ahora: {reserva.fecha}
-        {reserva.turno ? ` · ${reserva.turno}` : ""}.
+    <div className="mt-3 rounded-xl border border-[#ecd8a6] bg-[#fffaf0] px-3 py-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="inline-flex items-center rounded-full bg-[#f6e7b8] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#7a5a1f]">
+          Reprogramada
+        </span>
+
+        {reserva.reprogramadaEn && (
+          <span className="text-[11px] text-[#9a8351]">
+            {reserva.reprogramadaEn}
+          </span>
+        )}
+      </div>
+
+      <p className="text-sm text-[#6f5727] leading-relaxed">
+        <span className="font-semibold">Antes:</span> {fechaAnterior}
+        {turnoAnterior ? ` · ${turnoAnterior}` : ""}
       </p>
+
+      <p className="text-sm text-[#6f5727] leading-relaxed mt-1">
+        <span className="font-semibold">Ahora:</span> {reserva.fecha || "—"}
+        {reserva.turno ? ` · ${reserva.turno}` : ""}
+      </p>
+    </div>
+  );
+}
+
+function AvisoCancelacion({ reserva }) {
+  if (!esReservaCancelada(reserva)) return null;
+
+  return (
+    <div className="mt-3 rounded-xl border border-[#e5bcbc] bg-[#fff5f5] px-3 py-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="inline-flex items-center rounded-full bg-[#f7d7d7] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#8a3b3b]">
+          Cancelada
+        </span>
+
+        {reserva.canceladaEn && (
+          <span className="text-[11px] text-[#a56b6b]">
+            {reserva.canceladaEn}
+          </span>
+        )}
+      </div>
+
+      <p className="text-sm text-[#7a4747] leading-relaxed">
+        {reserva.avisoPerfil ||
+          "Esta reserva ha sido cancelada. Si lo necesitas, contacta con el taller."}
+      </p>
+
+      {reserva.motivoCancelacion && (
+        <p className="text-sm text-[#7a4747] leading-relaxed mt-1">
+          <span className="font-semibold">Motivo:</span>{" "}
+          {reserva.motivoCancelacion}
+        </p>
+      )}
     </div>
   );
 }
@@ -80,6 +137,7 @@ function TarjetaReserva({ reserva }) {
       )}
 
       <AvisoReprogramacion reserva={reserva} />
+      <AvisoCancelacion reserva={reserva} />
     </div>
   );
 }
@@ -123,6 +181,12 @@ export default function PerfilUsuario() {
 
           todas.forEach((reserva) => {
             const fechaReserva = obtenerFechaReserva(reserva);
+            const cancelada = esReservaCancelada(reserva);
+
+            if (cancelada) {
+              pasadas.push(reserva);
+              return;
+            }
 
             if (fechaReserva && fechaReserva >= ahora) {
               futuras.push(reserva);
@@ -289,7 +353,10 @@ export default function PerfilUsuario() {
                       {r.ubicacion ? ` en ${r.ubicacion}` : ""}
                     </p>
 
-                    <AvisoReprogramacion reserva={r} />
+                    <AvisoCancelacion reserva={r} />
+                    {!esReservaCancelada(r) && (
+                      <AvisoReprogramacion reserva={r} />
+                    )}
                   </li>
                 ))}
               </ul>
