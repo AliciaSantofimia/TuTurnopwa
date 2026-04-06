@@ -1,3 +1,5 @@
+//pantalla antigua
+
 import React from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
