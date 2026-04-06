@@ -162,6 +162,32 @@ async function guardarTarjetaRegaloPagada(orderId, pedido, timestamp) {
 
   return tarjetaData;
 }
+async function guardarBonoPagado(orderId, pedido, timestamp) {
+  if (!pedido?.uid || !pedido?.datosBono) return null;
+
+  const bonoRef = adminDb.ref(`usuarios/${pedido.uid}/bonos/${orderId}`);
+  const bonoSnap = await bonoRef.get();
+
+  if (bonoSnap.exists()) {
+    return bonoSnap.val();
+  }
+
+  const bonoData = {
+    bonoId: orderId,
+    uid: pedido.uid,
+    ...pedido.datosBono,
+    orderId,
+    estadoPago: "pagado",
+    procesado: true,
+    creadoEn:
+      pedido?.datosBono?.creadoEn || pedido?.creadoEn || timestamp,
+    actualizadoEn: timestamp,
+  };
+
+  await bonoRef.set(bonoData);
+
+  return bonoData;
+}
 
 async function guardarReservaEnPerfilUsuario(reserva) {
   if (!reserva?.uid || !reserva?.orderId) return;
@@ -301,6 +327,17 @@ if (aceptarPagoTemporalmente) {
         return res.status(200).send("OK");
       }
 
+            if (pedido?.esBono && pedido?.datosBono) {
+        const bonoGuardado = await guardarBonoPagado(order, pedido, timestamp);
+
+        console.log("Bono guardado en /usuarios/{uid}/bonos:", {
+          order,
+          bonoId: bonoGuardado?.bonoId || order,
+          uid: pedido.uid,
+        });
+
+        return res.status(200).send("OK");
+      }
       const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
 
       if (reservaActualizada) {

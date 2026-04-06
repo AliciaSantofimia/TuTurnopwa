@@ -83,7 +83,7 @@ import ReservaEspecialPintaTuPieza from "./ReservaEspecialPintaTuPieza";
 import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
 import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 import ReservaGrupos from "./ReservaGrupos.jsx";
-
+import UsarBonoTornoAlfareroEmpezarDesdeCero from "./UsarBonoTornoAlfareroEmpezarDesdeCero";
 // Tarjetas regalo
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
 
@@ -114,6 +114,8 @@ import AdminTarjetasRegalo from "./AdminTarjetasRegalo";
 import AdminReservasGrupos from "./AdminReservasGrupos";
 import AdminDetalleTarjetaRegaloNuevo from "./AdminDetalleTarjetaRegaloNuevo";
 import AdminBloqueosFechas from "./AdminBloqueosFechas";
+import AdminBonosNuevo from "./AdminBonosNuevo";
+
 
 import ChatAyuda from "./ChatAyuda.jsx";
 
@@ -193,6 +195,10 @@ function App() {
           />
 
           {/* Reservas normales */}
+          <Route
+  path="/usar-bono-torno-alfarero-empezar-desde-cero"
+  element={<UsarBonoTornoAlfareroEmpezarDesdeCero />}
+/>
           <Route
             path="/reserva-crea-tu-pieza-favorita"
             element={<ReservaCreaTuPiezaFavorita />}
@@ -408,6 +414,7 @@ function App() {
     </RutaAdmin>
   }
 />
+<Route path="/admin-bonos-nuevo" element={<AdminBonosNuevo />} />
 <Route
   path="/admin-tarjetas-regalo"
   element={

@@ -229,6 +229,12 @@ const AdminDashboard = () => {
 >
   Bloquear fechas
 </button>
+<button
+  style={styles.boton}
+  onClick={() => navigate("/admin-bonos-nuevo")}
+>
+  Ver bonos
+</button>
           </div>
         </div>
       </div>

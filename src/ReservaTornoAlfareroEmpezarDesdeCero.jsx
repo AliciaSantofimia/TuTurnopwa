@@ -204,12 +204,37 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
       const orderId = Date.now().toString().slice(-12);
       const timestamp = new Date().toISOString();
 
+      const datosBono = {
+        claseId: CLASE_ID,
+        clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
+        tipo: "bono",
+        subtipo,
+        numeroClases,
+        clasesConsumidas: 0,
+        clasesRestantes: numeroClases,
+        fechaInicio,
+        fechaFinMes: sumarUnMes(fechaInicio),
+        fechaCaducidadBono: sumarTresMeses(fechaInicio),
+        turnoHabitual: turno,
+        duracionClase,
+        modalidad,
+        incluyeDecoracion,
+        precioBase,
+        precioTotal,
+        estadoBono: "activo",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
+        orderId,
+        creadoEn: timestamp,
+        actualizadoEn: timestamp,
+        sesionesConsumidas: {},
+      };
+
       const reserva = {
-        clase:
-          claseConfig?.nombre || "Torno alfarero empezar desde cero",
+        clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
         claseId: CLASE_ID,
         tipoTaller: "bono_mensual",
         subtipo,
+        fecha: fechaInicio,
         fechaInicio,
         fechaFinMes: sumarUnMes(fechaInicio),
         fechaCaducidadBono: sumarTresMeses(fechaInicio),
@@ -230,29 +255,42 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         timestamp,
       };
 
-      const generalRef = ref(
-        dbRealtime,
-        `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
-      );
-
-      const nuevaReservaRef = push(generalRef);
-      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
-
       if (desdeTarjeta) {
+        const generalRef = ref(
+          dbRealtime,
+          `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
+        );
+
+        const nuevaReservaRef = push(generalRef);
+        await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
         const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
         const codigoTarjeta = location.state?.codigoTarjeta || "";
 
         await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
           ...reserva,
           uid: user.uid,
+          fecha: fechaInicio,
           tarjetaRegaloId,
           codigoTarjeta,
           creadaDesde: "tarjeta_regalo",
         });
 
-        const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+        const bonoRef = push(ref(dbRealtime, `usuarios/${user.uid}/bonos`));
+        await update(bonoRef, {
+          bonoId: bonoRef.key,
+          uid: user.uid,
+          ...datosBono,
+        });
+
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
         const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
-        const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
         const uidComprador = tarjetaGlobal?.uidComprador || "";
 
         const datosActualizacionTarjeta = {
@@ -277,7 +315,10 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
 
         if (uidComprador) {
           await update(
-            ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
             datosActualizacionTarjeta
           );
         }
@@ -285,9 +326,9 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         navigate("/pago/exito", {
           state: {
             desdeTarjeta: true,
+            datosBono,
             tipo: "bono",
-            clase:
-              claseConfig?.nombre || "Torno alfarero empezar desde cero",
+            clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
             claseId: CLASE_ID,
             fechaInicio,
             fechaFinMes: sumarUnMes(fechaInicio),
@@ -312,8 +353,7 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         state: {
           desdeTarjeta,
           tipo: "bono",
-          clase:
-            claseConfig?.nombre || "Torno alfarero empezar desde cero",
+          clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
           claseId: CLASE_ID,
           precio: precioTotal,
           precioBase,
@@ -327,6 +367,7 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
           modalidad,
           incluyeDecoracion,
           orderId,
+          datosBono,
         },
       });
     } catch (err) {
@@ -362,12 +403,15 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
           <BloqueoReserva>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p><strong>Curso de {numeroClases} clases.</strong></p>
+                <p>
+                  <strong>Curso de {numeroClases} clases.</strong>
+                </p>
                 <p>
                   Incluye {numeroClases} sesiones de {duracionClase} centradas
-                  en {modalidad}, {incluyeDecoracion ? "con decoración" : "sin decoración"}.
-                  El mes comienza con tu primera sesión y finaliza el mismo día
-                  del mes siguiente.
+                  en {modalidad},{" "}
+                  {incluyeDecoracion ? "con decoración" : "sin decoración"}. El
+                  mes comienza con tu primera sesión y finaliza el mismo día del
+                  mes siguiente.
                 </p>
               </div>
 
@@ -394,12 +438,13 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
                       : ""}
                   </p>
                 )}
-                {fecha && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-  </p>
-)}
+                {fechaInicio && !fechaBloqueada && diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Días
+                    disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -428,10 +473,12 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
                   <strong>Modalidad:</strong> {modalidad}
                 </p>
                 <p>
-                  <strong>Clases incluidas:</strong> {numeroClases} sesiones de {duracionClase}
+                  <strong>Clases incluidas:</strong> {numeroClases} sesiones de{" "}
+                  {duracionClase}
                 </p>
                 <p>
-                  <strong>Decoración:</strong> {incluyeDecoracion ? "Incluida" : "No incluida"}
+                  <strong>Decoración:</strong>{" "}
+                  {incluyeDecoracion ? "Incluida" : "No incluida"}
                 </p>
               </div>
 
@@ -442,10 +489,12 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
                     {desdeTarjeta ? "0€" : `${precioTotal}€`}
                   </p>
                   <p>
-                    <strong>Fin del bono mensual:</strong> {sumarUnMes(fechaInicio)}
+                    <strong>Fin del bono mensual:</strong>{" "}
+                    {sumarUnMes(fechaInicio)}
                   </p>
                   <p>
-                    <strong>Validez máxima del bono:</strong> {sumarTresMeses(fechaInicio)}
+                    <strong>Validez máxima del bono:</strong>{" "}
+                    {sumarTresMeses(fechaInicio)}
                   </p>
                 </div>
               )}

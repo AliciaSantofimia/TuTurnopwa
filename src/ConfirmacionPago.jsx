@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get } from "firebase/database";
+import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 
 const ConfirmacionPago = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [cargando, setCargando] = useState(true);
   const [esTarjetaRegalo, setEsTarjetaRegalo] = useState(false);
@@ -22,6 +23,35 @@ const ConfirmacionPago = () => {
       }
 
       try {
+        const datosBono = location.state?.datosBono || null;
+        const tipo = location.state?.tipo || "";
+
+        if (tipo === "bono" && datosBono?.orderId) {
+          const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
+          const bonosSnap = await get(bonosRef);
+
+          let bonoExistenteKey = null;
+
+          if (bonosSnap.exists()) {
+            const bonos = bonosSnap.val() || {};
+            for (const [key, bono] of Object.entries(bonos)) {
+              if (bono?.orderId === datosBono.orderId) {
+                bonoExistenteKey = key;
+                break;
+              }
+            }
+          }
+
+          if (!bonoExistenteKey) {
+            const nuevoBonoRef = push(bonosRef);
+            await update(nuevoBonoRef, {
+              bonoId: nuevoBonoRef.key,
+              uid: user.uid,
+              ...datosBono,
+            });
+          }
+        }
+
         const [tarjetasSnap, reservasSnap] = await Promise.all([
           get(ref(dbRealtime, `usuarios/${user.uid}/tarjetasRegalo`)),
           get(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`)),
@@ -61,7 +91,7 @@ const ConfirmacionPago = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [location.state]);
 
   const copiarCodigo = async () => {
     if (!tarjeta?.codigo) return;

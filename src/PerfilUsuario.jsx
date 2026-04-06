@@ -49,6 +49,36 @@ function esReservaCancelada(reserva) {
   );
 }
 
+function obtenerEstadoVisibleBono(bono) {
+  if (!bono) return "—";
+
+  const restantes = Number(bono.clasesRestantes || 0);
+  const estadoGuardado = String(bono.estadoBono || "").toLowerCase();
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  let fechaCaducidad = null;
+  if (bono.fechaCaducidadBono) {
+    fechaCaducidad = new Date(`${bono.fechaCaducidadBono}T00:00:00`);
+  }
+
+  const estaCaducado =
+    fechaCaducidad instanceof Date &&
+    !isNaN(fechaCaducidad.getTime()) &&
+    hoy > fechaCaducidad;
+
+  if (estadoGuardado === "caducado" || estaCaducado) {
+    return "Caducado";
+  }
+
+  if (estadoGuardado === "agotado" || restantes <= 0) {
+    return "Agotado";
+  }
+
+  return "Activo";
+}
+
 function AvisoReprogramacion({ reserva }) {
   const reprogramada = esReservaReprogramada(reserva);
 
@@ -151,6 +181,7 @@ export default function PerfilUsuario() {
   const [reservasActivas, setReservasActivas] = useState([]);
   const [reservasPasadas, setReservasPasadas] = useState([]);
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
+  const [bonos, setBonos] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -240,6 +271,23 @@ export default function PerfilUsuario() {
           setTarjetasRegalo(tarjetas);
         } else {
           setTarjetasRegalo([]);
+        }
+
+        const refBonos = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
+        const snapBonos = await get(refBonos);
+
+        if (snapBonos.exists()) {
+          const listaBonos = Object.values(snapBonos.val())
+            .filter(Boolean)
+            .sort((a, b) => {
+              const fechaA = new Date(a.actualizadoEn || a.creadoEn || 0);
+              const fechaB = new Date(b.actualizadoEn || b.creadoEn || 0);
+              return fechaB - fechaA;
+            });
+
+          setBonos(listaBonos);
+        } else {
+          setBonos([]);
         }
       } else {
         navigate("/login");
@@ -363,6 +411,71 @@ export default function PerfilUsuario() {
             ) : (
               <p className="text-sm text-[#7b6d62]">
                 Aún no tienes reservas anteriores.
+              </p>
+            )}
+          </div>
+        </details>
+
+        <details className="mb-5 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
+          <summary className="cursor-pointer font-semibold">
+            🎟️ Mis bonos
+          </summary>
+
+          <div className="mt-3">
+            {bonos.length > 0 ? (
+              <ul className="text-sm space-y-2">
+                {bonos.map((bono, i) => {
+                  const estadoVisible = obtenerEstadoVisibleBono(bono);
+
+                  return (
+                    <li
+                      key={bono.bonoId || i}
+                      className="bg-[#faf8f4] p-3 rounded-xl border border-[#ece4d8]"
+                    >
+                      <p>
+                        <strong>Bono:</strong> {bono.clase || "Bono"}
+                      </p>
+                      <p>
+                        <strong>Clases incluidas:</strong>{" "}
+                        {Number(bono.numeroClases || 0)}
+                      </p>
+                      <p>
+                        <strong>Consumidas:</strong>{" "}
+                        {Number(bono.clasesConsumidas || 0)}
+                      </p>
+                      <p>
+                        <strong>Restantes:</strong>{" "}
+                        {Number(bono.clasesRestantes || 0)}
+                      </p>
+                      <p>
+                        <strong>Fecha de inicio:</strong>{" "}
+                        {bono.fechaInicio || "—"}
+                      </p>
+                      <p>
+                        <strong>Caduca el:</strong>{" "}
+                        {bono.fechaCaducidadBono || "—"}
+                      </p>
+                      <p>
+                        <strong>Estado:</strong> {estadoVisible}
+                      </p>
+                      {estadoVisible === "Activo" &&
+  bono.claseId === "tornodesdecero4clases" && (
+    <button
+      onClick={() =>
+        navigate("/usar-bono-torno-alfarero-empezar-desde-cero")
+      }
+      className="mt-3 w-full px-4 py-2 bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-semibold rounded-xl transition"
+    >
+      Reservar sesión con este bono
+    </button>
+  )}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#7b6d62]">
+                Aún no tienes bonos comprados.
               </p>
             )}
           </div>
