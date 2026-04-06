@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
 import { useNavigate, useLocation } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function PintaTuPieza() {
   const navigate = useNavigate();
@@ -19,6 +21,74 @@ export default function PintaTuPieza() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/pintatupieza"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de Pinta tu pieza:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase = datosClase?.nombre || "Pinta tu pieza de cerámica";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `${datosClase.precioDesde}€`
+      : "25,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "En nuestro taller de cerámica encontrarás una amplia variedad de piezas, colores y herramientas de la mejor calidad para pintar tu bizcocho.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "No necesitas experiencia; nuestro equipo te guiará a través de todo el proceso.";
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asististe a tu curso o bono en la fecha original y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir un taller acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -67,11 +137,11 @@ export default function PintaTuPieza() {
           {/* TEXTO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
-              Pinta tu pieza de cerámica
+              {nombreClase}
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-relaxed break-words">
-              25,00 €
+              {precioClase}
             </p>
 
             {desdeGrupos && (
@@ -98,14 +168,11 @@ export default function PintaTuPieza() {
               </div>
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                En nuestro taller de cerámica encontrarás una amplia variedad de
-                piezas, colores y herramientas de la mejor calidad para pintar
-                tu bizcocho.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                No necesitas experiencia; nuestro equipo te guiará a través de
-                todo el proceso.
+                {descripcionLarga}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
@@ -115,7 +182,7 @@ export default function PintaTuPieza() {
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Reserva tu espacio y tendrás hasta <strong>dos horas y media</strong>
-                para desatar tu creatividad.
+                {" "}para desatar tu creatividad.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
@@ -144,11 +211,7 @@ export default function PintaTuPieza() {
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Nota importante:</strong> Las tarifas están sujetas a
-                cambios. Si no asististe a tu curso o bono en la fecha original
-                y deseas reprogramarlo cuando las tarifas hayan cambiado,
-                deberás abonar la diferencia o elegir un taller acorde a la
-                cantidad ya pagada.
+                <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">

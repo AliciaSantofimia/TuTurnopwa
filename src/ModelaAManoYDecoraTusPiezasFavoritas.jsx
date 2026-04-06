@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function ModelaAManoYDecoraTusPiezasFavoritas() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/modelamano/modelamano1.jpg",
     "/img/modelamano/modelamano2.jpg",
@@ -14,10 +19,85 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [convertirTorno, setConvertirTorno] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
 
-  const precioBase = 79;
-  const extraTorno = 10;
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/modelamano4clases"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error(
+          "Error al cargar datos de Modela a mano y decora tus piezas favoritas:",
+          error
+        );
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase =
+    datosClase?.nombre || "Modela a mano y decora tus piezas favoritas";
+
+  const precioBase =
+    typeof datosClase?.precio === "number"
+      ? Number(datosClase.precio)
+      : typeof datosClase?.precioDesde === "number"
+      ? Number(datosClase.precioDesde)
+      : 79;
+
+  const extraTorno =
+    typeof datosClase?.precios?.torno === "number"
+      ? Math.max(0, Number(datosClase.precios.torno) - precioBase)
+      : 10;
+
   const precioFinal = convertirTorno ? precioBase + extraTorno : precioBase;
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Descubre el proceso completo de la cerámica sin torno con este bono formativo de modelado manual y decoración, donde aprenderás a dar forma, textura y color a tus propias piezas desde cero.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "En esta formación trabajarás exclusivamente con modelado a mano, explorando distintas técnicas tradicionales para crear piezas únicas: tazas, cuencos, bandejas, jarrones o elementos decorativos. Después pasarás a la fase de decoración con engobes y esmaltes, experimentando con color, textura y diferentes acabados para personalizar tus creaciones.";
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Los bonos son válidos por 3 meses desde la fecha de compra. Si las tarifas cambian, deberás abonar la diferencia o elegir otro equivalente más alto.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -66,7 +146,7 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
           {/* TEXTO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
-              Modela a mano y decora tus piezas favoritas
+              {nombreClase}
             </h1>
 
             <p className="text-base text-[#6b3700] font-medium mb-1 leading-relaxed break-words">
@@ -74,7 +154,7 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
             </p>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-relaxed break-words">
-              {precioFinal},00 €
+              {precioFinal.toFixed(2).replace(".", ",")} €
             </p>
 
             {/* OPCIÓN TORNO */}
@@ -93,7 +173,7 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
                       : "border-gray-300 bg-white"
                   }`}
                 >
-                  SÍ QUIERO 🏺 (+10,00 €)
+                  SÍ QUIERO 🏺 (+{extraTorno.toFixed(2).replace(".", ",")} €)
                 </button>
 
                 <button
@@ -116,35 +196,19 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
                 Información del producto
               </h2>
 
-              
-
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Descubre el proceso completo de la cerámica sin torno con este
-                <strong> bono formativo de modelado manual y decoración</strong>,
-                donde aprenderás a dar forma, textura y color a tus propias
-                piezas desde cero.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                En esta formación trabajarás exclusivamente con modelado a mano,
-                explorando distintas técnicas tradicionales para crear piezas
-                únicas: tazas, cuencos, bandejas, jarrones o elementos
-                decorativos.
-              </p>
-
-              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Después pasarás a la fase de decoración con engobes y esmaltes,
-                experimentando con color, textura y diferentes acabados para
-                personalizar tus creaciones.
+                {descripcionLarga}
               </p>
             </div>
 
             {/* POLÍTICA */}
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Política de venta:</strong> Los bonos son válidos por 3
-                meses desde la fecha de compra. Si las tarifas cambian, deberás
-                abonar la diferencia o elegir otro equivalente más alto.
+                <strong>Política de venta:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">

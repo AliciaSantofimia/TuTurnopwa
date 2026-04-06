@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function CreaTuSetMatcha() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/matcha/setmatcha1.jpg",
     "/img/matcha/setmatcha2.jpg",
@@ -14,6 +19,85 @@ export default function CreaTuSetMatcha() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/setmatcha"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de Crea tu set de matcha:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase = datosClase?.nombre || "CREA TU SET DE MATCHA";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `${datosClase.precioDesde}€`
+      : "60,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Crea tu propio set de matcha artesanal en una formación de dos sesiones, pensada para quienes quieren vivir el proceso completo de la cerámica: modelado, secado, cocción, esmaltado y segunda intervención decorativa.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "En la primera sesión crearás tu set desde cero y aprenderás a dar forma a piezas funcionales con equilibrio, delicadeza y carácter. Más adelante, cuando la pieza esté cocida, podrás completar el proceso con la segunda sesión.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "Formación guiada en 2 sesiones.",
+          "Todos los materiales y herramientas necesarios.",
+          "Cocciones completas en horno cerámico.",
+          "Esmaltado y acabado final de las piezas.",
+          "Acompañamiento durante todo el proceso.",
+        ];
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asistes a tu formación o bono en la fecha original y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir una formación acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -58,11 +142,11 @@ export default function CreaTuSetMatcha() {
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              CREA TU SET DE MATCHA
+              {nombreClase}
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              60,00 €
+              {precioClase}
             </p>
 
             <div className="mb-5 min-w-0">
@@ -70,20 +154,12 @@ export default function CreaTuSetMatcha() {
                 Información del producto
               </h2>
 
-            
-
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Crea tu propio <strong>set de matcha</strong> artesanal en una
-                formación de <strong>dos sesiones</strong>, pensada para quienes
-                quieren vivir el proceso completo de la cerámica: modelado,
-                secado, cocción, esmaltado y segunda intervención decorativa.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                En la primera sesión crearás tu set desde cero y aprenderás a dar
-                forma a piezas funcionales con equilibrio, delicadeza y carácter.
-                Más adelante, cuando la pieza esté cocida, podrás completar el
-                proceso con la segunda sesión.
+                {descripcionLarga}
               </p>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -91,11 +167,9 @@ export default function CreaTuSetMatcha() {
               </p>
 
               <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• Formación guiada en 2 sesiones.</li>
-                <li>• Todos los materiales y herramientas necesarios.</li>
-                <li>• Cocciones completas en horno cerámico.</li>
-                <li>• Esmaltado y acabado final de las piezas.</li>
-                <li>• Acompañamiento durante todo el proceso.</li>
+                {incluyeLista.map((item, index) => (
+                  <li key={index}>• {item}</li>
+                ))}
               </ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -131,11 +205,7 @@ export default function CreaTuSetMatcha() {
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Nota importante:</strong> Las tarifas están sujetas a
-                cambios. Si no asistes a tu formación o bono en la fecha original
-                y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás
-                abonar la diferencia o elegir una formación acorde a la cantidad
-                ya pagada.
+                <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">

@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function CreaTuGranCentroMesa() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/centrodemesa/grancentromesa1.jpg",
     "/img/centrodemesa/grancentromesa2.jpg",
@@ -14,6 +19,84 @@ export default function CreaTuGranCentroMesa() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/creatugrancentrodemesa"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de Crea tu gran centro de mesa:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase = datosClase?.nombre || "CREA TU GRAN CENTRO MESA";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `${datosClase.precioDesde}€`
+      : "65,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Sumérgete en una formación intensiva donde aprenderás a modelar, dar forma y decorar un frutero o ensaladera de gran tamaño, combinando técnica, observación y paciencia.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "Durante la clase podrás elegir el método de trabajo: modelado a mano, ideal si buscas una forma más orgánica y expresiva, o torno alfarero, si deseas precisión y simetría en una pieza amplia y estable.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "Todos los materiales y herramientas necesarios.",
+          "Cocciones completas en horno cerámico.",
+          "Esmaltado de una pieza incluida (tu frutero o ensaladera).",
+          "Formación guiada y acompañamiento técnico durante toda la sesión.",
+        ];
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asistes a tu formación o bono en la fecha original y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir una formación acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -60,11 +143,11 @@ export default function CreaTuGranCentroMesa() {
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              CREA TU GRAN CENTRO MESA
+              {nombreClase}
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              65,00 €
+              {precioClase}
             </p>
 
             <div className="mb-5 min-w-0">
@@ -72,7 +155,6 @@ export default function CreaTuGranCentroMesa() {
                 Información del producto
               </h2>
 
-              
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
                 <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
                   En esta formación trabajaremos piezas de gran tamaño
@@ -89,25 +171,12 @@ export default function CreaTuGranCentroMesa() {
               </div>
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Sumérgete en una formación intensiva donde aprenderás a modelar,
-                dar forma y decorar un frutero o ensaladera de gran tamaño,
-                combinando técnica, observación y paciencia.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Durante la clase podrás elegir el método de trabajo:
+                {descripcionLarga}
               </p>
-
-              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>
-                  • <strong>Modelado a mano</strong>, ideal si buscas una forma
-                  más orgánica y expresiva.
-                </li>
-                <li>
-                  • <strong>Torno alfarero</strong>, si deseas precisión y
-                  simetría en una pieza amplia y estable.
-                </li>
-              </ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
                 Qué aprenderás:
@@ -147,15 +216,9 @@ export default function CreaTuGranCentroMesa() {
               </p>
 
               <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• Todos los materiales y herramientas necesarios.</li>
-                <li>• Cocciones completas en horno cerámico.</li>
-                <li>
-                  • Esmaltado de una pieza incluida (tu frutero o ensaladera).
-                </li>
-                <li>
-                  • Formación guiada y acompañamiento técnico durante toda la
-                  sesión.
-                </li>
+                {incluyeLista.map((item, index) => (
+                  <li key={index}>• {item}</li>
+                ))}
               </ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -194,9 +257,10 @@ export default function CreaTuGranCentroMesa() {
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
-
-Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
-Ahí encontrarás siempre la información actualizada.
+                <br />
+                <br />
+                Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
+                Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">
@@ -208,11 +272,7 @@ Ahí encontrarás siempre la información actualizada.
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Nota importante:</strong> Las tarifas están sujetas a
-                cambios. Si no asistes a tu formación o bono en la fecha original
-                y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás
-                abonar la diferencia o elegir una formación acorde a la cantidad
-                ya pagada.
+                <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">

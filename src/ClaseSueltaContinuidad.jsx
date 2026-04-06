@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function ClaseSueltaContinuidad() {
   const imagenes = [
@@ -13,6 +15,44 @@ export default function ClaseSueltaContinuidad() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/clasesueltacontinuidad"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de la clase suelta:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "La clase suelta con continuidad es una opción flexible para quienes quieren seguir aprendiendo cerámica y avanzar en sus piezas sin necesidad de contratar un bono mensual desde el principio.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "Puedes venir de forma puntual y comprar cada sesión por separado, continuando tu proyecto poco a poco en el taller. Es ideal tanto para personas que ya han tenido contacto con la cerámica como para quienes quieren empezar con más libertad y sin compromiso fijo.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "Arcilla y materiales necesarios para la sesión.",
+          "Uso de herramientas y espacio de trabajo del taller.",
+          "Esmaltes y decoración, cuando formen parte del proceso.",
+          "Cocción en horno cerámico.",
+          "Acompañamiento guiado durante toda la clase.",
+        ];
+
+  const notaImportanteFirebase = datosClase?.notaImportante || "";
 
   return (
     <PantallaConVolver>
@@ -74,11 +114,8 @@ export default function ClaseSueltaContinuidad() {
               
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                La clase suelta con continuidad es una opción flexible para
-                quienes quieren seguir aprendiendo cerámica y avanzar en sus
-                piezas sin necesidad de contratar un bono mensual desde el
-                principio.
-              </p>
+  {descripcionCorta}
+</p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Puedes venir de forma puntual y comprar cada sesión por separado,
@@ -141,13 +178,12 @@ export default function ClaseSueltaContinuidad() {
                 Qué incluye:
               </p>
 
-              <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• Arcilla y materiales necesarios para la sesión.</li>
-                <li>• Uso de herramientas y espacio de trabajo del taller.</li>
-                <li>• Esmaltes y decoración, cuando formen parte del proceso.</li>
-                <li>• Cocción en horno cerámico.</li>
-                <li>• Acompañamiento guiado durante toda la clase.</li>
-              </ul>
+              
+                <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
+  {incluyeLista.map((item, index) => (
+    <li key={index}>• {item}</li>
+  ))}
+</ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
                 Duración:
@@ -202,11 +238,10 @@ Ahí encontrarás siempre la información actualizada.
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Nota importante:</strong> Las tarifas están sujetas a
-                cambios. Si no asistes a tu clase en la fecha reservada y deseas
-                reprogramarla cuando las tarifas hayan cambiado, deberás abonar
-                la diferencia o adaptarte a la tarifa vigente.
-              </p>
+  <strong>Nota importante:</strong>{" "}
+  {notaImportanteFirebase ||
+    "Las tarifas están sujetas a cambios. Si no asistes a tu clase en la fecha reservada y deseas reprogramarla cuando las tarifas hayan cambiado, deberás abonar la diferencia o adaptarte a la tarifa vigente."}
+</p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Antes de reservar:</strong> por favor revisa nuestra

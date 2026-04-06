@@ -1,58 +1,122 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
 export default function Clases() {
   const navigate = useNavigate();
+  const [clasesConfig, setClasesConfig] = useState({});
+  const [cargandoConfig, setCargandoConfig] = useState(true);
 
   const categorias = [
-  {
-    id: 1,
-    titulo: "Crear piezas desde cero",
-    descripcion: ["Talleres de 1 sesión", "Talleres de 2 sesiones"],
-    ruta: "/talleres/crear-piezas",
-    color: "border-[#F4C542]",
-    imagen: "/img/vasijaedicionpremium.png",
-  },
-  {
-    id: 2,
-    titulo: "Cursos y bonos mensuales",
-    descripcion: ["Cursos de torno y modelado", "Bonos mensuales"],
-    ruta: "/talleres/cursos-bonos",
-    color: "border-[#F4C542]",
-    imagen: "/img/vasijabono4.png",
-  },
-  {
-    id: 3,
-    titulo: "Clase suelta con continuidad",
-    descripcion: [
-      "Clases sueltas para continuar tu proyecto o empezar uno nuevo en el taller",
-    ],
-    ruta: "/talleres/clase-suelta-continuidad",
-    color: "border-[#F4C542]",
-    imagen: "/img/vasijabono2.png",
-  },
-  {
-    id: 4,
-    titulo: "Pinta y decora tu pieza",
-    descripcion: ["Talleres para pintar cerámica", "Opciones especiales"],
-    ruta: "/talleres/pinta-decora",
-    color: "border-[#F4C542]",
-    imagen: "/img/vasijapintarceramica.png",
-  },
-  {
-    id: 5,
-    titulo: "Tarjeta regalo",
-    descripcion: [
-      "Regala un taller sin fecha fija",
-      "Ideal para sorprender a alguien",
-    ],
-    ruta: "/tarjeta-regalo",
-    color: "border-[#F4C542]",
-    imagen: "/img/vasijatarjetaregalo.png",
-  },
-];
+    {
+      id: 1,
+      titulo: "Crear piezas desde cero",
+      descripcion: ["Talleres de 1 sesión", "Talleres de 2 sesiones"],
+      ruta: "/talleres/crear-piezas",
+      color: "border-[#F4C542]",
+      imagen: "/img/vasijaedicionpremium.png",
+      claseIds: [
+        "crearpiezadesdecero",
+        "creatubandejahogar",
+        "creatubrunchbowl",
+        "creatucuencoramen",
+        "creatugrancentrodemesa",
+        "creatujarrajarrongrande",
+        "creatumaceta",
+        "creatupiezafavorita",
+        "creatutazafavorita",
+        "macetaorganica",
+        "setmatcha",
+        "setsake",
+        "tazaescultorica",
+      ],
+    },
+    {
+      id: 2,
+      titulo: "Cursos y bonos mensuales",
+      descripcion: ["Cursos de torno y modelado", "Bonos mensuales"],
+      ruta: "/talleres/cursos-bonos",
+      color: "border-[#F4C542]",
+      imagen: "/img/vasijabono4.png",
+      claseIds: [
+        "modelamano4clases",
+        "tornodecoracion4clases",
+        "tornodesdecero4clases",
+        "tornoperfeccionamiento6clases",
+      ],
+    },
+    {
+      id: 3,
+      titulo: "Clase suelta con continuidad",
+      descripcion: [
+        "Clases sueltas para continuar tu proyecto o empezar uno nuevo en el taller",
+      ],
+      ruta: "/talleres/clase-suelta-continuidad",
+      color: "border-[#F4C542]",
+      imagen: "/img/vasijabono2.png",
+      claseIds: ["clasesueltacontinuidad"],
+    },
+    {
+      id: 4,
+      titulo: "Pinta y decora tu pieza",
+      descripcion: ["Talleres para pintar cerámica", "Opciones especiales"],
+      ruta: "/talleres/pinta-decora",
+      color: "border-[#F4C542]",
+      imagen: "/img/vasijapintarceramica.png",
+      claseIds: ["pintatupieza", "especialpintatupieza"],
+    },
+    {
+      id: 5,
+      titulo: "Tarjeta regalo",
+      descripcion: [
+        "Regala un taller sin fecha fija",
+        "Ideal para sorprender a alguien",
+      ],
+      ruta: "/tarjeta-regalo",
+      color: "border-[#F4C542]",
+      imagen: "/img/vasijatarjetaregalo.png",
+      claseIds: [],
+      siempreVisible: true,
+    },
+  ];
+
+  useEffect(() => {
+    const cargarClasesConfig = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases"));
+        if (snap.exists()) {
+          setClasesConfig(snap.val() || {});
+        } else {
+          setClasesConfig({});
+        }
+      } catch (error) {
+        console.error("Error al cargar configuración de clases:", error);
+        setClasesConfig({});
+      } finally {
+        setCargandoConfig(false);
+      }
+    };
+
+    cargarClasesConfig();
+  }, []);
+
+  const categoriasVisibles = useMemo(() => {
+    return categorias.filter((cat) => {
+      if (cat.siempreVisible) return true;
+      if (!cat.claseIds || cat.claseIds.length === 0) return true;
+
+      return cat.claseIds.some((idClase) => {
+        const clase = clasesConfig[idClase];
+        if (!clase) return false;
+
+        const estado = clase.estado || (clase.activa === false ? "oculta" : "activa");
+        return estado === "activa";
+      });
+    });
+    }, [clasesConfig]);
 
   const handleClick = (categoria) => {
     const currentUser = getAuth().currentUser;
@@ -92,54 +156,62 @@ export default function Clases() {
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
-        {categorias.map((cat) => (
-          <div
-            key={cat.id}
-           className={`rounded-2xl bg-white p-5 border border-[#f1e7c6] border-l-8 ${cat.color}
+      {cargandoConfig ? (
+        <p className="text-sm text-gray-600">Cargando talleres...</p>
+      ) : categoriasVisibles.length === 0 ? (
+        <p className="text-sm text-gray-600">
+          Ahora mismo no hay talleres disponibles.
+        </p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
+          {categoriasVisibles.map((cat) => (
+            <div
+              key={cat.id}
+              className={`rounded-2xl bg-white p-5 border border-[#f1e7c6] border-l-8 ${cat.color}
 shadow-lg
 hover:shadow-xl
 hover:scale-[1.015]
 transition
 flex flex-col justify-between`}
-          >
-            <div className="flex items-start gap-4">
-              <div className="text-sm font-bold bg-white rounded-full w-9 h-9 flex items-center justify-center border border-gray-200 mt-0.5">
-                {cat.id}
-              </div>
+            >
+              <div className="flex items-start gap-4">
+                <div className="text-sm font-bold bg-white rounded-full w-9 h-9 flex items-center justify-center border border-gray-200 mt-0.5">
+                  {cat.id}
+                </div>
 
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800">
-                  {cat.titulo}
-                </h3>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    {cat.titulo}
+                  </h3>
 
-                <ul className="text-[13px] text-gray-600 list-disc ml-4 mt-2 space-y-1">
-                  {cat.descripcion.map((linea, idx) => (
-                    <li key={idx}>{linea}</li>
-                  ))}
-                </ul>
+                  <ul className="text-[13px] text-gray-600 list-disc ml-4 mt-2 space-y-1">
+                    {cat.descripcion.map((linea, idx) => (
+                      <li key={idx}>{linea}</li>
+                    ))}
+                  </ul>
 
-                <button
-  className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
+                  <button
+                    className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
   bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
   shadow-md hover:shadow-lg
   hover:from-[#F4C542] hover:to-[#E5B92F]
   transition-all duration-200"
-  onClick={() => handleClick(cat)}
->
-  Ver talleres
-</button>
+                    onClick={() => handleClick(cat)}
+                  >
+                    Ver talleres
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <img
-              src={cat.imagen}
-              alt={`Icono de ${cat.titulo}`}
-              className="w-28 h-28 object-contain mt-4 ml-auto opacity-95 hover:scale-110 transition-transform duration-300 drop-shadow-md"
-            />
-          </div>
-        ))}
-      </div>
+              <img
+                src={cat.imagen}
+                alt={`Icono de ${cat.titulo}`}
+                className="w-28 h-28 object-contain mt-4 ml-auto opacity-95 hover:scale-110 transition-transform duration-300 drop-shadow-md"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

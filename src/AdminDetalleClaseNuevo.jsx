@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ref, get, push, remove } from "firebase/database";
+import { ref, get, push, remove, update } from "firebase/database";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
@@ -17,7 +17,89 @@ const AdminDetalleClaseNuevo = () => {
   const [notasInternas, setNotasInternas] = useState([]);
   const [nuevaNota, setNuevaNota] = useState("");
   const [guardandoNota, setGuardandoNota] = useState(false);
+  const [guardandoInfo, setGuardandoInfo] = useState(false);
   const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
+
+  const [nombreEditado, setNombreEditado] = useState("");
+  const [categoriaEditada, setCategoriaEditada] = useState("");
+  const [descripcionCortaEditada, setDescripcionCortaEditada] = useState("");
+  const [descripcionLargaEditada, setDescripcionLargaEditada] = useState("");
+  const [incluyeEditado, setIncluyeEditado] = useState("");
+  const [notaImportanteEditada, setNotaImportanteEditada] = useState("");
+  const [estadoEditado, setEstadoEditado] = useState("activa");
+
+  const normalizarEstadoClase = (data = {}) => {
+    if (typeof data.estado === "string" && data.estado.trim()) {
+      return data.estado.trim().toLowerCase();
+    }
+
+    if (data.activa === false) {
+      return "oculta";
+    }
+
+    return "activa";
+  };
+
+  const construirClaseNormalizada = (id, data = {}) => {
+    const estadoNormalizado = normalizarEstadoClase(data);
+
+    return {
+      id,
+      nombre: data.nombre || id,
+      categoria: data.categoria || "Sin categoría",
+      precioDesde: data.precioDesde || "",
+      precio: data.precio || "",
+      descripcionCorta: data.descripcionCorta || "",
+      descripcionLarga: data.descripcionLarga || "",
+      incluye: Array.isArray(data.incluye) ? data.incluye : [],
+      notaImportante: data.notaImportante || "",
+      estado: estadoNormalizado,
+      activa: estadoNormalizado === "activa",
+    };
+  };
+
+  const guardarInformacionClase = async () => {
+    if (!clase?.id) return;
+
+    try {
+      setGuardandoInfo(true);
+
+      const incluyeArray = incluyeEditado
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const estadoNormalizado = (estadoEditado || "activa").trim().toLowerCase();
+      const activaNormalizada = estadoNormalizado === "activa";
+
+      const datosActualizados = {
+        nombre: nombreEditado.trim(),
+        categoria: categoriaEditada.trim(),
+        descripcionCorta: descripcionCortaEditada.trim(),
+        descripcionLarga: descripcionLargaEditada.trim(),
+        incluye: incluyeArray,
+        notaImportante: notaImportanteEditada.trim(),
+        estado: estadoNormalizado,
+        activa: activaNormalizada,
+      };
+
+      await update(ref(dbRealtime, `clases/${clase.id}`), datosActualizados);
+
+      setClase((prev) => ({
+        ...prev,
+        ...datosActualizados,
+      }));
+
+      setEstadoEditado(estadoNormalizado);
+
+      alert("Información de la clase guardada correctamente.");
+    } catch (error) {
+      console.error("Error al guardar información de la clase:", error);
+      alert("No se pudo guardar la información de la clase.");
+    } finally {
+      setGuardandoInfo(false);
+    }
+  };
 
   useEffect(() => {
     const cargarDetalleClase = async () => {
@@ -37,12 +119,7 @@ const AdminDetalleClaseNuevo = () => {
 
         if (claseSnap.exists()) {
           const data = claseSnap.val() || {};
-          claseEncontrada = {
-            id: claseId,
-            nombre: data.nombre || claseId,
-            categoria: data.categoria || "Sin categoría",
-            precioDesde: data.precioDesde || "",
-          };
+          claseEncontrada = construirClaseNormalizada(claseId, data);
         } else {
           const todasLasClasesSnap = await get(ref(dbRealtime, "clases"));
 
@@ -54,12 +131,7 @@ const AdminDetalleClaseNuevo = () => {
 
               if (!claseEncontrada && nombre && nombre === nombreBuscado) {
                 claseIdReal = itemSnap.key;
-                claseEncontrada = {
-                  id: itemSnap.key,
-                  nombre: data.nombre || itemSnap.key,
-                  categoria: data.categoria || "Sin categoría",
-                  precioDesde: data.precioDesde || "",
-                };
+                claseEncontrada = construirClaseNormalizada(itemSnap.key, data);
               }
             });
           }
@@ -72,10 +144,10 @@ const AdminDetalleClaseNuevo = () => {
         hoy.setHours(0, 0, 0, 0);
 
         if (reservasSnap.exists()) {
-          reservasSnap.forEach((claseSnap) => {
-            const claseKey = claseSnap.key;
+          reservasSnap.forEach((claseSnapReserva) => {
+            const claseKey = claseSnapReserva.key;
 
-            claseSnap.forEach((fechaSnap) => {
+            claseSnapReserva.forEach((fechaSnap) => {
               const fechaKey = fechaSnap.key;
 
               fechaSnap.forEach((turnoSnap) => {
@@ -89,7 +161,7 @@ const AdminDetalleClaseNuevo = () => {
                     if (!reserva || typeof reserva !== "object") return;
 
                     const claseReal = reserva.claseId || claseKey;
-                    if (claseReal !== (clase?.id || claseId)) return;
+                    if (claseReal !== (claseIdReal || claseId)) return;
 
                     if (reserva.estado !== "Confirmada") return;
 
@@ -159,7 +231,7 @@ const AdminDetalleClaseNuevo = () => {
     };
 
     cargarDetalleClase();
-  }, [claseId]);
+  }, [claseId, nombreClase]);
 
   useEffect(() => {
     const cargarNotasInternasClase = async () => {
@@ -201,6 +273,20 @@ const AdminDetalleClaseNuevo = () => {
     cargarNotasInternasClase();
   }, [claseId]);
 
+  useEffect(() => {
+    if (!clase) return;
+
+    setNombreEditado(clase.nombre || "");
+    setCategoriaEditada(clase.categoria || "");
+    setDescripcionCortaEditada(clase.descripcionCorta || "");
+    setDescripcionLargaEditada(clase.descripcionLarga || "");
+    setIncluyeEditado(
+      Array.isArray(clase.incluye) ? clase.incluye.join("\n") : ""
+    );
+    setNotaImportanteEditada(clase.notaImportante || "");
+    setEstadoEditado(normalizarEstadoClase(clase));
+  }, [clase]);
+
   const guardarNotaInterna = async () => {
     const texto = nuevaNota.trim();
 
@@ -218,7 +304,7 @@ const AdminDetalleClaseNuevo = () => {
       };
 
       const nuevaNotaRef = await push(
-        ref(dbRealtime, `clasesNotas/${claseId}/notasInternas`),
+        ref(dbRealtime, `clasesNotas/${clase.id}/notasInternas`),
         nota
       );
 
@@ -250,7 +336,7 @@ const AdminDetalleClaseNuevo = () => {
       setEliminandoNotaId(notaId);
 
       await remove(
-        ref(dbRealtime, `clasesNotas/${claseId}/notasInternas/${notaId}`)
+        ref(dbRealtime, `clasesNotas/${clase.id}/notasInternas/${notaId}`)
       );
 
       setNotasInternas((prev) => prev.filter((nota) => nota.id !== notaId));
@@ -293,8 +379,134 @@ const AdminDetalleClaseNuevo = () => {
           <p><strong>Nombre:</strong> {clase.nombre}</p>
           <p><strong>ID:</strong> {clase.id}</p>
           <p><strong>Categoría:</strong> {clase.categoria}</p>
-          <p><strong>Precio base:</strong> {clase.precioDesde ? `${clase.precioDesde}€` : "—"}</p>
+          <p><strong>Estado:</strong> {clase.estado || "activa"}</p>
+          <p>
+            <strong>Activa:</strong> {clase.activa ? "Sí" : "No"}
+          </p>
+          <p>
+            <strong>Precio base:</strong>{" "}
+            {clase.precioDesde
+              ? `${clase.precioDesde}€`
+              : clase.precio
+              ? `${clase.precio}€`
+              : "—"}
+          </p>
           <p><strong>Reservas futuras:</strong> {reservas.length}</p>
+
+          <hr style={styles.separador} />
+
+          <p><strong>Descripción corta:</strong> {clase.descripcionCorta || "—"}</p>
+          <p><strong>Descripción larga:</strong> {clase.descripcionLarga || "—"}</p>
+
+          <div>
+            <strong>Incluye:</strong>
+            {clase.incluye && clase.incluye.length > 0 ? (
+              <ul style={styles.listaIncluye}>
+                {clase.incluye.map((item, index) => (
+                  <li key={index} style={styles.itemIncluye}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span> —</span>
+            )}
+          </div>
+
+          <p><strong>Nota importante:</strong> {clase.notaImportante || "—"}</p>
+        </div>
+
+        <div style={styles.bloque}>
+          <h2 style={styles.subtitulo}>Editar información de la clase</h2>
+
+          <div style={styles.formGrid}>
+            <div style={styles.campo}>
+              <label style={styles.label}>Nombre</label>
+              <input
+                type="text"
+                value={nombreEditado}
+                onChange={(e) => setNombreEditado(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.campo}>
+              <label style={styles.label}>Categoría</label>
+              <input
+                type="text"
+                value={categoriaEditada}
+                onChange={(e) => setCategoriaEditada(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.campo}>
+              <label style={styles.label}>Estado</label>
+              <select
+                value={estadoEditado}
+                onChange={(e) => setEstadoEditado(e.target.value)}
+                style={styles.input}
+              >
+                <option value="activa">Activa</option>
+                <option value="oculta">Oculta</option>
+                <option value="pausada">Pausada</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={styles.campo}>
+            <label style={styles.label}>Texto introductorio</label>
+            <textarea
+              value={descripcionCortaEditada}
+              onChange={(e) => setDescripcionCortaEditada(e.target.value)}
+              style={styles.textarea}
+              rows={3}
+            />
+          </div>
+
+          <div style={styles.campo}>
+            <label style={styles.label}>Texto explicativo</label>
+            <textarea
+              value={descripcionLargaEditada}
+              onChange={(e) => setDescripcionLargaEditada(e.target.value)}
+              style={styles.textarea}
+              rows={5}
+            />
+          </div>
+
+          <div style={styles.campo}>
+            <label style={styles.label}>
+              Qué incluye esta clase
+              <span style={styles.labelAyuda}> (escribe una cosa por línea)</span>
+            </label>
+            <textarea
+              value={incluyeEditado}
+              onChange={(e) => setIncluyeEditado(e.target.value)}
+              style={styles.textarea}
+              rows={5}
+              placeholder={`Materiales incluidos
+Cocciones incluidas
+Acompañamiento en el taller`}
+            />
+          </div>
+
+          <div style={styles.campo}>
+            <label style={styles.label}>Nota importante</label>
+            <textarea
+              value={notaImportanteEditada}
+              onChange={(e) => setNotaImportanteEditada(e.target.value)}
+              style={styles.textarea}
+              rows={4}
+            />
+          </div>
+
+          <button
+            onClick={guardarInformacionClase}
+            style={styles.botonGuardar}
+            disabled={guardandoInfo}
+          >
+            {guardandoInfo ? "Guardando..." : "Guardar cambios de la clase"}
+          </button>
         </div>
 
         <div style={styles.bloque}>
@@ -307,7 +519,9 @@ const AdminDetalleClaseNuevo = () => {
                   <div style={styles.notaHeader}>
                     <div>
                       <p style={styles.notaTexto}>{nota.texto}</p>
-                      <p style={styles.notaFecha}>{formatearFechaNota(nota.fecha)}</p>
+                      <p style={styles.notaFecha}>
+                        {formatearFechaNota(nota.fecha)}
+                      </p>
                     </div>
 
                     <button
@@ -322,7 +536,9 @@ const AdminDetalleClaseNuevo = () => {
               ))}
             </div>
           ) : (
-            <p style={styles.textoVacio}>Aún no hay notas internas para esta clase.</p>
+            <p style={styles.textoVacio}>
+              Aún no hay notas internas para esta clase.
+            </p>
           )}
 
           <textarea
@@ -429,12 +645,50 @@ const styles = {
     display: "grid",
     gap: 8,
   },
+  separador: {
+    border: "none",
+    borderTop: "1px solid #eee",
+    margin: "10px 0",
+  },
+  listaIncluye: {
+    marginTop: 8,
+    paddingLeft: 20,
+  },
+  itemIncluye: {
+    marginBottom: 4,
+  },
   bloque: {
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
+  },
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 14,
+    marginBottom: 16,
+  },
+  campo: {
+    display: "grid",
+    gap: 6,
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: "0.92rem",
+    fontWeight: 600,
+    color: "#5b4a2d",
+  },
+  input: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    fontSize: "0.95rem",
+    fontFamily: "'Segoe UI', sans-serif",
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
   },
   lista: {
     display: "grid",
@@ -519,6 +773,11 @@ const styles = {
     fontWeight: 600,
     color: "#8a3b3b",
     flexShrink: 0,
+  },
+  labelAyuda: {
+    fontWeight: 400,
+    color: "#8a7b65",
+    fontSize: "0.88rem",
   },
 };
 

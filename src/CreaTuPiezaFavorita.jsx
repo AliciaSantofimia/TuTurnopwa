@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function CreaTuPiezaFavorita() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/creatupiezafavorita/creatupieza1.jpg",
     "/img/creatupiezafavorita/creatupieza2.jpg",
@@ -13,12 +18,90 @@ export default function CreaTuPiezaFavorita() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/creatupiezafavorita"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de Crea tu pieza favorita:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase =
+    datosClase?.nombre || "CREA TU PIEZA FAVORITA DESDE CERO";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `Desde ${datosClase.precioDesde}€`
+      : "Desde 55,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Explora el mundo de la cerámica y da vida a tus creaciones en un ambiente acogedor y sin experiencia previa requerida. En nuestro estudio, te guiaremos paso a paso a través de diferentes técnicas de modelado manual y decoración cerámica para que puedas diseñar tu propia pieza única.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "Después de la verificación de la reserva, únete a nosotros el día elegido y disfruta de crear una pieza propia. Tras las cocciones, podrás llevarte a casa tu creación única y personalizada.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "Formación guiada para crear tu pieza favorita desde cero.",
+          "Posibilidad de elegir modelado a mano o torno alfarero.",
+          "Materiales y cocciones incluidos.",
+          "Esmaltado de una pieza culinaria o decorativa.",
+        ];
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asistes a tu formación o bono en la fecha original y deseas reprogramar cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir una formación acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
       <div className="bg-white text-[#333] font-sans max-w-5xl w-full shadow-md rounded-2xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-
           {/* GALERÍA */}
           <div className="p-4 sm:p-5">
             <button
@@ -61,13 +144,12 @@ export default function CreaTuPiezaFavorita() {
 
           {/* CONTENIDO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              CREA TU PIEZA FAVORITA DESDE CERO
+              {nombreClase}
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              Desde 55,00 €
+              {precioClase}
             </p>
 
             <div className="mb-5">
@@ -83,17 +165,12 @@ export default function CreaTuPiezaFavorita() {
             </div>
 
             <div className="mb-5">
-
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Explora el mundo de la cerámica y da vida a tus creaciones en un
-                ambiente acogedor y sin experiencia previa requerida. En nuestro
-                estudio, te guiaremos paso a paso a través de diferentes técnicas
-                de modelado manual y decoración cerámica para que puedas diseñar
-                tu propia pieza única.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -101,10 +178,9 @@ export default function CreaTuPiezaFavorita() {
               </p>
 
               <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• Formación guiada para crear tu pieza favorita desde cero.</li>
-                <li>• Posibilidad de elegir modelado a mano o torno alfarero.</li>
-                <li>• Materiales y cocciones incluidos.</li>
-                <li>• Esmaltado de una pieza culinaria o decorativa.</li>
+                {incluyeLista.map((item, index) => (
+                  <li key={index}>• {item}</li>
+                ))}
               </ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -117,26 +193,19 @@ export default function CreaTuPiezaFavorita() {
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">
-                Después de la verificación de la reserva, únete a nosotros el día
-                elegido y disfruta de crear una pieza propia. Tras las cocciones,
-                podrás llevarte a casa tu creación única y personalizada.
+                {descripcionLarga}
               </p>
-
             </div>
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">
-                Nota importante: las tarifas están sujetas a cambios. Si no
-                asistes a tu formación o bono en la fecha original y deseas
-                reprogramar cuando las tarifas hayan cambiado, deberás abonar la
-                diferencia o elegir una formación acorde a la cantidad ya pagada.
+                <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
             </div>
 
             <div className="mt-auto">
               <BotonReserva destino="/reserva-crea-tu-pieza-favorita" />
             </div>
-
           </div>
         </div>
       </div>
@@ -167,7 +236,6 @@ export default function CreaTuPiezaFavorita() {
           </div>
         </div>
       )}
-
     </PantallaConVolver>
   );
 }

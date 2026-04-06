@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function CreaTuBandejaHogar() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/bandeja/bandeja1.jpg",
     "/img/bandeja/bandeja2.jpg",
@@ -14,6 +19,84 @@ export default function CreaTuBandejaHogar() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "clases/creatubandejahogar"));
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error("Error al cargar datos de Crea tu bandeja de hogar:", error);
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase = datosClase?.nombre || "CREA TU BANDEJA DE HOGAR";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `${datosClase.precioDesde}€`
+      : "55,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Descubre las bases del modelado cerámico a través de esta práctica de formación de una sola sesión, donde podrás crear tus propias piezas planas artesanales, ideales para el hogar o como objetos decorativos.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "Durante la clase podrás elegir qué tipo de pieza realizar: una tabla para quesos, una bandeja joyera, una huevera, un plato para tostadas u otra pieza funcional de formato plano.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "Todos los materiales y herramientas necesarios.",
+          "Cocciones completas en horno cerámico.",
+          "Esmaltado de una pieza incluida (tu pieza plana).",
+          "Formación guiada y personalizada durante toda la sesión.",
+        ];
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asistes a tu formación o bono en la fecha original y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir una formación acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -60,19 +143,17 @@ export default function CreaTuBandejaHogar() {
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              CREA TU BANDEJA DE HOGAR
+              {nombreClase}
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              55,00 €
+              {precioClase}
             </p>
 
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
               </h2>
-
-              
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
                 <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
@@ -98,16 +179,11 @@ export default function CreaTuBandejaHogar() {
               </div>
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Descubre las bases del modelado cerámico a través de esta práctica
-                de formación de una sola sesión, donde podrás crear tus propias
-                piezas planas artesanales, ideales para el hogar o como objetos
-                decorativos.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Durante la clase podrás elegir qué tipo de pieza realizar:
-                una tabla para quesos, una bandeja joyera, una huevera, un plato
-                para tostadas u otra pieza funcional de formato plano.
+                {descripcionLarga}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
@@ -144,10 +220,9 @@ export default function CreaTuBandejaHogar() {
               </p>
 
               <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• Todos los materiales y herramientas necesarios.</li>
-                <li>• Cocciones completas en horno cerámico.</li>
-                <li>• Esmaltado de una pieza incluida (tu pieza plana).</li>
-                <li>• Formación guiada y personalizada durante toda la sesión.</li>
+                {incluyeLista.map((item, index) => (
+                  <li key={index}>• {item}</li>
+                ))}
               </ul>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -174,7 +249,9 @@ export default function CreaTuBandejaHogar() {
 
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
                 Tus piezas no estarán listas el mismo día.
-Después de la clase, necesitan pasar por un proceso de secado y cocción en el horno, que requiere tiempo y puede variar según el clima y el tamaño de las piezas.
+                Después de la clase, necesitan pasar por un proceso de secado y
+                cocción en el horno, que requiere tiempo y puede variar según el
+                clima y el tamaño de las piezas.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
@@ -184,9 +261,10 @@ Después de la clase, necesitan pasar por un proceso de secado y cocción en el 
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
                 Cuando tus piezas estén listas, se subirán fotos a la carpeta correspondiente para que puedas identificarlas.
-
-Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
-Ahí encontrarás siempre la información actualizada.
+                <br />
+                <br />
+                Para saber si tu pieza ya está disponible y cómo recogerla, entra en “Quiero recoger mi pieza” dentro de tu perfil.
+                Ahí encontrarás siempre la información actualizada.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">
@@ -198,11 +276,7 @@ Ahí encontrarás siempre la información actualizada.
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Nota importante:</strong> Las tarifas están sujetas a
-                cambios. Si no asistes a tu formación o bono en la fecha original
-                y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás
-                abonar la diferencia o elegir una formación acorde a la cantidad
-                ya pagada.
+                <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">

@@ -44,11 +44,18 @@ const AdminClasesNuevo = () => {
             const claseId = claseSnap.key;
             const claseData = claseSnap.val() || {};
 
-            if (claseData.activa === false) return;
+            
 
             const nombre = claseData.nombre || claseId;
 
-           listaClases.push({
+           const estadoClase =
+  typeof claseData.estado === "string" && claseData.estado.trim()
+    ? claseData.estado.trim().toLowerCase()
+    : claseData.activa === false
+    ? "oculta"
+    : "activa";
+
+listaClases.push({
   id: claseId,
   nombre,
   categoria: claseData.categoria || "Sin categoría",
@@ -58,6 +65,8 @@ const AdminClasesNuevo = () => {
   plazas: claseData.plazas || {},
   turnos: claseData.turnos || [],
   horarios: claseData.horarios || claseData.horario || {},
+  estado: estadoClase,
+  activa: estadoClase === "activa",
 });
 
             mapaResumen[claseId] = {
@@ -477,6 +486,9 @@ const AdminClasesNuevo = () => {
                 </div>
 
                 <div style={styles.infoBox}>
+                  <p style={styles.linea}>
+  <strong>Estado:</strong> {clase.estado || "activa"}
+</p>
                   <p style={styles.linea}>
                     <strong>Reservas totales:</strong> {clase.reservasTotales}
                   </p>

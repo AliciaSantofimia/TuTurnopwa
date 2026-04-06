@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BotonReserva from "./BotonReserva";
 import PantallaConVolver from "./PantallaConVolver";
+import { useNavigate } from "react-router-dom";
+import { ref, get } from "firebase/database";
+import { dbRealtime } from "./firebase";
 
 export default function TornoAlfareroYDecoracion() {
+  const navigate = useNavigate();
+
   const imagenes = [
     "/img/tornoalfarero/torno-decoracion1.jpg",
     "/img/tornoalfarero/torno-decoracion2.jpg",
@@ -13,6 +18,88 @@ export default function TornoAlfareroYDecoracion() {
 
   const [imagenActiva, setImagenActiva] = useState(imagenes[0]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [datosClase, setDatosClase] = useState(null);
+
+  useEffect(() => {
+    const cargarClase = async () => {
+      try {
+        const snap = await get(
+          ref(dbRealtime, "clases/tornodecoracion4clases")
+        );
+
+        if (snap.exists()) {
+          setDatosClase(snap.val());
+        }
+      } catch (error) {
+        console.error(
+          "Error al cargar datos de Torno alfarero y decoración:",
+          error
+        );
+      }
+    };
+
+    cargarClase();
+  }, []);
+
+  const nombreClase = datosClase?.nombre || "Torno alfarero y decoración";
+
+  const precioClase =
+    typeof datosClase?.precio === "number"
+      ? `${datosClase.precio.toFixed(2).replace(".", ",")} €`
+      : datosClase?.precioDesde
+      ? `${datosClase.precioDesde}€`
+      : "99,00 €";
+
+  const descripcionCorta =
+    datosClase?.descripcionCorta ||
+    "Sumérgete en el proceso completo de la cerámica con este bono formativo de 4 sesiones, diseñado para quienes desean aprender torno y técnicas de decoración cerámica.";
+
+  const descripcionLarga =
+    datosClase?.descripcionLarga ||
+    "El recorrido combina dos sesiones centradas en el torno alfarero y dos sesiones dedicadas a la decoración con engobes o esmaltes, guiadas paso a paso en el estudio. Podrás crear tus propias piezas torneadas —cuencos, tazas, jarrones o piezas con tapa— y después decorarlas aplicando color, efectos y acabados personales.";
+
+  const incluyeLista =
+    Array.isArray(datosClase?.incluye) && datosClase.incluye.length > 0
+      ? datosClase.incluye
+      : [
+          "4 sesiones de 3 horas (2 de torno + 2 de decoración).",
+          "Todos los materiales, herramientas y cocciones necesarias.",
+          "Formación personalizada y acompañamiento técnico en todo el proceso.",
+        ];
+
+  const notaImportanteFirebase =
+    datosClase?.notaImportante ||
+    "Las tarifas están sujetas a cambios. Si no asististe a tu curso o bono en la fecha original y deseas reprogramarlo cuando las tarifas hayan cambiado, deberás abonar la diferencia o elegir una formación acorde a la cantidad ya pagada.";
+
+  const estadoClase = datosClase?.estado
+    ? datosClase.estado.trim().toLowerCase()
+    : datosClase?.activa === false
+    ? "oculta"
+    : "activa";
+
+  if (estadoClase !== "activa") {
+    return (
+      <PantallaConVolver>
+        <div className="bg-white text-[#333] font-sans max-w-3xl w-full shadow-md rounded-2xl overflow-hidden p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-4">
+            Este taller no está disponible ahora mismo
+          </h1>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            Esta clase está temporalmente oculta o pausada y no puede reservarse
+            en este momento.
+          </p>
+
+          <button
+            onClick={() => navigate("/clases")}
+            className="px-6 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+          >
+            Volver a talleres
+          </button>
+        </div>
+      </PantallaConVolver>
+    );
+  }
 
   return (
     <PantallaConVolver>
@@ -57,7 +144,7 @@ export default function TornoAlfareroYDecoracion() {
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
-              Torno alfarero y decoración
+              {nombreClase}
             </h1>
 
             <p className="text-base text-[#6b3700] font-medium mb-1 leading-relaxed break-words">
@@ -65,7 +152,7 @@ export default function TornoAlfareroYDecoracion() {
             </p>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-relaxed break-words">
-              99,00 €
+              {precioClase}
             </p>
 
             <div className="mb-5 min-w-0">
@@ -73,24 +160,12 @@ export default function TornoAlfareroYDecoracion() {
                 Información del producto
               </h2>
 
-            
-
               <p className="text-sm text-gray-700 mb-3 leading-relaxed break-words">
-                Sumérgete en el proceso completo de la cerámica con este
-                <strong> bono formativo de 4 sesiones</strong>, diseñado para
-                quienes desean aprender torno y técnicas de decoración cerámica.
+                {descripcionCorta}
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                El recorrido combina dos sesiones centradas en el torno alfarero
-                y dos sesiones dedicadas a la decoración con engobes o esmaltes,
-                guiadas paso a paso en el estudio.
-              </p>
-
-              <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Podrás crear tus propias piezas torneadas —cuencos, tazas,
-                jarrones o piezas con tapa— y después decorarlas aplicando
-                color, efectos y acabados personales.
+                {descripcionLarga}
               </p>
 
               <p className="text-sm text-gray-700 mb-2 font-semibold">
@@ -131,9 +206,9 @@ export default function TornoAlfareroYDecoracion() {
               </p>
 
               <ul className="text-sm text-gray-700 space-y-2 mb-4 leading-relaxed break-words">
-                <li>• 4 sesiones de 3 horas (2 de torno + 2 de decoración).</li>
-                <li>• Todos los materiales, herramientas y cocciones necesarias.</li>
-                <li>• Formación personalizada y acompañamiento técnico en todo el proceso.</li>
+                {incluyeLista.map((item, index) => (
+                  <li key={index}>• {item}</li>
+                ))}
               </ul>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
@@ -192,11 +267,7 @@ export default function TornoAlfareroYDecoracion() {
 
             <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-5">
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
-                <strong>Política de reservas y condiciones:</strong> Las tarifas
-                están sujetas a cambios. Si no asististe a tu curso o bono en
-                la fecha original y deseas reprogramarlo cuando las tarifas hayan
-                cambiado, deberás abonar la diferencia o elegir una formación
-                acorde a la cantidad ya pagada.
+                <strong>Política de reservas y condiciones:</strong> {notaImportanteFirebase}
               </p>
 
               <p className="text-sm text-gray-700 italic mb-2 leading-relaxed break-words">
