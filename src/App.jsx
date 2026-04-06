@@ -115,6 +115,8 @@ import AdminReservasGrupos from "./AdminReservasGrupos";
 import AdminDetalleTarjetaRegaloNuevo from "./AdminDetalleTarjetaRegaloNuevo";
 import AdminBloqueosFechas from "./AdminBloqueosFechas";
 
+import ChatAyuda from "./ChatAyuda.jsx";
+
 function App() {
   return (
     <BrowserRouter>
@@ -123,6 +125,7 @@ function App() {
         <Route element={<AppLayout />}>
           {/* Redirección inicial */}
           <Route path="/" element={<Navigate to="/portada" replace />} />
+          <Route path="/ayuda" element={<ChatAyuda />} />
 
           {/* Páginas principales */}
           <Route path="/portada" element={<Portada />} />
