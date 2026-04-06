@@ -110,6 +110,51 @@ export const validarUsoBono = async ({ uid, claseId }) => {
   };
 };
 
+export const crearBonoActivo = async ({
+  uid,
+  clase,
+  claseId = "",
+  tipoTaller = "bono_mensual",
+  subtipo = "",
+  numeroClases = 0,
+  fechaInicio = "",
+  fechaFinMes = "",
+  fechaCaducidadBono = "",
+  turno = "",
+  orderId = "",
+  datosExtra = {},
+}) => {
+  const bonosRef = ref(dbRealtime, `usuarios/${uid}/bonos`);
+  const nuevoBonoRef = push(bonosRef);
+
+  const bonoData = {
+    bonoId: nuevoBonoRef.key,
+    uid,
+    clase,
+    claseId,
+    tipo: "bono",
+    tipoTaller,
+    subtipo,
+    numeroClases,
+    clasesConsumidas: 0,
+    clasesRestantes: numeroClases,
+    fechaInicio,
+    fechaFinMes,
+    fechaCaducidadBono,
+    turnoHabitual: turno,
+    estadoBono: "activo",
+    estadoPago: "pagado",
+    orderId,
+    creadoEn: new Date().toISOString(),
+    actualizadoEn: new Date().toISOString(),
+    sesionesConsumidas: {},
+    ...datosExtra,
+  };
+
+  await update(nuevoBonoRef, bonoData);
+
+  return nuevoBonoRef.key;
+};
 export const usarSesionDeBono = async ({
   uid,
   bonoId,
