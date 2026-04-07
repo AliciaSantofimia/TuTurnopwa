@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
-import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
+import { crearBonoActivo } from "./utils/bonos";
 
 const CLASE_ID = "modelamano4clases";
 const RESERVAS_PATH_KEY = "ModelaAManoYDecoraTusPiezasFavoritas";
@@ -207,7 +207,30 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     try {
       const orderId = Date.now().toString().slice(-12);
       const timestamp = new Date().toISOString();
-
+const datosBono = {
+  claseId: CLASE_ID,
+  clase:
+    claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
+  tipo: "bono",
+  subtipo,
+  numeroClases,
+  clasesConsumidas: 0,
+  clasesRestantes: numeroClases,
+  fechaInicio,
+  fechaFinMes: sumarUnMes(fechaInicio),
+  fechaCaducidadBono: sumarTresMeses(fechaInicio),
+  turnoHabitual: turno,
+  duracionClase,
+  modalidad,
+  precioBase,
+  precioTotal,
+  estadoBono: "activo",
+  estadoPago: desdeTarjeta ? "pagado" : "pendiente",
+  orderId,
+  creadoEn: timestamp,
+  actualizadoEn: timestamp,
+  sesionesConsumidas: {},
+};
       const reserva = {
         clase:
           claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
@@ -254,7 +277,52 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
           codigoTarjeta,
           creadaDesde: "tarjeta_regalo",
         });
+        const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
+        const bonosSnap = await get(bonosRef);
 
+       let bonoYaExiste = false;
+
+if (bonosSnap.exists()) {
+  const bonos = bonosSnap.val() || {};
+
+  for (const bono of Object.values(bonos)) {
+    if (
+      bono?.tarjetaRegaloId === tarjetaRegaloId ||
+      bono?.orderId === orderId
+    ) {
+      bonoYaExiste = true;
+      break;
+    }
+  }
+}
+
+        if (!bonoYaExiste) {
+          await crearBonoActivo({
+            uid: user.uid,
+            clase:
+              claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
+            claseId: CLASE_ID,
+            tipoTaller: "bono_mensual",
+            subtipo,
+            numeroClases,
+            fechaInicio,
+            fechaFinMes: sumarUnMes(fechaInicio),
+            fechaCaducidadBono: sumarTresMeses(fechaInicio),
+            turno,
+            orderId,
+            datosExtra: {
+              duracionClase,
+              modalidad,
+              precioBase,
+              precioTotal,
+              incluyeCambioTorno: convertirTorno,
+              extraCambioTorno: extraTorno,
+              tarjetaRegaloId,
+              codigoTarjeta,
+              creadaDesde: "tarjeta_regalo",
+            },
+          });
+        }
         const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
         const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
         const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
@@ -332,6 +400,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
           incluyeCambioTorno: convertirTorno,
           extraCambioTorno: extraTorno,
           orderId,
+          datosBono,
         },
       });
     } catch (err) {
@@ -365,8 +434,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
             No se ha encontrado la configuración de este bono en Firebase.
           </p>
         ) : (
-          <BloqueoReserva>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
               <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                 <p><strong>Bono mensual de {numeroClases} clases.</strong></p>
                 <p>
@@ -399,7 +467,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                       : ""}
                   </p>
                 )}
-                {fecha && !fechaBloqueada && diaNoDisponible && (
+                {fechaInicio && !fechaBloqueada && diaNoDisponible && (
   <p className="mt-2 text-sm text-red-600 font-medium">
     Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
     {Object.keys(claseConfig?.horarios || {}).join(", ")}.
@@ -485,7 +553,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                 {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
               </button>
             </form>
-          </BloqueoReserva>
+        
         )}
 
         <div className="mt-8 text-center">

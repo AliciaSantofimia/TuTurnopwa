@@ -84,6 +84,7 @@ import ReservaPintaTuPieza from "./ReservaPintaTuPieza";
 import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 import ReservaGrupos from "./ReservaGrupos.jsx";
 import UsarBonoTornoAlfareroEmpezarDesdeCero from "./UsarBonoTornoAlfareroEmpezarDesdeCero";
+import UsarBono from "./UsarBono";
 // Tarjetas regalo
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
 
@@ -195,6 +196,7 @@ function App() {
           />
 
           {/* Reservas normales */}
+          <Route path="/usar-bono/:bonoId" element={<UsarBono />} />
           <Route
   path="/usar-bono-torno-alfarero-empezar-desde-cero"
   element={<UsarBonoTornoAlfareroEmpezarDesdeCero />}

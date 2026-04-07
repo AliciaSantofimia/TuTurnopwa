@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ref, get, push, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
-import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
+import { crearBonoActivo } from "./utils/bonos";
 
 const CLASE_ID = "tornodesdecero4clases";
 const RESERVAS_PATH_KEY = "TornoAlfareroEmpezarDesdeCero";
@@ -234,7 +234,6 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         claseId: CLASE_ID,
         tipoTaller: "bono_mensual",
         subtipo,
-        fecha: fechaInicio,
         fechaInicio,
         fechaFinMes: sumarUnMes(fechaInicio),
         fechaCaducidadBono: sumarTresMeses(fechaInicio),
@@ -255,33 +254,71 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         timestamp,
       };
 
+      const generalRef = ref(
+        dbRealtime,
+        `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
+      );
+
+      const nuevaReservaRef = push(generalRef);
+      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
+
       if (desdeTarjeta) {
-        const generalRef = ref(
-          dbRealtime,
-          `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
-        );
-
-        const nuevaReservaRef = push(generalRef);
-        await update(nuevaReservaRef, { uid: user.uid, ...reserva });
-
         const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
         const codigoTarjeta = location.state?.codigoTarjeta || "";
 
         await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
           ...reserva,
           uid: user.uid,
-          fecha: fechaInicio,
           tarjetaRegaloId,
           codigoTarjeta,
           creadaDesde: "tarjeta_regalo",
         });
 
-        const bonoRef = push(ref(dbRealtime, `usuarios/${user.uid}/bonos`));
-        await update(bonoRef, {
-          bonoId: bonoRef.key,
-          uid: user.uid,
-          ...datosBono,
-        });
+        const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
+const bonosSnap = await get(bonosRef);
+
+
+let bonoYaExiste = false;
+
+if (bonosSnap.exists()) {
+  const bonos = bonosSnap.val() || {};
+
+  for (const bono of Object.values(bonos)) {
+    if (
+      bono?.tarjetaRegaloId === tarjetaRegaloId ||
+      bono?.orderId === orderId
+    ) {
+      bonoYaExiste = true;
+      break;
+    }
+  }
+}
+
+if (!bonoYaExiste) {
+  await crearBonoActivo({
+    uid: user.uid,
+    clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
+    claseId: CLASE_ID,
+    tipoTaller: "bono_mensual",
+    subtipo,
+    numeroClases,
+    fechaInicio,
+    fechaFinMes: sumarUnMes(fechaInicio),
+    fechaCaducidadBono: sumarTresMeses(fechaInicio),
+    turno,
+    orderId,
+    datosExtra: {
+      duracionClase,
+      modalidad,
+      incluyeDecoracion,
+      precioBase,
+      precioTotal,
+      tarjetaRegaloId,
+      codigoTarjeta,
+      creadaDesde: "tarjeta_regalo",
+    },
+  });
+}
 
         const tarjetaGlobalRef = ref(
           dbRealtime,
@@ -326,7 +363,6 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         navigate("/pago/exito", {
           state: {
             desdeTarjeta: true,
-            datosBono,
             tipo: "bono",
             clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
             claseId: CLASE_ID,
@@ -400,124 +436,121 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
             No se ha encontrado la configuración de este bono en Firebase.
           </p>
         ) : (
-          <BloqueoReserva>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p>
-                  <strong>Curso de {numeroClases} clases.</strong>
-                </p>
-                <p>
-                  Incluye {numeroClases} sesiones de {duracionClase} centradas
-                  en {modalidad},{" "}
-                  {incluyeDecoracion ? "con decoración" : "sin decoración"}. El
-                  mes comienza con tu primera sesión y finaliza el mismo día del
-                  mes siguiente.
-                </p>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+              <p>
+                <strong>Curso de {numeroClases} clases.</strong>
+              </p>
+              <p>
+                Incluye {numeroClases} sesiones de {duracionClase} centradas en{" "}
+                {modalidad},{" "}
+                {incluyeDecoracion ? "con decoración" : "sin decoración"}. El
+                mes comienza con tu primera sesión y finaliza el mismo día del
+                mes siguiente.
+              </p>
+            </div>
 
-              <div>
-                <label
-                  htmlFor="fechaInicio"
-                  className="block font-bold text-sm mb-1"
-                >
-                  Selecciona el día de tu primera clase:
-                </label>
-                <DateInputReserva
-                  id="fechaInicio"
-                  value={fechaInicio}
-                  onChange={(e) => {
-                    setFechaInicio(e.target.value);
-                    setTurno("");
-                  }}
-                />
-                {fechaBloqueada && (
-                  <p className="mt-2 text-sm text-red-600 font-medium">
-                    Este día no está disponible para reservar.
-                    {fechaBloqueada.motivo
-                      ? ` Motivo: ${fechaBloqueada.motivo}.`
-                      : ""}
-                  </p>
-                )}
-                {fechaInicio && !fechaBloqueada && diaNoDisponible && (
-                  <p className="mt-2 text-sm text-red-600 font-medium">
-                    Esta clase no se imparte el día seleccionado. Días
-                    disponibles:{" "}
-                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                  Selecciona el turno habitual:
-                </label>
-                <select
-                  id="turno"
-                  value={turno}
-                  onChange={(e) => setTurno(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                  disabled={!fechaInicio || diaNoDisponible}
-                >
-                  <option value="">-- Elige turno --</option>
-                  {turnosDisponibles.map((turnoItem) => (
-                    <option key={turnoItem} value={turnoItem}>
-                      {turnoItem}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p>
-                  <strong>Modalidad:</strong> {modalidad}
-                </p>
-                <p>
-                  <strong>Clases incluidas:</strong> {numeroClases} sesiones de{" "}
-                  {duracionClase}
-                </p>
-                <p>
-                  <strong>Decoración:</strong>{" "}
-                  {incluyeDecoracion ? "Incluida" : "No incluida"}
-                </p>
-              </div>
-
-              {fechaInicio && (
-                <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                  <p>
-                    <strong>Precio total:</strong>{" "}
-                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
-                  </p>
-                  <p>
-                    <strong>Fin del bono mensual:</strong>{" "}
-                    {sumarUnMes(fechaInicio)}
-                  </p>
-                  <p>
-                    <strong>Validez máxima del bono:</strong>{" "}
-                    {sumarTresMeses(fechaInicio)}
-                  </p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
-                bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
-                shadow-md hover:shadow-lg
-                hover:from-[#F4C542] hover:to-[#E5B92F]
-                transition-all duration-200"
-                disabled={
-                  !!fechaBloqueada ||
-                  diaNoDisponible ||
-                  !fechaInicio ||
-                  !turno ||
-                  (!desdeTarjeta && !(precioBase > 0))
-                }
+            <div>
+              <label
+                htmlFor="fechaInicio"
+                className="block font-bold text-sm mb-1"
               >
-                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
-              </button>
-            </form>
-          </BloqueoReserva>
+                Selecciona el día de tu primera clase:
+              </label>
+              <DateInputReserva
+                id="fechaInicio"
+                value={fechaInicio}
+                onChange={(e) => {
+                  setFechaInicio(e.target.value);
+                  setTurno("");
+                }}
+              />
+              {fechaBloqueada && (
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  Este día no está disponible para reservar.
+                  {fechaBloqueada.motivo
+                    ? ` Motivo: ${fechaBloqueada.motivo}.`
+                    : ""}
+                </p>
+              )}
+              {fechaInicio && !fechaBloqueada && diaNoDisponible && (
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  Esta clase no se imparte el día seleccionado. Días
+                  disponibles: {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                Selecciona el turno habitual:
+              </label>
+              <select
+                id="turno"
+                value={turno}
+                onChange={(e) => setTurno(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+                disabled={!fechaInicio || diaNoDisponible}
+              >
+                <option value="">-- Elige turno --</option>
+                {turnosDisponibles.map((turnoItem) => (
+                  <option key={turnoItem} value={turnoItem}>
+                    {turnoItem}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+              <p>
+                <strong>Modalidad:</strong> {modalidad}
+              </p>
+              <p>
+                <strong>Clases incluidas:</strong> {numeroClases} sesiones de{" "}
+                {duracionClase}
+              </p>
+              <p>
+                <strong>Decoración:</strong>{" "}
+                {incluyeDecoracion ? "Incluida" : "No incluida"}
+              </p>
+            </div>
+
+            {fechaInicio && (
+              <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+                <p>
+                  <strong>Precio total:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${precioTotal}€`}
+                </p>
+                <p>
+                  <strong>Fin del bono mensual:</strong>{" "}
+                  {sumarUnMes(fechaInicio)}
+                </p>
+                <p>
+                  <strong>Validez máxima del bono:</strong>{" "}
+                  {sumarTresMeses(fechaInicio)}
+                </p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
+              bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
+              shadow-md hover:shadow-lg
+              hover:from-[#F4C542] hover:to-[#E5B92F]
+              transition-all duration-200"
+              disabled={
+                !!fechaBloqueada ||
+                diaNoDisponible ||
+                !fechaInicio ||
+                !turno ||
+                (!desdeTarjeta && !(precioBase > 0))
+              }
+            >
+              {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
+            </button>
+          </form>
         )}
 
         <div className="mt-8 text-center">

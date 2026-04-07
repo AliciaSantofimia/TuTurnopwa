@@ -458,17 +458,21 @@ export default function PerfilUsuario() {
                       <p>
                         <strong>Estado:</strong> {estadoVisible}
                       </p>
-                      {estadoVisible === "Activo" &&
-  bono.claseId === "tornodesdecero4clases" && (
-    <button
-      onClick={() =>
-        navigate("/usar-bono-torno-alfarero-empezar-desde-cero")
-      }
-      className="mt-3 w-full px-4 py-2 bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-semibold rounded-xl transition"
-    >
-      Reservar sesión con este bono
-    </button>
-  )}
+                      <p className="text-red-600 text-sm">
+  DEBUG bonoId: {bono.bonoId || "sin bonoId"}
+</p>
+<p className="text-red-600 text-sm">
+  DEBUG estadoVisible: {estadoVisible}
+</p>
+                      {estadoVisible === "Activo" && (
+ <button
+  onClick={() => navigate(`/usar-bono/${bono.bonoId}`)}
+  className="mt-3 w-full px-4 py-2 bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-semibold rounded-xl transition"
+>
+  Reservar sesión con este bono
+</button>
+)}
+                      
                     </li>
                   );
                 })}
