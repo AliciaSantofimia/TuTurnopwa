@@ -259,6 +259,12 @@ export default function ReservaClaseSueltaContinuidad() {
     }
   };
 
+  const handleFechaChange = (e) => {
+    setFecha(e.target.value);
+    setTurno("");
+    setPlazas(1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -431,6 +437,9 @@ export default function ReservaClaseSueltaContinuidad() {
   };
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const puedeElegirTurno =
+    !!tipoClase && !!fecha && !!metodo && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirPlazas = puedeElegirTurno && !!turno && plazasDisponibles > 0;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -493,10 +502,7 @@ export default function ReservaClaseSueltaContinuidad() {
                 <DateInputReserva
                   id="fecha"
                   value={fecha}
-                  onChange={(e) => {
-                    setFecha(e.target.value);
-                    setTurno("");
-                  }}
+                  onChange={handleFechaChange}
                 />
                 {fechaBloqueada && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
@@ -506,33 +512,12 @@ export default function ReservaClaseSueltaContinuidad() {
                       : ""}
                   </p>
                 )}
-                               {fecha && !fechaBloqueada && diaNoDisponible && (
+                {fecha && !fechaBloqueada && diaNoDisponible && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
                     Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
                     {Object.keys(claseConfig?.horarios || {}).join(", ")}.
                   </p>
                 )}
-              </div>
-
-              <div>
-                <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                  Selecciona turno:
-                </label>
-                <select
-                  id="turno"
-                  value={turno}
-                  onChange={(e) => setTurno(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                  disabled={!tipoClase || !fecha || diaNoDisponible}
-                >
-                  <option value="">-- Elige turno --</option>
-                  {turnosDisponibles.map((turnoItem) => (
-                    <option key={turnoItem} value={turnoItem}>
-                      {turnoItem}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div>
@@ -544,8 +529,46 @@ export default function ReservaClaseSueltaContinuidad() {
                   type="text"
                   value={metodo}
                   readOnly
+                  placeholder="Primero selecciona el tipo de clase"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base bg-gray-50"
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  El método se asigna automáticamente según el tipo de clase que elijas.
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                  Selecciona turno:
+                </label>
+                <select
+                  id="turno"
+                  value={turno}
+                  onChange={(e) => {
+                    setTurno(e.target.value);
+                    setPlazas(1);
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
+                  required
+                  disabled={!puedeElegirTurno}
+                >
+                  <option value="">
+                    {!tipoClase
+                      ? "-- Primero elige el tipo de clase --"
+                      : !fecha
+                      ? "-- Primero selecciona fecha --"
+                      : !metodo
+                      ? "-- Primero se asignará el método --"
+                      : diaNoDisponible
+                      ? "-- No hay turnos para este día --"
+                      : "-- Elige turno --"}
+                  </option>
+                  {turnosDisponibles.map((turnoItem) => (
+                    <option key={turnoItem} value={turnoItem}>
+                      {turnoItem}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {metodo && fecha && !diaNoDisponible && (
@@ -563,7 +586,8 @@ export default function ReservaClaseSueltaContinuidad() {
                   <button
                     type="button"
                     onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     −
                   </button>
@@ -575,14 +599,19 @@ export default function ReservaClaseSueltaContinuidad() {
                     onClick={() =>
                       setPlazas(Math.min(plazasDisponibles || 1, plazasNum + 1))
                     }
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  {diaNoDisponible
+                  {!tipoClase || !fecha || !metodo
+                    ? "Primero completa tipo de clase, fecha y método."
+                    : !turno
+                    ? "Primero selecciona un turno."
+                    : diaNoDisponible
                     ? "No hay plazas porque esta clase no se imparte ese día."
                     : `Máximo ${plazasDisponibles} plazas disponibles.`}
                 </p>
@@ -592,6 +621,9 @@ export default function ReservaClaseSueltaContinuidad() {
                 <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                   <p>
                     <strong>Clase elegida:</strong> {nombreTipoClase}
+                  </p>
+                  <p>
+                    <strong>Método:</strong> {nombreTipoClase}
                   </p>
                   <p>
                     <strong>Precio unitario:</strong>{" "}
@@ -610,7 +642,7 @@ export default function ReservaClaseSueltaContinuidad() {
                 bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
-                transition-all duration-200"
+                transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   !!fechaBloqueada ||
                   diaNoDisponible ||

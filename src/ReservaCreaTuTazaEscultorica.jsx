@@ -239,19 +239,36 @@ export default function ReservaCreaTuTazaEscultorica() {
     return turnosDisponibles.length === 0;
   }, [fecha, turnosDisponibles]);
 
-  const esTurnoConsulta =
-    turnosDisponibles.length === 1 &&
-    turnosDisponibles[0].toLowerCase().includes("consultar");
+  const esTurnoConsulta = useMemo(() => {
+    return (
+      turnosDisponibles.length === 1 &&
+      turnosDisponibles[0].toLowerCase().includes("consultar")
+    );
+  }, [turnosDisponibles]);
 
   useEffect(() => {
-    if (esTurnoConsulta && turnosDisponibles.length === 1 && !turno) {
+    if (esTurnoConsulta && turnosDisponibles.length === 1) {
       setTurno(turnosDisponibles[0]);
+      return;
+    }
+
+    if (!esTurnoConsulta && turno && !turnosDisponibles.includes(turno)) {
+      setTurno("");
     }
   }, [esTurnoConsulta, turnosDisponibles, turno]);
 
+  const handleFechaChange = (e) => {
+    setFecha(e.target.value);
+    setMetodo("");
+    setTurno("");
+    setPlazas(1);
+  };
+
   const handleMetodoChange = (valor) => {
     setMetodo(valor);
-    if (!esTurnoConsulta) setTurno("");
+    if (!esTurnoConsulta) {
+      setTurno("");
+    }
     setPlazas(1);
   };
 
@@ -264,7 +281,7 @@ export default function ReservaCreaTuTazaEscultorica() {
     }
 
     if (!fecha || !turno || !metodo) {
-      alert("Selecciona fecha, turno y método.");
+      alert("Selecciona fecha, método y turno.");
       return;
     }
 
@@ -350,9 +367,14 @@ export default function ReservaCreaTuTazaEscultorica() {
           creadaDesde: "tarjeta_regalo",
         });
 
-        const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
         const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
-        const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
         const uidComprador = tarjetaGlobal?.uidComprador || "";
 
         const datosActualizacionTarjeta = {
@@ -376,7 +398,10 @@ export default function ReservaCreaTuTazaEscultorica() {
 
         if (uidComprador) {
           await update(
-            ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
             datosActualizacionTarjeta
           );
         }
@@ -424,6 +449,16 @@ export default function ReservaCreaTuTazaEscultorica() {
   };
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const puedeElegirMetodo = !!fecha && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirTurno =
+    !!fecha && !!metodo && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirPlazas =
+    !!fecha &&
+    !!metodo &&
+    !!turno &&
+    !fechaBloqueada &&
+    !diaNoDisponible &&
+    plazasDisponibles > 0;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -467,10 +502,7 @@ export default function ReservaCreaTuTazaEscultorica() {
                 <DateInputReserva
                   id="fecha"
                   value={fecha}
-                  onChange={(e) => {
-                    setFecha(e.target.value);
-                    if (!esTurnoConsulta) setTurno("");
-                  }}
+                  onChange={handleFechaChange}
                 />
                 {fechaBloqueada && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
@@ -481,11 +513,39 @@ export default function ReservaCreaTuTazaEscultorica() {
                   </p>
                 )}
                 {fecha && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-  </p>
-)}
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="metodo" className="block font-bold text-sm mb-1">
+                  Método:
+                </label>
+                <select
+                  id="metodo"
+                  value={metodo}
+                  onChange={(e) => handleMetodoChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
+                  required
+                  disabled={!puedeElegirMetodo}
+                >
+                  <option value="">
+                    {!fecha
+                      ? "-- Primero selecciona la fecha --"
+                      : diaNoDisponible
+                      ? "-- Esta clase no está disponible ese día --"
+                      : "-- Selecciona método --"}
+                  </option>
+                  <option value="torno">
+                    Torno — {Number(precios.torno || 0)}€
+                  </option>
+                  <option value="modelado a mano">
+                    Modelado a mano — {Number(precios.modelado || 0)}€
+                  </option>
+                </select>
               </div>
 
               <div>
@@ -505,12 +565,23 @@ export default function ReservaCreaTuTazaEscultorica() {
                   <select
                     id="turno"
                     value={turno}
-                    onChange={(e) => setTurno(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                    onChange={(e) => {
+                      setTurno(e.target.value);
+                      setPlazas(1);
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
                     required
-                    disabled={!metodo || !fecha || diaNoDisponible}
+                    disabled={!puedeElegirTurno}
                   >
-                    <option value="">-- Elige turno --</option>
+                    <option value="">
+                      {!fecha
+                        ? "-- Primero selecciona la fecha --"
+                        : !metodo
+                        ? "-- Primero selecciona el método --"
+                        : diaNoDisponible
+                        ? "-- No hay turnos para este día --"
+                        : "-- Elige turno --"}
+                    </option>
                     {turnosDisponibles.map((turnoItem) => (
                       <option key={turnoItem} value={turnoItem}>
                         {turnoItem}
@@ -518,27 +589,6 @@ export default function ReservaCreaTuTazaEscultorica() {
                     ))}
                   </select>
                 )}
-              </div>
-
-              <div>
-                <label htmlFor="metodo" className="block font-bold text-sm mb-1">
-                  Método:
-                </label>
-                <select
-                  id="metodo"
-                  value={metodo}
-                  onChange={(e) => handleMetodoChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                >
-                  <option value="">-- Selecciona --</option>
-                  <option value="torno">
-                    Torno — {Number(precios.torno || 0)}€
-                  </option>
-                  <option value="modelado a mano">
-                    Modelado a mano — {Number(precios.modelado || 0)}€
-                  </option>
-                </select>
               </div>
 
               {metodo && fecha && !diaNoDisponible && (
@@ -560,7 +610,8 @@ export default function ReservaCreaTuTazaEscultorica() {
                   <button
                     type="button"
                     onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     −
                   </button>
@@ -572,14 +623,21 @@ export default function ReservaCreaTuTazaEscultorica() {
                     onClick={() =>
                       setPlazas(Math.min(plazasDisponibles || 1, plazasNum + 1))
                     }
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  {diaNoDisponible
+                  {!fecha
+                    ? "Primero selecciona la fecha."
+                    : !metodo
+                    ? "Primero selecciona el método."
+                    : !turno
+                    ? "Primero selecciona el turno."
+                    : diaNoDisponible
                     ? "No hay plazas porque esta clase no se imparte ese día."
                     : `Máximo ${plazasDisponibles} plazas disponibles.`}
                 </p>
@@ -609,7 +667,7 @@ export default function ReservaCreaTuTazaEscultorica() {
                 bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
-                transition-all duration-200"
+                transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   !!fechaBloqueada ||
                   diaNoDisponible ||

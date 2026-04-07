@@ -241,6 +241,15 @@ export default function ReservaCreaTuMaceta() {
 
   const handleTamanoChange = (valor) => {
     setTamanoMaceta(valor);
+    setMetodo("");
+    setTurno("");
+    setPlazas(1);
+  };
+
+  const handleFechaChange = (e) => {
+    setFecha(e.target.value);
+    setMetodo("");
+    setTurno("");
     setPlazas(1);
   };
 
@@ -259,7 +268,7 @@ export default function ReservaCreaTuMaceta() {
     }
 
     if (!fecha || !turno || !metodo || !tamanoMaceta) {
-      alert("Selecciona tamaño, fecha, turno y método.");
+      alert("Selecciona tamaño, fecha, método y turno.");
       return;
     }
 
@@ -423,6 +432,12 @@ export default function ReservaCreaTuMaceta() {
   };
 
   const plazasNum = Number(plazas) > 0 ? Number(plazas) : 1;
+  const puedeElegirFecha = !!tamanoMaceta;
+  const puedeElegirMetodo =
+    !!tamanoMaceta && !!fecha && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirTurno =
+    !!tamanoMaceta && !!fecha && !!metodo && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirPlazas = puedeElegirTurno && !!turno && plazasDisponibles > 0;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -484,11 +499,14 @@ export default function ReservaCreaTuMaceta() {
                 <DateInputReserva
                   id="fecha"
                   value={fecha}
-                  onChange={(e) => {
-                    setFecha(e.target.value);
-                    setTurno("");
-                  }}
+                  onChange={handleFechaChange}
+                  disabled={!puedeElegirFecha}
                 />
+                {!tamanoMaceta && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Primero elige el tamaño de la maceta.
+                  </p>
+                )}
                 {fechaBloqueada && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
                     Este día no está disponible para reservar.
@@ -498,32 +516,11 @@ export default function ReservaCreaTuMaceta() {
                   </p>
                 )}
                 {fecha && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-  </p>
-)}
-              </div>
-
-              <div>
-                <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                  Selecciona turno:
-                </label>
-                <select
-                  id="turno"
-                  value={turno}
-                  onChange={(e) => setTurno(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                  disabled={!metodo || !fecha || diaNoDisponible}
-                >
-                  <option value="">-- Elige turno --</option>
-                  {turnosDisponibles.map((turnoItem) => (
-                    <option key={turnoItem} value={turnoItem}>
-                      {turnoItem}
-                    </option>
-                  ))}
-                </select>
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -534,12 +531,55 @@ export default function ReservaCreaTuMaceta() {
                   id="metodo"
                   value={metodo}
                   onChange={(e) => handleMetodoChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
                   required
+                  disabled={!puedeElegirMetodo}
                 >
-                  <option value="">-- Selecciona --</option>
+                  <option value="">
+                    {!tamanoMaceta
+                      ? "-- Primero elige el tamaño --"
+                      : !fecha
+                      ? "-- Primero selecciona la fecha --"
+                      : diaNoDisponible
+                      ? "-- Esta clase no está disponible ese día --"
+                      : "-- Selecciona método --"}
+                  </option>
                   <option value="torno">Torno</option>
                   <option value="modelado a mano">Modelado a mano</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                  Selecciona turno:
+                </label>
+                <select
+                  id="turno"
+                  value={turno}
+                  onChange={(e) => {
+                    setTurno(e.target.value);
+                    setPlazas(1);
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
+                  required
+                  disabled={!puedeElegirTurno}
+                >
+                  <option value="">
+                    {!tamanoMaceta
+                      ? "-- Primero elige el tamaño --"
+                      : !fecha
+                      ? "-- Primero selecciona la fecha --"
+                      : !metodo
+                      ? "-- Primero selecciona el método --"
+                      : diaNoDisponible
+                      ? "-- No hay turnos para este día --"
+                      : "-- Elige turno --"}
+                  </option>
+                  {turnosDisponibles.map((turnoItem) => (
+                    <option key={turnoItem} value={turnoItem}>
+                      {turnoItem}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -562,7 +602,8 @@ export default function ReservaCreaTuMaceta() {
                   <button
                     type="button"
                     onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     −
                   </button>
@@ -574,14 +615,23 @@ export default function ReservaCreaTuMaceta() {
                     onClick={() =>
                       setPlazas(Math.min(plazasDisponibles || 1, plazasNum + 1))
                     }
-                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100"
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  {diaNoDisponible
+                  {!tamanoMaceta
+                    ? "Primero elige el tamaño."
+                    : !fecha
+                    ? "Primero selecciona la fecha."
+                    : !metodo
+                    ? "Primero selecciona el método."
+                    : !turno
+                    ? "Primero selecciona el turno."
+                    : diaNoDisponible
                     ? "No hay plazas porque esta clase no se imparte ese día."
                     : `Máximo ${plazasDisponibles} plazas disponibles.`}
                 </p>
@@ -609,7 +659,7 @@ export default function ReservaCreaTuMaceta() {
                 bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
-                transition-all duration-200"
+                transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   !!fechaBloqueada ||
                   diaNoDisponible ||

@@ -154,6 +154,12 @@ export default function ReservaPintaTuPieza() {
     return turnosDisponibles.length === 0;
   }, [fecha, turnosDisponibles]);
 
+  const handleFechaChange = (e) => {
+    setFecha(e.target.value);
+    setTurno("");
+    setPlazas(1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -238,9 +244,14 @@ export default function ReservaPintaTuPieza() {
           creadaDesde: "tarjeta_regalo",
         });
 
-        const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
         const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
-        const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
         const uidComprador = tarjetaGlobal?.uidComprador || "";
 
         const datosActualizacionTarjeta = {
@@ -261,7 +272,10 @@ export default function ReservaPintaTuPieza() {
 
         if (uidComprador) {
           await update(
-            ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
             datosActualizacionTarjeta
           );
         }
@@ -308,6 +322,9 @@ export default function ReservaPintaTuPieza() {
     }
   };
 
+  const puedeElegirTurno = !!fecha && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirPlazas = !!fecha && !!turno && !fechaBloqueada && !diaNoDisponible;
+
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-md p-6">
@@ -349,10 +366,7 @@ export default function ReservaPintaTuPieza() {
                 <DateInputReserva
                   id="fecha"
                   value={fecha}
-                  onChange={(e) => {
-                    setFecha(e.target.value);
-                    setTurno("");
-                  }}
+                  onChange={handleFechaChange}
                 />
                 {fechaBloqueada && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
@@ -362,12 +376,12 @@ export default function ReservaPintaTuPieza() {
                       : ""}
                   </p>
                 )}
-              {fecha && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-  </p>
-)}
+                {fecha && !fechaBloqueada && diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -377,12 +391,21 @@ export default function ReservaPintaTuPieza() {
                 <select
                   id="turno"
                   value={turno}
-                  onChange={(e) => setTurno(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                  onChange={(e) => {
+                    setTurno(e.target.value);
+                    setPlazas(1);
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base disabled:bg-gray-100 disabled:text-gray-400"
                   required
-                  disabled={!fecha || diaNoDisponible}
+                  disabled={!puedeElegirTurno}
                 >
-                  <option value="">-- Elige turno --</option>
+                  <option value="">
+                    {!fecha
+                      ? "-- Primero selecciona el día --"
+                      : diaNoDisponible
+                      ? "-- No hay turnos para este día --"
+                      : "-- Elige turno --"}
+                  </option>
                   {turnosDisponibles.map((turnoItem) => (
                     <option key={turnoItem} value={turnoItem}>
                       {turnoItem}
@@ -392,19 +415,41 @@ export default function ReservaPintaTuPieza() {
               </div>
 
               <div>
-                <label htmlFor="plazas" className="block font-bold text-sm mb-1">
+                <label className="block font-bold text-sm mb-2">
                   ¿Cuántas plazas deseas reservar?
                 </label>
-                <input
-                  type="number"
-                  id="plazas"
-                  value={plazas}
-                  onChange={(e) => setPlazas(e.target.value)}
-                  min="1"
-                  max={maxTotales}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                />
+
+                <div className="flex items-center justify-between border border-gray-300 rounded-xl px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setPlazas(Math.max(1, plazasNum - 1))}
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    −
+                  </button>
+
+                  <span className="text-lg font-semibold">{plazasNum}</span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPlazas(Math.min(maxTotales, plazasNum + 1))
+                    }
+                    disabled={!puedeElegirPlazas}
+                    className="text-xl font-bold px-3 py-1 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  {!fecha
+                    ? "Primero selecciona el día."
+                    : !turno
+                    ? "Primero selecciona el turno."
+                    : `Máximo ${maxTotales} plazas disponibles.`}
+                </p>
               </div>
 
               {fecha && !diaNoDisponible && (
@@ -435,7 +480,7 @@ export default function ReservaPintaTuPieza() {
                 bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
-                transition-all duration-200"
+                transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   !!fechaBloqueada ||
                   diaNoDisponible ||
