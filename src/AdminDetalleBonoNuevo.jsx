@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, push, remove, set } from "firebase/database";
 import { useSearchParams } from "react-router-dom";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
@@ -34,6 +34,24 @@ function obtenerEstadoVisibleBono(bono) {
   return "Activo";
 }
 
+function formatearFechaNota(fecha) {
+  if (!fecha) return "Sin fecha";
+
+  const fechaParseada = new Date(fecha);
+
+  if (!isNaN(fechaParseada.getTime())) {
+    return fechaParseada.toLocaleString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return fecha;
+}
+
 const AdminDetalleBonoNuevo = () => {
   const [searchParams] = useSearchParams();
   const bonoId = searchParams.get("id");
@@ -42,6 +60,10 @@ const AdminDetalleBonoNuevo = () => {
   const [bono, setBono] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [cargando, setCargando] = useState(true);
+
+  const [notasInternas, setNotasInternas] = useState([]);
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [guardandoNota, setGuardandoNota] = useState(false);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -108,6 +130,45 @@ const AdminDetalleBonoNuevo = () => {
     cargarDetalle();
   }, [uid, bonoId]);
 
+  useEffect(() => {
+    const cargarNotas = async () => {
+      try {
+        if (!uid || !bonoId) {
+          setNotasInternas([]);
+          return;
+        }
+
+        const notasSnap = await get(
+          ref(dbRealtime, `usuarios/${uid}/bonos/${bonoId}/notasInternas`)
+        );
+
+        if (!notasSnap.exists()) {
+          setNotasInternas([]);
+          return;
+        }
+
+        const notasObj = notasSnap.val() || {};
+        const notasArray = Object.entries(notasObj).map(([id, nota]) => ({
+          id,
+          ...nota,
+        }));
+
+        notasArray.sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0).getTime();
+          const fechaB = new Date(b.fecha || 0).getTime();
+          return fechaB - fechaA;
+        });
+
+        setNotasInternas(notasArray);
+      } catch (error) {
+        console.error("Error al cargar notas del bono:", error);
+        setNotasInternas([]);
+      }
+    };
+
+    cargarNotas();
+  }, [uid, bonoId]);
+
   const estadoVisible = useMemo(() => obtenerEstadoVisibleBono(bono), [bono]);
 
   const porcentajeUso = useMemo(() => {
@@ -126,6 +187,63 @@ const AdminDetalleBonoNuevo = () => {
     }
 
     return <span style={styles.badgeActivo}>Activo</span>;
+  };
+
+  const guardarNota = async () => {
+    const texto = nuevaNota.trim();
+
+    if (!texto || !uid || !bonoId) return;
+
+    try {
+      setGuardandoNota(true);
+
+      const nuevaNotaRef = push(
+        ref(dbRealtime, `usuarios/${uid}/bonos/${bonoId}/notasInternas`)
+      );
+
+      const notaData = {
+        texto,
+        fecha: new Date().toISOString(),
+      };
+
+      await set(nuevaNotaRef, notaData);
+
+      setNotasInternas((prev) =>
+        [{ id: nuevaNotaRef.key, ...notaData }, ...prev].sort((a, b) => {
+          const fechaA = new Date(a.fecha || 0).getTime();
+          const fechaB = new Date(b.fecha || 0).getTime();
+          return fechaB - fechaA;
+        })
+      );
+
+      setNuevaNota("");
+    } catch (error) {
+      console.error("Error al guardar nota del bono:", error);
+      alert("No se pudo guardar la nota. Revisa la consola.");
+    } finally {
+      setGuardandoNota(false);
+    }
+  };
+
+  const eliminarNota = async (notaId) => {
+    if (!uid || !bonoId || !notaId) return;
+
+    const confirmar = window.confirm("¿Quieres eliminar esta nota?");
+    if (!confirmar) return;
+
+    try {
+      await remove(
+        ref(
+          dbRealtime,
+          `usuarios/${uid}/bonos/${bonoId}/notasInternas/${notaId}`
+        )
+      );
+
+      setNotasInternas((prev) => prev.filter((nota) => nota.id !== notaId));
+    } catch (error) {
+      console.error("Error al eliminar nota del bono:", error);
+      alert("No se pudo eliminar la nota. Revisa la consola.");
+    }
   };
 
   return (
@@ -153,9 +271,7 @@ const AdminDetalleBonoNuevo = () => {
                 </p>
               </div>
 
-              <div style={styles.heroEstado}>
-                {renderEstado()}
-              </div>
+              <div style={styles.heroEstado}>{renderEstado()}</div>
             </div>
 
             <div style={styles.bloque}>
@@ -285,6 +401,61 @@ const AdminDetalleBonoNuevo = () => {
                   <span style={styles.valor}>{usuario?.uid || "—"}</span>
                 </div>
               </div>
+            </div>
+
+            <div style={styles.bloque}>
+              <h2 style={styles.bloqueTitulo}>Notas internas</h2>
+
+              <div style={styles.notaBox}>
+                <textarea
+                  value={nuevaNota}
+                  onChange={(e) => setNuevaNota(e.target.value)}
+                  placeholder="Escribe aquí una nota interna para Berto..."
+                  style={styles.textarea}
+                />
+
+                <button
+                  onClick={guardarNota}
+                  disabled={guardandoNota || !nuevaNota.trim()}
+                  style={{
+                    ...styles.botonGuardarNota,
+                    opacity: guardandoNota || !nuevaNota.trim() ? 0.6 : 1,
+                    cursor:
+                      guardandoNota || !nuevaNota.trim()
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
+                >
+                  {guardandoNota ? "Guardando..." : "Guardar nota"}
+                </button>
+              </div>
+
+              {notasInternas.length === 0 ? (
+                <p style={styles.mensajeSecundario}>
+                  Todavía no hay notas para este bono.
+                </p>
+              ) : (
+                <div style={styles.listaNotas}>
+                  {notasInternas.map((nota) => (
+                    <div key={nota.id} style={styles.cardNota}>
+                      <div style={styles.cardNotaHeader}>
+                        <span style={styles.fechaNota}>
+                          {formatearFechaNota(nota.fecha)}
+                        </span>
+
+                        <button
+                          onClick={() => eliminarNota(nota.id)}
+                          style={styles.botonEliminarNota}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+
+                      <p style={styles.textoNota}>{nota.texto || "—"}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -525,6 +696,80 @@ const styles = {
     fontSize: "0.85rem",
     fontWeight: 700,
     whiteSpace: "nowrap",
+  },
+  notaBox: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    marginBottom: 18,
+  },
+  textarea: {
+    width: "100%",
+    minHeight: 110,
+    borderRadius: 14,
+    border: "1px solid #eadfbe",
+    padding: 14,
+    fontSize: "0.96rem",
+    fontFamily: "'Segoe UI', sans-serif",
+    resize: "vertical",
+    outline: "none",
+    boxSizing: "border-box",
+    backgroundColor: "#fffaf0",
+    color: "#2f2f2f",
+  },
+  botonGuardarNota: {
+    alignSelf: "flex-start",
+    backgroundColor: "#7a6331",
+    color: "#fff",
+    border: "none",
+    borderRadius: 999,
+    padding: "10px 18px",
+    fontSize: "0.92rem",
+    fontWeight: 700,
+  },
+  mensajeSecundario: {
+    color: "#7a7a7a",
+    margin: 0,
+  },
+  listaNotas: {
+    display: "grid",
+    gap: 12,
+  },
+  cardNota: {
+    backgroundColor: "#fffaf0",
+    border: "1px solid #eadfbe",
+    borderRadius: 16,
+    padding: 14,
+  },
+  cardNotaHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+    flexWrap: "wrap",
+  },
+  fechaNota: {
+    color: "#7a6331",
+    fontSize: "0.85rem",
+    fontWeight: 600,
+  },
+  textoNota: {
+    margin: 0,
+    color: "#2f2f2f",
+    fontSize: "0.96rem",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+  },
+  botonEliminarNota: {
+    backgroundColor: "#fff",
+    color: "#8a3b3b",
+    border: "1px solid #e7b7b7",
+    borderRadius: 999,
+    padding: "6px 12px",
+    fontSize: "0.82rem",
+    fontWeight: 700,
+    cursor: "pointer",
   },
 };
 

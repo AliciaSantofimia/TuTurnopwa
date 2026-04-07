@@ -71,6 +71,12 @@ const AdminBonosNuevo = () => {
             Object.entries(bonosUsuario).forEach(([bonoId, bono]) => {
               if (!bono || typeof bono !== "object") return;
 
+              const notasObj = bono.notasInternas || {};
+              const totalNotas =
+                notasObj && typeof notasObj === "object"
+                  ? Object.keys(notasObj).length
+                  : 0;
+
               listaBonos.push({
                 bonoId,
                 uid,
@@ -89,6 +95,8 @@ const AdminBonosNuevo = () => {
                 creadoEn: bono.creadoEn || "",
                 actualizadoEn: bono.actualizadoEn || "",
                 orderId: bono.orderId || bonoId,
+                totalNotas,
+                tieneNotas: totalNotas > 0,
               });
             });
           });
@@ -150,6 +158,20 @@ const AdminBonosNuevo = () => {
     }
 
     return <span style={styles.badgeActivo}>Activo</span>;
+  };
+
+  const renderNotasBadge = (bono) => {
+    if (!bono.tieneNotas) {
+      return <span style={styles.badgeSinNotas}>Sin notas</span>;
+    }
+
+    return (
+      <span style={styles.badgeConNotas}>
+        {bono.totalNotas === 1
+          ? "1 nota"
+          : `${bono.totalNotas} notas`}
+      </span>
+    );
   };
 
   const irADetalleBono = (bono) => {
@@ -244,6 +266,10 @@ const AdminBonosNuevo = () => {
                 <div style={styles.cardBloque}>
                   <p style={styles.cardTitulo}>{bono.clase}</p>
 
+                  <div style={styles.badgesFila}>
+                    {renderNotasBadge(bono)}
+                  </div>
+
                   <p style={styles.cardTexto}>
                     <strong>Usuario:</strong>{" "}
                     {bono.nombreUsuario || bono.emailUsuario || bono.uid}
@@ -278,6 +304,7 @@ const AdminBonosNuevo = () => {
                   <th style={styles.thInicio}>Inicio</th>
                   <th style={styles.thBono}>Bono</th>
                   <th style={styles.thUsuario}>Usuario</th>
+                  <th style={styles.thNotas}>Notas</th>
                   <th style={styles.thEstado}>Estado</th>
                 </tr>
               </thead>
@@ -293,6 +320,7 @@ const AdminBonosNuevo = () => {
                     <td style={styles.tdUsuario}>
                       {bono.nombreUsuario || bono.emailUsuario || bono.uid}
                     </td>
+                    <td style={styles.tdNotas}>{renderNotasBadge(bono)}</td>
                     <td style={styles.tdEstado}>{renderEstado(bono)}</td>
                   </tr>
                 ))}
@@ -414,7 +442,7 @@ const styles = {
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
     whiteSpace: "nowrap",
-    width: "16%",
+    width: "14%",
   },
   thBono: {
     textAlign: "left",
@@ -423,7 +451,7 @@ const styles = {
     color: "#5b4a2d",
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
-    width: "42%",
+    width: "34%",
   },
   thUsuario: {
     textAlign: "left",
@@ -432,7 +460,16 @@ const styles = {
     color: "#5b4a2d",
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
-    width: "24%",
+    width: "22%",
+  },
+  thNotas: {
+    textAlign: "left",
+    padding: "12px 10px",
+    backgroundColor: "#fff8da",
+    color: "#5b4a2d",
+    borderBottom: "1px solid #f0e5cf",
+    fontSize: "0.95rem",
+    width: "14%",
   },
   thEstado: {
     textAlign: "left",
@@ -442,7 +479,7 @@ const styles = {
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
     whiteSpace: "nowrap",
-    width: "18%",
+    width: "16%",
   },
   tdInicio: {
     padding: "12px 10px",
@@ -467,6 +504,11 @@ const styles = {
     fontSize: "0.95rem",
     verticalAlign: "middle",
     wordBreak: "break-word",
+  },
+  tdNotas: {
+    padding: "12px 10px",
+    borderBottom: "1px solid #f3ead7",
+    verticalAlign: "middle",
   },
   tdEstado: {
     padding: "12px 10px",
@@ -533,6 +575,13 @@ const styles = {
     gap: 8,
     marginTop: 4,
   },
+  badgesFila: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+    marginTop: 2,
+    marginBottom: 2,
+  },
   badgeActivo: {
     display: "inline-block",
     padding: "5px 10px",
@@ -564,6 +613,28 @@ const styles = {
     color: "#8a3b3b",
     fontSize: "0.85rem",
     fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+  badgeConNotas: {
+    display: "inline-block",
+    padding: "5px 10px",
+    borderRadius: 999,
+    backgroundColor: "#fff4dd",
+    border: "1px solid #e8d0a1",
+    color: "#7a6331",
+    fontSize: "0.82rem",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+  badgeSinNotas: {
+    display: "inline-block",
+    padding: "5px 10px",
+    borderRadius: 999,
+    backgroundColor: "#f7f3ec",
+    border: "1px solid #ddd2c0",
+    color: "#7b6f60",
+    fontSize: "0.82rem",
+    fontWeight: 600,
     whiteSpace: "nowrap",
   },
 };
