@@ -152,6 +152,10 @@ const AdminBonosNuevo = () => {
     return <span style={styles.badgeActivo}>Activo</span>;
   };
 
+  const irADetalleBono = (bono) => {
+    navigate(`/admin-detalle-bono?id=${bono.bonoId}&uid=${bono.uid}`);
+  };
+
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -225,6 +229,7 @@ const AdminBonosNuevo = () => {
               <div
                 key={bono.bonoId}
                 style={styles.cardMovil}
+                onClick={() => irADetalleBono(bono)}
               >
                 <div style={styles.cardTop}>
                   <div>
@@ -270,33 +275,25 @@ const AdminBonosNuevo = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Inicio</th>
-                  <th style={styles.th}>Caduca</th>
-                  <th style={styles.th}>Bono</th>
-                  <th style={styles.th}>Usuario</th>
-                  <th style={styles.th}>Incluidas</th>
-                  <th style={styles.th}>Consumidas</th>
-                  <th style={styles.th}>Restantes</th>
-                  <th style={styles.th}>Estado</th>
-                  <th style={styles.th}>Pago</th>
-                  <th style={styles.th}>Precio</th>
+                  <th style={styles.thInicio}>Inicio</th>
+                  <th style={styles.thBono}>Bono</th>
+                  <th style={styles.thUsuario}>Usuario</th>
+                  <th style={styles.thEstado}>Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {bonosFiltrados.map((bono) => (
-                  <tr key={bono.bonoId} style={styles.tr}>
-                    <td style={styles.td}>{bono.fechaInicio || "—"}</td>
-                    <td style={styles.td}>{bono.fechaCaducidadBono || "—"}</td>
+                  <tr
+                    key={bono.bonoId}
+                    style={styles.trClickable}
+                    onClick={() => irADetalleBono(bono)}
+                  >
+                    <td style={styles.tdInicio}>{bono.fechaInicio || "—"}</td>
                     <td style={styles.tdClase}>{bono.clase}</td>
                     <td style={styles.tdUsuario}>
                       {bono.nombreUsuario || bono.emailUsuario || bono.uid}
                     </td>
-                    <td style={styles.td}>{bono.numeroClases}</td>
-                    <td style={styles.td}>{bono.clasesConsumidas}</td>
-                    <td style={styles.td}>{bono.clasesRestantes}</td>
-                    <td style={styles.td}>{renderEstado(bono)}</td>
-                    <td style={styles.td}>{bono.estadoPago}</td>
-                    <td style={styles.td}>{bono.precioTotal}€</td>
+                    <td style={styles.tdEstado}>{renderEstado(bono)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -397,51 +394,89 @@ const styles = {
     padding: 20,
   },
   tablaWrapper: {
-    overflowX: "auto",
+    overflowX: "hidden",
     borderRadius: 18,
     border: "1px solid #f0e5cf",
     backgroundColor: "#fffdf7",
   },
   table: {
     width: "100%",
-    minWidth: "1200px",
     borderCollapse: "collapse",
     backgroundColor: "#fffdf7",
     overflow: "hidden",
+    tableLayout: "fixed",
   },
-  th: {
+  thInicio: {
     textAlign: "left",
-    padding: "14px 16px",
+    padding: "12px 10px",
     backgroundColor: "#fff8da",
     color: "#5b4a2d",
     borderBottom: "1px solid #f0e5cf",
     fontSize: "0.95rem",
     whiteSpace: "nowrap",
+    width: "16%",
   },
-  td: {
-    padding: "14px 16px",
+  thBono: {
+    textAlign: "left",
+    padding: "12px 10px",
+    backgroundColor: "#fff8da",
+    color: "#5b4a2d",
+    borderBottom: "1px solid #f0e5cf",
+    fontSize: "0.95rem",
+    width: "42%",
+  },
+  thUsuario: {
+    textAlign: "left",
+    padding: "12px 10px",
+    backgroundColor: "#fff8da",
+    color: "#5b4a2d",
+    borderBottom: "1px solid #f0e5cf",
+    fontSize: "0.95rem",
+    width: "24%",
+  },
+  thEstado: {
+    textAlign: "left",
+    padding: "12px 10px",
+    backgroundColor: "#fff8da",
+    color: "#5b4a2d",
+    borderBottom: "1px solid #f0e5cf",
+    fontSize: "0.95rem",
+    whiteSpace: "nowrap",
+    width: "18%",
+  },
+  tdInicio: {
+    padding: "12px 10px",
     borderBottom: "1px solid #f3ead7",
     color: "#333",
     fontSize: "0.95rem",
     verticalAlign: "middle",
+    wordBreak: "break-word",
   },
   tdClase: {
-    padding: "14px 16px",
+    padding: "12px 10px",
     borderBottom: "1px solid #f3ead7",
     color: "#333",
     fontSize: "0.95rem",
     verticalAlign: "middle",
-    minWidth: "200px",
+    wordBreak: "break-word",
   },
   tdUsuario: {
-    padding: "14px 16px",
+    padding: "12px 10px",
     borderBottom: "1px solid #f3ead7",
     color: "#333",
     fontSize: "0.95rem",
     verticalAlign: "middle",
-    minWidth: "220px",
+    wordBreak: "break-word",
   },
-  tr: {
+  tdEstado: {
+    padding: "12px 10px",
+    borderBottom: "1px solid #f3ead7",
+    color: "#333",
+    fontSize: "0.95rem",
+    verticalAlign: "middle",
+  },
+  trClickable: {
+    cursor: "pointer",
     transition: "background-color 0.2s ease",
   },
   cardsWrapper: {
@@ -455,6 +490,7 @@ const styles = {
     borderRadius: 18,
     padding: 16,
     boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+    cursor: "pointer",
   },
   cardTop: {
     display: "flex",

@@ -141,9 +141,9 @@ const AdminDashboard = () => {
         <BotonVolver />
 
         <div style={styles.header}>
-          <h1 style={styles.titulo}>Dashboard admin</h1>
+          <h1 style={styles.titulo}>Panel admin</h1>
           <p style={styles.subtitulo}>
-            Vista general rápida del funcionamiento del taller.
+            Resumen general del taller.
           </p>
         </div>
 
@@ -181,12 +181,12 @@ const AdminDashboard = () => {
           <h2 style={styles.accesosTitulo}>Accesos rápidos</h2>
 
           <div style={styles.botonesGrid}>
-            <button
-              style={styles.boton}
-              onClick={() => navigate("/admin-dashboard")}
-            >
-              Ver panel de control
-            </button>
+           <button
+  style={styles.boton}
+  onClick={() => navigate("/admin-calendario-reservas-nuevo")}
+>
+  Ver calendario
+</button>
 
             <button
               style={styles.boton}

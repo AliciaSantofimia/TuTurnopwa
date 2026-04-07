@@ -8,6 +8,7 @@ const AdminReservasNuevo = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const claseInicial = searchParams.get("clase") || "";
+  const fechaInicial = searchParams.get("fecha") || "";
 
   const [reservas, setReservas] = useState([]);
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
@@ -15,7 +16,7 @@ const AdminReservasNuevo = () => {
   const [cargando, setCargando] = useState(true);
   const [esMovil, setEsMovil] = useState(() => window.innerWidth <= 768);
 
-  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroFecha, setFiltroFecha] = useState(fechaInicial);
   const [filtroClase, setFiltroClase] = useState(claseInicial);
   const [filtroEstado, setFiltroEstado] = useState("");
   const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
@@ -34,6 +35,12 @@ const AdminReservasNuevo = () => {
       setFiltroClase(claseInicial);
     }
   }, [claseInicial]);
+
+  useEffect(() => {
+  if (fechaInicial) {
+    setFiltroFecha(fechaInicial);
+  }
+}, [fechaInicial]);
 
   useEffect(() => {
     const cargarDatos = async () => {

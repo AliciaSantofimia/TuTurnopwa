@@ -15,53 +15,66 @@ export default function Registro() {
   const [error, setError] = useState("");
 
   const normalizarTelefono = (valor) => {
-    return valor.replace(/\s+/g, "").trim();
-  };
+  return valor.replace(/\s+/g, "").replace(/[^\d+]/g, "").trim();
+};
 
-  const handleRegistro = async (e) => {
-    e.preventDefault();
-    setError("");
+ const handleRegistro = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    const telefonoLimpio = normalizarTelefono(telefono);
+  const nombreLimpio = nombre.trim();
+  const emailLimpio = email.trim().toLowerCase();
+  const telefonoLimpio = normalizarTelefono(telefono);
 
-    if (!telefonoLimpio) {
-      setError("El teléfono es obligatorio.");
-      return;
-    }
+  if (!nombreLimpio) {
+    setError("El nombre es obligatorio.");
+    return;
+  }
 
-    if (password !== confirmar) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
+  if (!telefonoLimpio) {
+    setError("El teléfono es obligatorio.");
+    return;
+  }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+  const telefonoValido = /^[+]?\d{9,15}$/.test(telefonoLimpio);
+  if (!telefonoValido) {
+    setError("Introduce un teléfono válido.");
+    return;
+  }
 
-      const uid = userCredential.user.uid;
+  if (password !== confirmar) {
+    setError("Las contraseñas no coinciden.");
+    return;
+  }
 
-      await updateProfile(userCredential.user, {
-        displayName: nombre,
-      });
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      emailLimpio,
+      password
+    );
 
-      await set(ref(dbRealtime, `usuarios/${uid}`), {
-        uid,
-        nombre,
-        telefono: telefonoLimpio,
-        email,
-        fechaRegistro: new Date().toISOString(),
-        reservas: 0,
-        bonos: [],
-      });
+    const uid = userCredential.user.uid;
 
-      navigate("/perfil");
-    } catch (error) {
-      setError("Error al registrar: " + error.message);
-    }
-  };
+    await updateProfile(userCredential.user, {
+      displayName: nombreLimpio,
+    });
+
+    await set(ref(dbRealtime, `usuarios/${uid}`), {
+      uid,
+      nombre: nombreLimpio,
+      telefono: telefonoLimpio,
+      email: emailLimpio,
+      fechaRegistro: new Date().toISOString(),
+      reservas: 0,
+      bonos: {},
+    });
+
+    navigate("/perfil");
+  } catch (error) {
+    setError("Error al registrar: " + error.message);
+  }
+};
 
   return (
     <div className="bg-[#fdfaf5] min-h-screen flex flex-col items-center justify-center px-4 text-[#333]">

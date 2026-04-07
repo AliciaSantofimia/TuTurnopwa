@@ -116,6 +116,7 @@ import AdminReservasGrupos from "./AdminReservasGrupos";
 import AdminDetalleTarjetaRegaloNuevo from "./AdminDetalleTarjetaRegaloNuevo";
 import AdminBloqueosFechas from "./AdminBloqueosFechas";
 import AdminBonosNuevo from "./AdminBonosNuevo";
+import AdminDetalleBonoNuevo from "./AdminDetalleBonoNuevo";
 
 
 import ChatAyuda from "./ChatAyuda.jsx";
@@ -311,6 +312,14 @@ function App() {
 
         {/* Nuevo Admin */}
 
+<Route
+  path="/admin-detalle-bono"
+  element={
+    <RutaAdmin>
+      <AdminDetalleBonoNuevo />
+    </RutaAdmin>
+  }
+/>
         <Route
   path="/admin-reservas-grupos"
   element={
