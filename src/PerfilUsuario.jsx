@@ -458,12 +458,7 @@ export default function PerfilUsuario() {
                       <p>
                         <strong>Estado:</strong> {estadoVisible}
                       </p>
-                      <p className="text-red-600 text-sm">
-  DEBUG bonoId: {bono.bonoId || "sin bonoId"}
-</p>
-<p className="text-red-600 text-sm">
-  DEBUG estadoVisible: {estadoVisible}
-</p>
+                      
                       {estadoVisible === "Activo" && (
  <button
   onClick={() => navigate(`/usar-bono/${bono.bonoId}`)}

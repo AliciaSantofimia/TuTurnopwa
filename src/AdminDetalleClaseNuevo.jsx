@@ -537,14 +537,14 @@ Acompañamiento en el taller`}
             </div>
           ) : (
             <p style={styles.textoVacio}>
-              Aún no hay notas internas para esta clase.
+              Aún no hay notas  para esta clase.
             </p>
           )}
 
           <textarea
             value={nuevaNota}
             onChange={(e) => setNuevaNota(e.target.value)}
-            placeholder="Escribe aquí una nota interna sobre esta clase..."
+            placeholder="Escribe aquí una nota  sobre esta clase..."
             style={styles.textarea}
             rows={4}
           />
@@ -554,7 +554,7 @@ Acompañamiento en el taller`}
             style={styles.botonGuardar}
             disabled={guardandoNota}
           >
-            {guardandoNota ? "Guardando..." : "Guardar nota interna"}
+            {guardandoNota ? "Guardando..." : "Guardar nota"}
           </button>
         </div>
 

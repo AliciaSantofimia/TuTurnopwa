@@ -129,7 +129,7 @@ const AdminBloqueosFechas = () => {
 
         <h1 style={styles.titulo}>Bloqueo de fechas</h1>
         <p style={styles.subtitulo}>
-          Aquí Berto podrá bloquear días para que no se puedan reservar.
+          Aquí puedes bloquear días para que no se puedan reservar.
         </p>
 
         <div style={styles.card}>

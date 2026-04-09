@@ -121,7 +121,7 @@ const AdminDetalleUsuarioNuevo = () => {
 
         setNotasInternas(listaNotas);
       } catch (error) {
-        console.error("Error al cargar notas internas del usuario:", error);
+        console.error("Error al cargar notas  del usuario:", error);
         setNotasInternas([]);
       }
     };
@@ -212,10 +212,10 @@ const AdminDetalleUsuarioNuevo = () => {
         </div>
 
         <div style={styles.bloque}>
-          <h2 style={styles.subtitulo}>Notas internas del usuario</h2>
+          <h2 style={styles.subtitulo}>Notas sobre el usuario</h2>
 
           {notasInternas.length === 0 ? (
-            <p style={styles.textoVacio}>Aún no hay notas internas para este usuario.</p>
+            <p style={styles.textoVacio}>Aún no hay notas para este usuario.</p>
           ) : (
             <div style={styles.listaNotas}>
               {notasInternas.map((nota) => (
@@ -244,7 +244,7 @@ const AdminDetalleUsuarioNuevo = () => {
           <textarea
             value={nuevaNota}
             onChange={(e) => setNuevaNota(e.target.value)}
-            placeholder="Escribe aquí una nota interna sobre este usuario..."
+            placeholder="Escribe aquí una nota sobre este usuario..."
             style={styles.textarea}
             rows={4}
           />
@@ -254,7 +254,7 @@ const AdminDetalleUsuarioNuevo = () => {
             style={styles.botonGuardar}
             disabled={guardandoNota}
           >
-            {guardandoNota ? "Guardando..." : "Guardar nota interna"}
+            {guardandoNota ? "Guardando..." : "Guardar nota"}
           </button>
         </div>
 

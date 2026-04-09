@@ -410,7 +410,7 @@ const AdminDetalleBonoNuevo = () => {
                 <textarea
                   value={nuevaNota}
                   onChange={(e) => setNuevaNota(e.target.value)}
-                  placeholder="Escribe aquí una nota interna para Berto..."
+                  placeholder="Escribe aquí una nota..."
                   style={styles.textarea}
                 />
 

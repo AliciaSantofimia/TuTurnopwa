@@ -881,7 +881,7 @@ const AdminDetalleReservaNuevo = () => {
         </div>
 
         <div style={styles.notasBox}>
-          <h2 style={styles.subtituloBloque}>Notas internas de Berto</h2>
+          <h2 style={styles.subtituloBloque}>Notas</h2>
 
           {notasInternas.length > 0 ? (
             notasInternas.map((nota) => (
@@ -903,13 +903,13 @@ const AdminDetalleReservaNuevo = () => {
               </div>
             ))
           ) : (
-            <p style={styles.textoVacio}>Aún no hay notas internas.</p>
+            <p style={styles.textoVacio}>Aún no hay notas.</p>
           )}
 
           <textarea
             value={nuevaNota}
             onChange={(e) => setNuevaNota(e.target.value)}
-            placeholder="Escribe aquí una nota interna..."
+            placeholder="Escribe aquí una nota..."
             style={styles.textarea}
             rows={4}
           />
@@ -919,7 +919,7 @@ const AdminDetalleReservaNuevo = () => {
             style={styles.botonGuardar}
             disabled={guardandoNota}
           >
-            {guardandoNota ? "Guardando..." : "Guardar nota interna"}
+            {guardandoNota ? "Guardando..." : "Guardar nota"}
           </button>
         </div>
       </div>

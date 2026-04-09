@@ -349,7 +349,7 @@ const AdminReservasGrupos = () => {
                     )}
 
                     <div style={styles.notasBox}>
-                      <strong>Notas internas de Berto</strong>
+                      <strong>Notas del Administrador</strong>
 
                       {r.notasInternas && r.notasInternas.length > 0 ? (
                         r.notasInternas.map((nota) => (
@@ -375,7 +375,7 @@ const AdminReservasGrupos = () => {
                           </div>
                         ))
                       ) : (
-                        <p style={styles.vacio}>Aún no hay notas internas.</p>
+                        <p style={styles.vacio}>Aún no hay notas.</p>
                       )}
                     </div>
 
@@ -386,7 +386,7 @@ const AdminReservasGrupos = () => {
                         onChange={(e) =>
                           handleChangeNota(r.orderId, e.target.value)
                         }
-                        placeholder="Escribe aquí una nota para Berto..."
+                        placeholder="Escribe aquí una nota..."
                         style={styles.textarea}
                         rows={3}
                       />

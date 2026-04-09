@@ -405,7 +405,7 @@ const AdminReservasNuevo = () => {
 
         <h1 style={styles.titulo}>Reservas</h1>
         <p style={styles.subtitulo}>
-          Vista general de todas las reservas guardadas en la app.
+          Vista general de todas las reservas.
         </p>
 
         <div style={styles.filtrosBox}>
