@@ -9,10 +9,20 @@ const AdminTarjetasRegalo = () => {
 
   const [tarjetasRegalo, setTarjetasRegalo] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
 
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroEstadoCanje, setFiltroEstadoCanje] = useState("");
   const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -64,8 +74,7 @@ const AdminTarjetasRegalo = () => {
                 claseId: "tarjeta_regalo",
                 clase: t.clase || "Tarjeta regalo",
                 fecha:
-                  typeof t.fechaCompra === "string" &&
-                  t.fechaCompra.length >= 10
+                  typeof t.fechaCompra === "string" && t.fechaCompra.length >= 10
                     ? t.fechaCompra.slice(0, 10)
                     : "—",
                 turno: "—",
@@ -93,12 +102,8 @@ const AdminTarjetasRegalo = () => {
         }
 
         datosTarjetas.sort((a, b) => {
-          const fechaA = new Date(
-            a.fecha === "—" ? 0 : `${a.fecha}T00:00:00`
-          );
-          const fechaB = new Date(
-            b.fecha === "—" ? 0 : `${b.fecha}T00:00:00`
-          );
+          const fechaA = new Date(a.fecha === "—" ? 0 : `${a.fecha}T00:00:00`);
+          const fechaB = new Date(b.fecha === "—" ? 0 : `${b.fecha}T00:00:00`);
           return fechaB - fechaA;
         });
 
@@ -133,8 +138,8 @@ const AdminTarjetasRegalo = () => {
   ).length;
 
   const totalCanjeadas = tarjetasRegalo.filter(
-  (t) => String(t.estado).toLowerCase() === "canjeado"
-).length;
+    (t) => String(t.estado).toLowerCase() === "canjeado"
+  ).length;
 
   const ingresosEstimados = tarjetasRegalo.reduce((acc, t) => {
     if (String(t.estadoPago).toLowerCase() === "pagado") {
@@ -149,42 +154,79 @@ const AdminTarjetasRegalo = () => {
     setFiltroEstadoPago("");
   };
 
+  const irADetalle = (orderId) => {
+    navigate(`/admin-detalle-tarjeta-regalo?id=${orderId}`);
+  };
+
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div style={{ ...styles.body, ...(isMobile ? styles.bodyMobile : {}) }}>
+      <div
+        style={{
+          ...styles.container,
+          ...(isMobile ? styles.containerMobile : {}),
+        }}
+      >
         <BotonVolver />
 
-        <h1 style={styles.titulo}>Tarjetas regalo</h1>
-        <p style={styles.subtitulo}>
+        <h1 style={{ ...styles.titulo, ...(isMobile ? styles.tituloMobile : {}) }}>
+          Tarjetas regalo
+        </h1>
+        <p
+          style={{
+            ...styles.subtitulo,
+            ...(isMobile ? styles.subtituloMobile : {}),
+          }}
+        >
           Vista general de todas las tarjetas regalo compradas.
         </p>
 
-        <div style={styles.statsGrid}>
+        <div
+          style={{
+            ...styles.statsGrid,
+            ...(isMobile ? styles.statsGridMobile : {}),
+          }}
+        >
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Total tarjetas</p>
-            <p style={styles.statValue}>{cargando ? "..." : totalTarjetas}</p>
+            <p style={{ ...styles.statValue, ...(isMobile ? styles.statValueMobile : {}) }}>
+              {cargando ? "..." : totalTarjetas}
+            </p>
           </div>
 
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Pagadas</p>
-            <p style={styles.statValue}>{cargando ? "..." : totalPagadas}</p>
+            <p style={{ ...styles.statValue, ...(isMobile ? styles.statValueMobile : {}) }}>
+              {cargando ? "..." : totalPagadas}
+            </p>
           </div>
 
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Canjeadas</p>
-            <p style={styles.statValue}>{cargando ? "..." : totalCanjeadas}</p>
+            <p style={{ ...styles.statValue, ...(isMobile ? styles.statValueMobile : {}) }}>
+              {cargando ? "..." : totalCanjeadas}
+            </p>
           </div>
 
           <div style={styles.statCard}>
             <p style={styles.statLabel}>Ingresos estimados</p>
-            <p style={styles.statValue}>
+            <p style={{ ...styles.statValue, ...(isMobile ? styles.statValueMobile : {}) }}>
               {cargando ? "..." : `${ingresosEstimados}€`}
             </p>
           </div>
         </div>
 
-        <div style={styles.filtrosBox}>
-          <div style={styles.filtrosGrid}>
+        <div
+          style={{
+            ...styles.filtrosBox,
+            ...(isMobile ? styles.filtrosBoxMobile : {}),
+          }}
+        >
+          <div
+            style={{
+              ...styles.filtrosGrid,
+              ...(isMobile ? styles.filtrosGridMobile : {}),
+            }}
+          >
             <div style={styles.campo}>
               <label style={styles.label}>Fecha</label>
               <input
@@ -240,6 +282,76 @@ const AdminTarjetasRegalo = () => {
           <p style={styles.mensaje}>Cargando tarjetas regalo...</p>
         ) : tarjetasFiltradas.length === 0 ? (
           <p style={styles.mensaje}>No hay tarjetas regalo para mostrar.</p>
+        ) : isMobile ? (
+          <div style={styles.cardsList}>
+            {tarjetasFiltradas.map((t) => (
+              <button
+                key={`${t.claseId}-${t.fecha}-${t.orderId}-${t.id}`}
+                type="button"
+                onClick={() => irADetalle(t.orderId)}
+                style={styles.cardMobile}
+              >
+                <div style={styles.cardTop}>
+                  <div>
+                    <p style={styles.cardTitulo}>{t.clase}</p>
+                    <p style={styles.cardFecha}>{t.fecha}</p>
+                  </div>
+
+                  <div style={styles.cardPrecio}>{t.precioTotal}€</div>
+                </div>
+
+                <div style={styles.cardGrid}>
+                  <div style={styles.cardItem}>
+                    <span style={styles.cardLabel}>Código</span>
+                    <span style={styles.cardValue}>{t.codigo || "—"}</span>
+                  </div>
+
+                  <div style={styles.cardItem}>
+                    <span style={styles.cardLabel}>Plazas</span>
+                    <span style={styles.cardValue}>{t.plazas}</span>
+                  </div>
+
+                  <div style={styles.cardItem}>
+                    <span style={styles.cardLabel}>Estado canje</span>
+                    <span style={styles.cardValue}>{t.estado}</span>
+                  </div>
+
+                  <div style={styles.cardItem}>
+                    <span style={styles.cardLabel}>Pago</span>
+                    <span style={styles.cardValue}>{t.estadoPago}</span>
+                  </div>
+
+                  <div style={styles.cardItemFull}>
+                    <span style={styles.cardLabel}>Destinatario</span>
+                    <span style={styles.cardValue}>
+                      {t.nombreDestinatario || t.emailDestinatario || "—"}
+                    </span>
+                  </div>
+
+                  <div style={styles.cardItemFull}>
+                    <span style={styles.cardLabel}>Usuario</span>
+                    <span style={styles.cardValue}>
+                      {t.nombreUsuario || t.emailUsuario || t.uid}
+                    </span>
+                  </div>
+
+                  <div style={styles.cardItemFull}>
+                    <span style={styles.cardLabel}>Notas</span>
+                    <span style={styles.cardValue}>
+                      {t.notasInternas > 0 ? (
+                        <span style={styles.badgeNotas}>
+                          {t.notasInternas}{" "}
+                          {t.notasInternas === 1 ? "nota" : "notas"}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         ) : (
           <div style={styles.tablaWrapper}>
             <table style={styles.table}>
@@ -261,9 +373,7 @@ const AdminTarjetasRegalo = () => {
                 {tarjetasFiltradas.map((t) => (
                   <tr
                     key={`${t.claseId}-${t.fecha}-${t.orderId}-${t.id}`}
-                    onClick={() =>
-                      navigate(`/admin-detalle-tarjeta-regalo?id=${t.orderId}`)
-                    }
+                    onClick={() => irADetalle(t.orderId)}
                     style={styles.trClickable}
                   >
                     <td style={styles.td}>{t.fecha}</td>
@@ -307,6 +417,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+    padding: 12,
+  },
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -315,11 +428,19 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+    borderRadius: 18,
+    padding: 14,
+  },
   titulo: {
     margin: 0,
     textAlign: "center",
     color: "#2f2f2f",
     fontSize: "2rem",
+  },
+  tituloMobile: {
+    fontSize: "1.45rem",
+    lineHeight: 1.2,
   },
   subtitulo: {
     textAlign: "center",
@@ -327,11 +448,20 @@ const styles = {
     marginTop: 8,
     marginBottom: 24,
   },
+  subtituloMobile: {
+    fontSize: "0.95rem",
+    lineHeight: 1.4,
+    marginBottom: 18,
+  },
   statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 16,
     marginBottom: 24,
+  },
+  statsGridMobile: {
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
   },
   statCard: {
     backgroundColor: "#fff8da",
@@ -352,6 +482,9 @@ const styles = {
     fontSize: "2rem",
     fontWeight: "bold",
   },
+  statValueMobile: {
+    fontSize: "1.45rem",
+  },
   filtrosBox: {
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -359,11 +492,18 @@ const styles = {
     padding: 18,
     marginBottom: 18,
   },
+  filtrosBoxMobile: {
+    padding: 14,
+    borderRadius: 16,
+  },
   filtrosGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 14,
     marginBottom: 14,
+  },
+  filtrosGridMobile: {
+    gridTemplateColumns: "1fr",
   },
   campo: {
     display: "flex",
@@ -390,6 +530,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: 600,
     color: "#5b4a2d",
+    width: "100%",
   },
   resumen: {
     marginBottom: 14,
@@ -430,6 +571,78 @@ const styles = {
   trClickable: {
     cursor: "pointer",
     transition: "0.2s",
+  },
+  cardsList: {
+    display: "grid",
+    gap: 12,
+  },
+  cardMobile: {
+    width: "100%",
+    border: "1px solid #f0e5cf",
+    backgroundColor: "#fffdf7",
+    borderRadius: 18,
+    padding: 14,
+    textAlign: "left",
+    cursor: "pointer",
+  },
+  cardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 12,
+  },
+  cardTitulo: {
+    margin: 0,
+    color: "#2f2f2f",
+    fontSize: "1rem",
+    fontWeight: 700,
+  },
+  cardFecha: {
+    margin: "6px 0 0 0",
+    color: "#7a7a7a",
+    fontSize: "0.9rem",
+  },
+  cardPrecio: {
+    color: "#333",
+    fontWeight: 800,
+    fontSize: "1rem",
+    whiteSpace: "nowrap",
+  },
+  cardGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
+  },
+  cardItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    backgroundColor: "#fffaf0",
+    borderRadius: 12,
+    padding: 10,
+    border: "1px solid #f3e7c8",
+  },
+  cardItemFull: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    backgroundColor: "#fffaf0",
+    borderRadius: 12,
+    padding: 10,
+    border: "1px solid #f3e7c8",
+    gridColumn: "1 / -1",
+  },
+  cardLabel: {
+    fontSize: "0.78rem",
+    color: "#7a6331",
+    fontWeight: 700,
+  },
+  cardValue: {
+    fontSize: "0.92rem",
+    color: "#333",
+    lineHeight: 1.35,
+    wordBreak: "break-word",
   },
   badgeNotas: {
     display: "inline-block",

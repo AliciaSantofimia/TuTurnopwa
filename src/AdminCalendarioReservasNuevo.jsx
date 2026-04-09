@@ -11,20 +11,32 @@ const AdminCalendarioReservasNuevo = () => {
 
   const [reservas, setReservas] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
   const [mesActual, setMesActual] = useState(() => {
     const hoy = new Date();
     return new Date(hoy.getFullYear(), hoy.getMonth(), 1);
   });
-  const obtenerFechaLocalISO = (fecha = new Date()) => {
-  const year = fecha.getFullYear();
-  const month = String(fecha.getMonth() + 1).padStart(2, "0");
-  const day = String(fecha.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 
-const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
-  return obtenerFechaLocalISO(new Date());
-});
+  const obtenerFechaLocalISO = (fecha = new Date()) => {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, "0");
+    const day = String(fecha.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
+    return obtenerFechaLocalISO(new Date());
+  });
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     const cargarReservas = async () => {
@@ -218,15 +230,15 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     }
 
     for (let dia = 1; dia <= totalDiasMes; dia++) {
-  const mesTexto = String(month + 1).padStart(2, "0");
-  const diaTexto = String(dia).padStart(2, "0");
-  const fechaISO = `${year}-${mesTexto}-${diaTexto}`;
+      const mesTexto = String(month + 1).padStart(2, "0");
+      const diaTexto = String(dia).padStart(2, "0");
+      const fechaISO = `${year}-${mesTexto}-${diaTexto}`;
 
-  celdas.push({
-    dia,
-    fechaISO,
-  });
-}
+      celdas.push({
+        dia,
+        fechaISO,
+      });
+    }
 
     while (celdas.length % 7 !== 0) {
       celdas.push(null);
@@ -244,15 +256,15 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
   };
 
   const irAMesActual = () => {
-  const hoy = new Date();
-  setMesActual(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
-  setFechaSeleccionada(obtenerFechaLocalISO(hoy));
-};
+    const hoy = new Date();
+    setMesActual(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    setFechaSeleccionada(obtenerFechaLocalISO(hoy));
+  };
 
- const esHoy = (fechaISO) => {
-  const hoy = obtenerFechaLocalISO(new Date());
-  return fechaISO === hoy;
-};
+  const esHoy = (fechaISO) => {
+    const hoy = obtenerFechaLocalISO(new Date());
+    return fechaISO === hoy;
+  };
 
   const esDiaPasado = (fechaISO) => {
     const hoy = new Date();
@@ -273,7 +285,12 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
   };
 
   const obtenerEstiloDia = (celda) => {
-    if (!celda) return styles.diaVacio;
+    if (!celda) {
+      return {
+        ...styles.diaVacio,
+        ...(isMobile ? styles.diaVacioMobile : {}),
+      };
+    }
 
     const resumen = resumenPorFecha[celda.fechaISO];
     const seleccionado = fechaSeleccionada === celda.fechaISO;
@@ -282,6 +299,7 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
 
     let estilo = {
       ...styles.dia,
+      ...(isMobile ? styles.diaMobile : {}),
     };
 
     if (pasado) {
@@ -329,37 +347,60 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     return estilo;
   };
 
- const irAReservasDelDia = () => {
-  if (!fechaSeleccionada) return;
-  navigate(`/admin-reservas-nuevo?fecha=${fechaSeleccionada}`);
-};
+  const irAReservasDelDia = () => {
+    if (!fechaSeleccionada) return;
+    navigate(`/admin-reservas-nuevo?fecha=${fechaSeleccionada}`);
+  };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div style={{ ...styles.body, ...(isMobile ? styles.bodyMobile : {}) }}>
+      <div
+        style={{
+          ...styles.container,
+          ...(isMobile ? styles.containerMobile : {}),
+        }}
+      >
         <BotonVolver />
 
-        <div style={styles.header}>
-          <h1 style={styles.titulo}>Calendario de reservas</h1>
-          <p style={styles.subtitulo}>
+        <div style={{ ...styles.header, ...(isMobile ? styles.headerMobile : {}) }}>
+          <h1 style={{ ...styles.titulo, ...(isMobile ? styles.tituloMobile : {}) }}>
+            Calendario de reservas
+          </h1>
+          <p
+            style={{
+              ...styles.subtitulo,
+              ...(isMobile ? styles.subtituloMobile : {}),
+            }}
+          >
             Vista mensual general para ver rápidamente los días con actividad.
           </p>
         </div>
 
-        <div style={styles.barraMes}>
-          <button style={styles.botonMes} onClick={() => cambiarMes(-1)}>
-            ← Mes anterior
+        <div style={{ ...styles.barraMes, ...(isMobile ? styles.barraMesMobile : {}) }}>
+          <button
+            style={{ ...styles.botonMes, ...(isMobile ? styles.botonMesMobile : {}) }}
+            onClick={() => cambiarMes(-1)}
+          >
+            ← Anterior
           </button>
 
-          <div style={styles.mesCentro}>
-            <h2 style={styles.mesTitulo}>{nombreMes}</h2>
-            <button style={styles.botonHoy} onClick={irAMesActual}>
+          <div style={{ ...styles.mesCentro, ...(isMobile ? styles.mesCentroMobile : {}) }}>
+            <h2 style={{ ...styles.mesTitulo, ...(isMobile ? styles.mesTituloMobile : {}) }}>
+              {nombreMes}
+            </h2>
+            <button
+              style={{ ...styles.botonHoy, ...(isMobile ? styles.botonHoyMobile : {}) }}
+              onClick={irAMesActual}
+            >
               Ir a hoy
             </button>
           </div>
 
-          <button style={styles.botonMes} onClick={() => cambiarMes(1)}>
-            Mes siguiente →
+          <button
+            style={{ ...styles.botonMes, ...(isMobile ? styles.botonMesMobile : {}) }}
+            onClick={() => cambiarMes(1)}
+          >
+            Siguiente →
           </button>
         </div>
 
@@ -367,19 +408,48 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
           <p style={styles.mensaje}>Cargando calendario...</p>
         ) : (
           <>
-            <div style={styles.calendarioBox}>
-              <div style={styles.semanaHeader}>
+            <div
+              style={{
+                ...styles.calendarioBox,
+                ...(isMobile ? styles.calendarioBoxMobile : {}),
+              }}
+            >
+              <div
+                style={{
+                  ...styles.semanaHeader,
+                  ...(isMobile ? styles.semanaHeaderMobile : {}),
+                }}
+              >
                 {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((dia) => (
-                  <div key={dia} style={styles.semanaDia}>
+                  <div
+                    key={dia}
+                    style={{
+                      ...styles.semanaDia,
+                      ...(isMobile ? styles.semanaDiaMobile : {}),
+                    }}
+                  >
                     {dia}
                   </div>
                 ))}
               </div>
 
-              <div style={styles.gridDias}>
+              <div
+                style={{
+                  ...styles.gridDias,
+                  ...(isMobile ? styles.gridDiasMobile : {}),
+                }}
+              >
                 {diasCalendario.map((celda, index) => {
                   if (!celda) {
-                    return <div key={`vacio-${index}`} style={styles.diaVacio} />;
+                    return (
+                      <div
+                        key={`vacio-${index}`}
+                        style={{
+                          ...styles.diaVacio,
+                          ...(isMobile ? styles.diaVacioMobile : {}),
+                        }}
+                      />
+                    );
                   }
 
                   const resumen = resumenPorFecha[celda.fechaISO];
@@ -391,21 +461,63 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
                       style={obtenerEstiloDia(celda)}
                       onClick={() => setFechaSeleccionada(celda.fechaISO)}
                     >
-                      <div style={styles.diaNumero}>{celda.dia}</div>
+                      <div
+                        style={{
+                          ...styles.diaNumero,
+                          ...(isMobile ? styles.diaNumeroMobile : {}),
+                        }}
+                      >
+                        {celda.dia}
+                      </div>
 
                       {resumen ? (
-                        <div style={styles.infoDia}>
-                          <span style={styles.infoDiaTexto}>
-                            {resumen.totalReservas} reserva
-                            {resumen.totalReservas !== 1 ? "s" : ""}
-                          </span>
-                          <span style={styles.infoDiaTexto}>
-                            {resumen.totalPlazas} plaza
-                            {resumen.totalPlazas !== 1 ? "s" : ""}
-                          </span>
+                        <div
+                          style={{
+                            ...styles.infoDia,
+                            ...(isMobile ? styles.infoDiaMobile : {}),
+                          }}
+                        >
+                          {isMobile ? (
+                            <>
+                              <span
+                                style={{
+                                  ...styles.infoDiaTexto,
+                                  ...styles.infoDiaTextoMobile,
+                                }}
+                              >
+                                {resumen.totalReservas} res.
+                              </span>
+                              <span
+                                style={{
+                                  ...styles.infoDiaTexto,
+                                  ...styles.infoDiaTextoMobile,
+                                }}
+                              >
+                                {resumen.totalPlazas} pl.
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span style={styles.infoDiaTexto}>
+                                {resumen.totalReservas} reserva
+                                {resumen.totalReservas !== 1 ? "s" : ""}
+                              </span>
+                              <span style={styles.infoDiaTexto}>
+                                {resumen.totalPlazas} plaza
+                                {resumen.totalPlazas !== 1 ? "s" : ""}
+                              </span>
+                            </>
+                          )}
                         </div>
                       ) : (
-                        <div style={styles.infoDiaVacio}>Sin reservas</div>
+                        <div
+                          style={{
+                            ...styles.infoDiaVacio,
+                            ...(isMobile ? styles.infoDiaVacioMobile : {}),
+                          }}
+                        >
+                          {isMobile ? "—" : "Sin reservas"}
+                        </div>
                       )}
                     </button>
                   );
@@ -413,17 +525,37 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
               </div>
             </div>
 
-            <div style={styles.detalleBox}>
-              <div style={styles.detalleCabecera}>
-                <div>
-                  <h3 style={styles.detalleTitulo}>
+            <div
+              style={{
+                ...styles.detalleBox,
+                ...(isMobile ? styles.detalleBoxMobile : {}),
+              }}
+            >
+              <div
+                style={{
+                  ...styles.detalleCabecera,
+                  ...(isMobile ? styles.detalleCabeceraMobile : {}),
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <h3
+                    style={{
+                      ...styles.detalleTitulo,
+                      ...(isMobile ? styles.detalleTituloMobile : {}),
+                    }}
+                  >
                     {fechaSeleccionada
                       ? `Detalle del ${formatearFecha(fechaSeleccionada)}`
                       : "Selecciona un día"}
                   </h3>
 
                   {detalleDiaSeleccionado ? (
-                    <p style={styles.detalleSubtitulo}>
+                    <p
+                      style={{
+                        ...styles.detalleSubtitulo,
+                        ...(isMobile ? styles.detalleSubtituloMobile : {}),
+                      }}
+                    >
                       {detalleDiaSeleccionado.totalReservas} reserva
                       {detalleDiaSeleccionado.totalReservas !== 1 ? "s" : ""} ·{" "}
                       {detalleDiaSeleccionado.totalPlazas} plaza
@@ -431,14 +563,25 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
                       {detalleDiaSeleccionado.totalIngresos}€
                     </p>
                   ) : (
-                    <p style={styles.detalleSubtitulo}>
+                    <p
+                      style={{
+                        ...styles.detalleSubtitulo,
+                        ...(isMobile ? styles.detalleSubtituloMobile : {}),
+                      }}
+                    >
                       No hay reservas confirmadas para este día.
                     </p>
                   )}
                 </div>
 
                 {detalleDiaSeleccionado?.reservas?.length > 0 && (
-                  <button style={styles.botonIrReservas} onClick={irAReservasDelDia}>
+                  <button
+                    style={{
+                      ...styles.botonIrReservas,
+                      ...(isMobile ? styles.botonIrReservasMobile : {}),
+                    }}
+                    onClick={irAReservasDelDia}
+                  >
                     Ir a reservas del día
                   </button>
                 )}
@@ -455,8 +598,19 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
 
                   <div style={styles.listaReservas}>
                     {reservasPreview.map((r, index) => (
-                      <div key={`${r.id}-${index}`} style={styles.reservaFila}>
-                        <div style={styles.reservaIzq}>
+                      <div
+                        key={`${r.id}-${index}`}
+                        style={{
+                          ...styles.reservaFila,
+                          ...(isMobile ? styles.reservaFilaMobile : {}),
+                        }}
+                      >
+                        <div
+                          style={{
+                            ...styles.reservaIzq,
+                            ...(isMobile ? styles.reservaIzqMobile : {}),
+                          }}
+                        >
                           <p style={styles.reservaClase}>{r.clase}</p>
                           <p style={styles.reservaMeta}>
                             {r.turno} · {r.metodo} · {r.plazas} plaza
@@ -464,7 +618,12 @@ const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
                           </p>
                         </div>
 
-                        <div style={styles.reservaDer}>
+                        <div
+                          style={{
+                            ...styles.reservaDer,
+                            ...(isMobile ? styles.reservaDerMobile : {}),
+                          }}
+                        >
                           <span style={styles.pagoEstado}>{r.estadoPago}</span>
                           <span style={styles.pagoPrecio}>{r.precioTotal}€</span>
                         </div>
@@ -490,6 +649,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+    padding: 12,
+  },
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -498,18 +660,33 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+    borderRadius: 18,
+    padding: 14,
+  },
   header: {
     textAlign: "center",
     marginBottom: 24,
+  },
+  headerMobile: {
+    marginBottom: 18,
   },
   titulo: {
     margin: 0,
     color: "#2f2f2f",
     fontSize: "2rem",
   },
+  tituloMobile: {
+    fontSize: "1.45rem",
+    lineHeight: 1.2,
+  },
   subtitulo: {
     marginTop: 8,
     color: "#7a7a7a",
+  },
+  subtituloMobile: {
+    fontSize: "0.95rem",
+    lineHeight: 1.4,
   },
   barraMes: {
     display: "flex",
@@ -523,6 +700,12 @@ const styles = {
     padding: 16,
     marginBottom: 20,
   },
+  barraMesMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    padding: 12,
+    gap: 10,
+  },
   mesCentro: {
     display: "flex",
     flexDirection: "column",
@@ -531,11 +714,18 @@ const styles = {
     flex: 1,
     minWidth: 220,
   },
+  mesCentroMobile: {
+    minWidth: "auto",
+  },
   mesTitulo: {
     margin: 0,
     color: "#4b3a2a",
     textTransform: "capitalize",
     fontSize: "1.35rem",
+  },
+  mesTituloMobile: {
+    fontSize: "1.15rem",
+    textAlign: "center",
   },
   botonMes: {
     padding: "10px 14px",
@@ -546,6 +736,10 @@ const styles = {
     fontWeight: 600,
     color: "#5b4a2d",
   },
+  botonMesMobile: {
+    width: "100%",
+    fontSize: "0.95rem",
+  },
   botonHoy: {
     padding: "8px 12px",
     borderRadius: 10,
@@ -554,6 +748,9 @@ const styles = {
     cursor: "pointer",
     fontWeight: 600,
     color: "#5b4a2d",
+  },
+  botonHoyMobile: {
+    width: "100%",
   },
   mensaje: {
     textAlign: "center",
@@ -567,11 +764,19 @@ const styles = {
     padding: 18,
     marginBottom: 22,
   },
+  calendarioBoxMobile: {
+    padding: 10,
+    borderRadius: 16,
+  },
   semanaHeader: {
     display: "grid",
     gridTemplateColumns: "repeat(7, 1fr)",
     gap: 10,
     marginBottom: 10,
+  },
+  semanaHeaderMobile: {
+    gap: 4,
+    marginBottom: 6,
   },
   semanaDia: {
     textAlign: "center",
@@ -580,10 +785,17 @@ const styles = {
     fontSize: "0.95rem",
     padding: "8px 4px",
   },
+  semanaDiaMobile: {
+    fontSize: "0.72rem",
+    padding: "4px 2px",
+  },
   gridDias: {
     display: "grid",
     gridTemplateColumns: "repeat(7, 1fr)",
     gap: 10,
+  },
+  gridDiasMobile: {
+    gap: 4,
   },
   dia: {
     minHeight: 110,
@@ -598,11 +810,20 @@ const styles = {
     justifyContent: "space-between",
     transition: "all 0.2s ease",
   },
+  diaMobile: {
+    minHeight: 68,
+    padding: 6,
+    borderRadius: 10,
+  },
   diaVacio: {
     minHeight: 110,
     borderRadius: 16,
     backgroundColor: "#fbf7ef",
     border: "1px dashed #f2ead9",
+  },
+  diaVacioMobile: {
+    minHeight: 68,
+    borderRadius: 10,
   },
   diaPasado: {
     opacity: 0.78,
@@ -631,10 +852,16 @@ const styles = {
     fontWeight: 700,
     color: "#3e3022",
   },
+  diaNumeroMobile: {
+    fontSize: "0.92rem",
+  },
   infoDia: {
     display: "flex",
     flexDirection: "column",
     gap: 4,
+  },
+  infoDiaMobile: {
+    gap: 2,
   },
   infoDiaTexto: {
     fontSize: "0.8rem",
@@ -642,15 +869,27 @@ const styles = {
     fontWeight: 600,
     lineHeight: 1.2,
   },
+  infoDiaTextoMobile: {
+    fontSize: "0.66rem",
+    lineHeight: 1.1,
+  },
   infoDiaVacio: {
     fontSize: "0.78rem",
     color: "#b0a38d",
+  },
+  infoDiaVacioMobile: {
+    fontSize: "0.72rem",
+    textAlign: "center",
   },
   detalleBox: {
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
     borderRadius: 22,
     padding: 20,
+  },
+  detalleBoxMobile: {
+    borderRadius: 16,
+    padding: 14,
   },
   detalleCabecera: {
     display: "flex",
@@ -660,15 +899,28 @@ const styles = {
     flexWrap: "wrap",
     marginBottom: 16,
   },
+  detalleCabeceraMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   detalleTitulo: {
     margin: 0,
     color: "#4b3a2a",
     textTransform: "capitalize",
     fontSize: "1.2rem",
   },
+  detalleTituloMobile: {
+    fontSize: "1.02rem",
+    lineHeight: 1.35,
+  },
   detalleSubtitulo: {
     marginTop: 8,
     color: "#7a7a7a",
+  },
+  detalleSubtituloMobile: {
+    fontSize: "0.92rem",
+    lineHeight: 1.45,
   },
   botonIrReservas: {
     padding: "10px 14px",
@@ -679,6 +931,9 @@ const styles = {
     fontWeight: 700,
     color: "#5b4a2d",
     whiteSpace: "nowrap",
+  },
+  botonIrReservasMobile: {
+    width: "100%",
   },
   mensajeResumen: {
     margin: "0 0 14px 0",
@@ -698,9 +953,19 @@ const styles = {
     borderBottom: "1px solid #f3ead7",
     flexWrap: "wrap",
   },
+  reservaFilaMobile: {
+    padding: "12px",
+    border: "1px solid #f1e6cf",
+    borderRadius: 14,
+    backgroundColor: "#fffaf2",
+  },
   reservaIzq: {
     minWidth: 220,
     flex: 1,
+  },
+  reservaIzqMobile: {
+    minWidth: "auto",
+    width: "100%",
   },
   reservaClase: {
     margin: 0,
@@ -719,6 +984,14 @@ const styles = {
     alignItems: "flex-end",
     gap: 4,
     minWidth: 90,
+  },
+  reservaDerMobile: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    minWidth: "auto",
+    marginTop: 6,
   },
   pagoEstado: {
     color: "#5b4a2d",
