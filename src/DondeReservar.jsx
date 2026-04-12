@@ -86,9 +86,9 @@ export default function DondeReservar() {
             Reservas para grupos
           </h2>
           <p className="text-sm text-gray-600 mt-2 text-center leading-6">
-            Cumpleaños, celebraciones, despedidas, planes con amigos o eventos
-            especiales en el taller. Reserva para grupos y concreta los detalles
-            con nosotros por WhatsApp.
+           Si sois un grupo de <strong>5 personas o más</strong> y queréis realizar una actividad de formación en el taller,
+  podéis solicitar vuestra reserva aquí. Antes de realizar el pago, es importante contactar
+  con el taller por WhatsApp para concretar los detalles.
           </p>
         </div>
 

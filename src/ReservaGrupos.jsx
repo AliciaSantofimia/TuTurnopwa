@@ -17,7 +17,7 @@ const TALLERES_RECOMENDADOS = [
     id: "especial-pinta",
     nombre: "Especial pinta tu pieza de cerámica",
     precio: 35,
-    descripcion: "Una opción ideal para celebraciones y grupos.",
+    descripcion: "Una opción ideal para actividades formativas en grupo.",
     imagen: "/img/grupos/enjoy.jpg",
     ruta: "/especial-pinta-tu-pieza",
   },
@@ -25,7 +25,7 @@ const TALLERES_RECOMENDADOS = [
     id: "pinta-tu-pieza",
     nombre: "Pinta tu pieza de cerámica",
     precio: 25,
-    descripcion: "Perfecto para pasar un rato creativo en grupo.",
+    descripcion: "Perfecto para realizar una actividad creativa en grupo.",
     imagen: "/img/pintatupieza.jpg",
     ruta: "/pinta-tu-pieza",
   },
@@ -33,7 +33,7 @@ const TALLERES_RECOMENDADOS = [
     id: "crea-tu-pieza",
     nombre: "Crea tu pieza favorita desde cero",
     precio: 55,
-    descripcion: "Una experiencia más completa para grupos especiales.",
+    descripcion: "Una experiencia más completa para grupos.",
     imagen: "/img/grupos/desdecero.jpg",
     ruta: "/talleres/crear-piezas",
   },
@@ -69,20 +69,19 @@ function obtenerHorarioPorFecha(fechaISO) {
   const fecha = new Date(year, month - 1, day);
   const dia = fecha.getDay();
 
-  if (dia === 5 || dia === 6) return "17:30 a 20:30";
-  if (dia === 0) return "11:30 a 14:30";
+  if (dia === 2 || dia === 3 || dia === 4 || dia === 5) {
+    return "17:30 a 20:30";
+  }
 
-  return "";
-}
+  if (dia === 6) {
+    return "11:30 a 14:30 o 17:30 a 20:30";
+  }
 
-function esFechaValidaGrupo(fechaISO) {
-  if (!fechaISO) return false;
+  if (dia === 0) {
+    return "11:30 a 14:30";
+  }
 
-  const [year, month, day] = fechaISO.split("-").map(Number);
-  const fecha = new Date(year, month - 1, day);
-  const dia = fecha.getDay();
-
-  return dia === 5 || dia === 6 || dia === 0;
+  return "Pendiente de confirmar con el taller";
 }
 
 function construirMensajeWhatsApp({
@@ -130,6 +129,8 @@ export default function ReservaGrupos() {
   const [email, setEmail] = useState("");
   const [fecha, setFecha] = useState("");
   const [horario, setHorario] = useState("");
+  const [modoHorario, setModoHorario] = useState("habitual");
+  const [horarioManual, setHorarioManual] = useState("");
   const [personas, setPersonas] = useState(5);
   const [notas, setNotas] = useState("");
   const [claseSeleccionada, setClaseSeleccionada] = useState("");
@@ -187,12 +188,16 @@ export default function ReservaGrupos() {
       return;
     }
 
-    if (esFechaValidaGrupo(fecha)) {
+    if (modoHorario === "habitual") {
       setHorario(obtenerHorarioPorFecha(fecha));
-    } else {
-      setHorario("");
     }
-  }, [fecha]);
+  }, [fecha, modoHorario]);
+
+  useEffect(() => {
+    if (modoHorario === "habitual") {
+      setHorarioManual("");
+    }
+  }, [modoHorario]);
 
   useEffect(() => {
     const clasePreseleccionada = location.state?.clasePreseleccionada;
@@ -214,19 +219,29 @@ export default function ReservaGrupos() {
     return precioUnitario * personasNum;
   }, [precioUnitario, personas]);
 
+  const turnoFinal = modoHorario === "manual" ? horarioManual.trim() : horario;
+
   const whatsappUrl = useMemo(() => {
     const mensaje = construirMensajeWhatsApp({
       nombre: nombreReserva,
       telefono,
       taller: claseSeleccionada,
       fecha,
-      horario,
+      horario: turnoFinal,
       personas,
       notas,
     });
 
     return `https://wa.me/${WHATSAPP_BERTO}?text=${mensaje}`;
-  }, [nombreReserva, telefono, claseSeleccionada, fecha, horario, personas, notas]);
+  }, [
+    nombreReserva,
+    telefono,
+    claseSeleccionada,
+    fecha,
+    turnoFinal,
+    personas,
+    notas,
+  ]);
 
   const fechaBloqueada = useMemo(() => {
     if (!fecha) return null;
@@ -246,22 +261,38 @@ export default function ReservaGrupos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("submit lanzado", {
+      user,
+      nombreReserva,
+      telefono,
+      email,
+      fecha,
+      horario,
+      horarioManual,
+      modoHorario,
+      claseSeleccionada,
+      contactoConfirmado,
+      precioUnitario,
+      precioTotal,
+      fechaBloqueada,
+      personas,
+      turnoFinal,
+    });
+
     if (!user) {
+      console.log("bloqueado: sin usuario");
       alert("Debes iniciar sesión para reservar.");
       return;
     }
 
     if (!nombreReserva || !telefono || !claseSeleccionada || !fecha) {
+      console.log("bloqueado: faltan campos obligatorios");
       alert("Completa todos los campos obligatorios.");
       return;
     }
 
-    if (!esFechaValidaGrupo(fecha)) {
-      alert("Solo se permiten reservas de grupo los viernes, sábados y domingos.");
-      return;
-    }
-
     if (fechaBloqueada) {
+      console.log("bloqueado: fecha bloqueada", fechaBloqueada);
       alert(
         `No se puede reservar el día ${fecha}. Motivo: ${
           fechaBloqueada.motivo || "día bloqueado"
@@ -270,29 +301,40 @@ export default function ReservaGrupos() {
       return;
     }
 
-    if (!horario) {
+    if (modoHorario === "habitual" && !horario) {
+      console.log("bloqueado: sin horario habitual");
       alert("No se ha podido asignar el horario.");
+      return;
+    }
+
+    if (modoHorario === "manual" && !horarioManual.trim()) {
+      console.log("bloqueado: sin horario manual");
+      alert("Debes indicar el horario acordado con el taller.");
       return;
     }
 
     const personasNum = Number(personas) || 0;
 
     if (personasNum < MIN_PERSONAS) {
+      console.log("bloqueado: menos de 5 personas");
       alert("El mínimo para reservar en grupo es de 5 personas.");
       return;
     }
 
     if (personasNum > MAX_PERSONAS) {
+      console.log("bloqueado: más de 45 personas");
       alert("El máximo de plazas para grupos es de 45 personas.");
       return;
     }
 
     if (!(precioUnitario > 0)) {
+      console.log("bloqueado: precio no válido");
       alert("No se ha podido calcular el precio del taller.");
       return;
     }
 
     if (!contactoConfirmado) {
+      console.log("bloqueado: falta confirmar contacto");
       alert("Debes confirmar antes que ya has contactado con Berto por WhatsApp.");
       return;
     }
@@ -311,7 +353,11 @@ export default function ReservaGrupos() {
         claseId: "reserva-grupo",
         tipo: "grupo",
         fecha,
-        turno: horario,
+        turno: turnoFinal,
+        modoHorario,
+        horarioPendienteConfirmacion:
+          modoHorario === "manual" ||
+          turnoFinal === "Pendiente de confirmar con el taller",
         metodo: "grupo",
         plazas: personasNum,
         precio: precioTotal,
@@ -325,27 +371,33 @@ export default function ReservaGrupos() {
         timestamp: new Date().toISOString(),
       };
 
+      console.log("va a guardar reservaGrupo", reservaGrupo);
+
       await push(ref(dbRealtime, "reservasGrupos"), reservaGrupo);
 
-      navigate("/resumen-pago", {
-        state: {
-          tipo: "grupo",
-          clase: claseSeleccionada,
-          claseId: "reserva-grupo",
-          precio: precioTotal,
-          precioUnitario,
-          precioTotal,
-          fecha,
-          turno: horario,
-          metodo: "grupo",
-          plazas: personasNum,
-          orderId,
-          notas: notas || "",
-          telefono,
-          email: email || "",
-          nombreReserva,
-        },
-      });
+      console.log("reserva guardada, navegando al resumen");
+
+navigate("/resumen-pago", {
+  state: {
+    tipo: "grupo",
+    clase: claseSeleccionada,
+    claseId: "reserva-grupo",
+    precio: precioTotal,
+    precioUnitario,
+    precioTotal,
+    fecha,
+    turno: turnoFinal,
+    metodo: "grupo",
+    plazas: personasNum,
+    orderId,
+    notas: notas || "",
+    telefono,
+    email: email || "",
+    nombreReserva,
+  },
+});
+
+return;
     } catch (error) {
       console.error("Error al guardar la reserva de grupo:", error);
       alert("No se pudo guardar la reserva de grupo.");
@@ -365,19 +417,21 @@ export default function ReservaGrupos() {
           </h1>
 
           <p className="text-gray-700 text-center max-w-3xl mx-auto leading-7 mb-3">
-            Si sois un grupo y queréis celebrar una experiencia especial en el taller,
-            podéis reservar vuestro taller aquí. Antes de realizar el pago, es
-            importante contactar con el taller por WhatsApp para concretar bien todos los detalles.
+            Si sois un grupo de <strong>5 o más personas</strong> y queréis realizar
+            una actividad formativa en el taller, podéis solicitar vuestra reserva aquí.
+            Antes de realizar el pago, es importante contactar con el taller por WhatsApp
+            para concretar bien los detalles.
           </p>
 
           <p className="text-sm text-[#7a5a1e] bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-3 text-center mb-8">
-            Horarios disponibles para grupos:
+            Horarios habituales disponibles para grupos:
             <br />
-            <strong>Viernes y sábados:</strong> 17:30 a 20:30
+            <strong>Tardes: martes, miércoles, jueves, viernes y sábados:</strong> 17:30 a 20:30
             <br />
-            <strong>Domingos:</strong> 11:30 a 14:30
+            <strong>Mañanas: sábados y domingos:</strong> 11:30 a 14:30
             <br />
-            Si necesitáis otro día u otro horario, contactad con el taller antes de reservar.
+            Si necesitáis otro día u horario distinto, también se puede solicitar,
+            siempre consultándolo previamente con el taller por WhatsApp.
           </p>
 
           <div className="mb-8">
@@ -442,13 +496,17 @@ export default function ReservaGrupos() {
               })}
             </div>
           </div>
+          <p className="text-sm text-center text-[#7a5a1e] mb-4">
+  Los campos marcados con <span className="font-bold text-red-600">*</span> son obligatorios.
+</p>
+
 
           <BloqueoReserva>
             <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl mx-auto">
               <div>
                 <label className="block font-bold text-sm mb-1">
-                  Taller elegido
-                </label>
+  Taller elegido <span className="text-red-600">*</span>
+</label>
                 <select
                   value={claseSeleccionada}
                   onChange={(e) => setClaseSeleccionada(e.target.value)}
@@ -467,8 +525,8 @@ export default function ReservaGrupos() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="block font-bold text-sm mb-1">
-                    Nombre de la persona que reserva
-                  </label>
+  Nombre de la persona que reserva <span className="text-red-600">*</span>
+</label>
                   <input
                     type="text"
                     value={nombreReserva}
@@ -479,9 +537,9 @@ export default function ReservaGrupos() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-sm mb-1">
-                    Teléfono
-                  </label>
+                 <label className="block font-bold text-sm mb-1">
+  Teléfono <span className="text-red-600">*</span>
+</label>
                   <input
                     type="tel"
                     value={telefono}
@@ -506,15 +564,16 @@ export default function ReservaGrupos() {
 
               <div>
                 <label className="block font-bold text-sm mb-1">
-                  Selecciona fecha
-                </label>
+  Selecciona fecha <span className="text-red-600">*</span>
+</label>
                 <DateInputReserva
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
                 />
-                {fecha && !esFechaValidaGrupo(fecha) && (
-                  <p className="text-sm text-red-600 mt-2">
-                    Solo puedes reservar grupos los viernes, sábados y domingos.
+                {fecha && !fechaBloqueada && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Si eliges una fecha fuera del horario habitual, la solicitud quedará
+                    sujeta a confirmación previa con el taller.
                   </p>
                 )}
                 {fechaBloqueada && (
@@ -528,22 +587,56 @@ export default function ReservaGrupos() {
               </div>
 
               <div>
-                <label className="block font-bold text-sm mb-1">
-                  Horario asignado
-                </label>
-                <input
-                  type="text"
-                  value={horario}
-                  readOnly
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"
-                  placeholder="Se asignará automáticamente según el día elegido"
-                />
+                <label className="block font-bold text-sm mb-2">
+  Horario <span className="text-red-600">*</span>
+</label>
+
+                <div className="flex gap-4 mb-3 flex-wrap">
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="radio"
+                      value="habitual"
+                      checked={modoHorario === "habitual"}
+                      onChange={() => setModoHorario("habitual")}
+                      className="mr-2"
+                    />
+                    Horario habitual
+                  </label>
+
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="radio"
+                      value="manual"
+                      checked={modoHorario === "manual"}
+                      onChange={() => setModoHorario("manual")}
+                      className="mr-2"
+                    />
+                    Otro horario (ya acordado con el taller)
+                  </label>
+                </div>
+
+                {modoHorario === "habitual" ? (
+                  <input
+                    type="text"
+                    value={horario}
+                    readOnly
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={horarioManual}
+                    onChange={(e) => setHorarioManual(e.target.value)}
+                    placeholder="Ejemplo: domingo por la tarde, martes 11:30 a 14:30..."
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="block font-bold text-sm mb-2">
-                  Número de personas
-                </label>
+  Número de personas <span className="text-red-600">*</span>
+</label>
 
                 <div className="flex items-center justify-between border border-gray-300 rounded-xl px-3 py-2">
                   <button
@@ -583,7 +676,7 @@ export default function ReservaGrupos() {
                   onChange={(e) => setNotas(e.target.value)}
                   rows={4}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  placeholder="Ejemplo: somos un grupo de cumpleaños, queremos mesa junta, nos interesa una opción sencilla, etc."
+                  placeholder="Ejemplo: número de asistentes, si preferís mañana o tarde, o cualquier detalle que el taller deba tener en cuenta."
                 />
               </div>
 
@@ -599,12 +692,15 @@ export default function ReservaGrupos() {
                   <strong>Total:</strong>{" "}
                   {precioTotal > 0 ? `${precioTotal}€` : "-"}
                 </p>
+                <p>
+                  <strong>Horario:</strong> {turnoFinal || "-"}
+                </p>
               </div>
 
               <div className="bg-[#f7f7f7] border border-gray-200 rounded-xl p-4">
                 <p className="text-sm text-gray-700 mb-3">
                   Antes de realizar el pago, debes hablar con Berto por WhatsApp
-                  para confirmar bien el taller, el horario y cualquier detalle especial.
+                  para confirmar bien el taller, el horario y cualquier detalle necesario.
                 </p>
 
                 <a
@@ -638,7 +734,8 @@ export default function ReservaGrupos() {
                   !nombreReserva ||
                   !telefono ||
                   !fecha ||
-                  !horario ||
+                  (modoHorario === "habitual" && !horario) ||
+                  (modoHorario === "manual" && !horarioManual.trim()) ||
                   personas < MIN_PERSONAS ||
                   !(precioUnitario > 0) ||
                   !contactoConfirmado

@@ -8,12 +8,11 @@ import BloqueoReserva from "./BloqueoReserva";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
 
+
 const CLASE_ID = "creatumaceta";
 const RESERVAS_PATH_KEY = "CreaTuMaceta";
 
-// Fallback temporal mientras no metas estos límites en Firebase
-const MAX_TORNO_FALLBACK = 12;
-const MAX_TOTALES_FALLBACK = 45;
+
 
 const normalizarTurnos = (turnosRaw) => {
   if (!turnosRaw) return [];
@@ -104,6 +103,7 @@ export default function ReservaCreaTuMaceta() {
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+  
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -177,6 +177,7 @@ export default function ReservaCreaTuMaceta() {
     cargarFechasHabilitadas();
   }, []);
 
+  
   useEffect(() => {
     if (!fecha) {
       setOcupadasTorno(0);
@@ -218,39 +219,38 @@ export default function ReservaCreaTuMaceta() {
   }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
 
   const precios = useMemo(() => {
-    return claseConfig?.precios || {};
-  }, [claseConfig]);
+  return claseConfig?.precios || {};
+}, [claseConfig]);
 
-  const maxTorno = Number(claseConfig?.plazas?.maxTorno || MAX_TORNO_FALLBACK);
-  const maxTotales = Number(
-    claseConfig?.plazas?.maxTotales || MAX_TOTALES_FALLBACK
-  );
+const maxTorno = Number(claseConfig?.plazas?.maxTorno || 12);
+const maxTotales = Number(claseConfig?.plazas?.maxTotales || 45);
 
-  const plazasTotalesOcupadas = ocupadasTorno + ocupadasModelado;
+const plazasTotalesOcupadas = ocupadasTorno + ocupadasModelado;
 
-  const plazasDisponibles = useMemo(() => {
-    if (!metodo) return 0;
+const plazasDisponibles = useMemo(() => {
+  if (!metodo) return 0;
 
-    if (metodo === "torno") {
-      return Math.max(
-        Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
-        0
-      );
-    }
+  if (metodo === "torno") {
+    return Math.max(
+      Math.min(maxTorno - ocupadasTorno, maxTotales - plazasTotalesOcupadas),
+      0
+    );
+  }
 
-    if (metodo === "modelado a mano") {
-      return Math.max(maxTotales - plazasTotalesOcupadas, 0);
-    }
+  if (metodo === "modelado a mano") {
+    return Math.max(maxTotales - plazasTotalesOcupadas, 0);
+  }
 
-    return 0;
-  }, [
-    metodo,
-    maxTorno,
-    maxTotales,
-    ocupadasTorno,
-    ocupadasModelado,
-    plazasTotalesOcupadas,
-  ]);
+  return 0;
+}, [
+  metodo,
+  maxTorno,
+  maxTotales,
+  ocupadasTorno,
+  ocupadasModelado,
+  plazasTotalesOcupadas,
+]);
+ 
 
   const precioUnitario = useMemo(() => {
     return mapearPrecioDesdeFirebase(tamanoMaceta, precios);
