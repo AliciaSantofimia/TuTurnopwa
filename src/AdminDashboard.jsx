@@ -231,6 +231,12 @@ const AdminDashboard = () => {
 </button>
 <button
   style={styles.boton}
+  onClick={() => navigate("/admin-habilitar-fechas")}
+>
+  Habilitar fechas
+</button>
+<button
+  style={styles.boton}
   onClick={() => navigate("/admin-bonos-nuevo")}
 >
   Ver bonos

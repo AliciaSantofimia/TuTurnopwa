@@ -79,6 +79,7 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [fechasHabilitadas, setFechasHabilitadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -134,9 +135,50 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
     cargarFechasBloqueadas();
   }, []);
 
-  const turnosDisponibles = useMemo(() => {
+  useEffect(() => {
+    const cargarFechasHabilitadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "fechasHabilitadas"));
+        if (snap.exists()) {
+          setFechasHabilitadas(snap.val() || {});
+        } else {
+          setFechasHabilitadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas habilitadas:", error);
+        setFechasHabilitadas({});
+      }
+    };
+
+    cargarFechasHabilitadas();
+  }, []);
+
+  const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fechaInicio);
   }, [claseConfig, fechaInicio]);
+
+  const fechaHabilitadaManual = useMemo(() => {
+    if (!fechaInicio) return null;
+
+    const habilitacion = fechasHabilitadas?.[fechaInicio];
+    if (habilitacion?.habilitada) {
+      return habilitacion;
+    }
+
+    return null;
+  }, [fechaInicio, fechasHabilitadas]);
+
+  const turnosDisponibles = useMemo(() => {
+    if (turnosHabituales.length > 0) {
+      return turnosHabituales;
+    }
+
+    if (fechaHabilitadaManual) {
+      return normalizarTurnos(claseConfig?.turnos);
+    }
+
+    return [];
+  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
 
   const precioBase = Number(claseConfig?.precio || 120);
   const precioTotal = precioBase;
@@ -275,50 +317,49 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         });
 
         const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
-const bonosSnap = await get(bonosRef);
+        const bonosSnap = await get(bonosRef);
 
+        let bonoYaExiste = false;
 
-let bonoYaExiste = false;
+        if (bonosSnap.exists()) {
+          const bonos = bonosSnap.val() || {};
 
-if (bonosSnap.exists()) {
-  const bonos = bonosSnap.val() || {};
+          for (const bono of Object.values(bonos)) {
+            if (
+              bono?.tarjetaRegaloId === tarjetaRegaloId ||
+              bono?.orderId === orderId
+            ) {
+              bonoYaExiste = true;
+              break;
+            }
+          }
+        }
 
-  for (const bono of Object.values(bonos)) {
-    if (
-      bono?.tarjetaRegaloId === tarjetaRegaloId ||
-      bono?.orderId === orderId
-    ) {
-      bonoYaExiste = true;
-      break;
-    }
-  }
-}
-
-if (!bonoYaExiste) {
-  await crearBonoActivo({
-    uid: user.uid,
-    clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
-    claseId: CLASE_ID,
-    tipoTaller: "bono_mensual",
-    subtipo,
-    numeroClases,
-    fechaInicio,
-    fechaFinMes: sumarUnMes(fechaInicio),
-    fechaCaducidadBono: sumarTresMeses(fechaInicio),
-    turno,
-    orderId,
-    datosExtra: {
-      duracionClase,
-      modalidad,
-      incluyeDecoracion,
-      precioBase,
-      precioTotal,
-      tarjetaRegaloId,
-      codigoTarjeta,
-      creadaDesde: "tarjeta_regalo",
-    },
-  });
-}
+        if (!bonoYaExiste) {
+          await crearBonoActivo({
+            uid: user.uid,
+            clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
+            claseId: CLASE_ID,
+            tipoTaller: "bono_mensual",
+            subtipo,
+            numeroClases,
+            fechaInicio,
+            fechaFinMes: sumarUnMes(fechaInicio),
+            fechaCaducidadBono: sumarTresMeses(fechaInicio),
+            turno,
+            orderId,
+            datosExtra: {
+              duracionClase,
+              modalidad,
+              incluyeDecoracion,
+              precioBase,
+              precioTotal,
+              tarjetaRegaloId,
+              codigoTarjeta,
+              creadaDesde: "tarjeta_regalo",
+            },
+          });
+        }
 
         const tarjetaGlobalRef = ref(
           dbRealtime,
@@ -473,12 +514,23 @@ if (!bonoYaExiste) {
                     : ""}
                 </p>
               )}
-              {fechaInicio && !fechaBloqueada && diaNoDisponible && (
-                <p className="mt-2 text-sm text-red-600 font-medium">
-                  Esta clase no se imparte el día seleccionado. Días
-                  disponibles: {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+              {fechaInicio && !fechaBloqueada && fechaHabilitadaManual && (
+                <p className="mt-2 text-sm text-green-700 font-medium">
+                  Esta fecha ha sido habilitada manualmente desde administración.
+                  {fechaHabilitadaManual.motivo
+                    ? ` Motivo: ${fechaHabilitadaManual.motivo}.`
+                    : ""}
                 </p>
               )}
+              {fechaInicio &&
+                !fechaBloqueada &&
+                !fechaHabilitadaManual &&
+                diaNoDisponible && (
+                  <p className="mt-2 text-sm text-red-600 font-medium">
+                    Esta clase no se imparte el día seleccionado. Días
+                    disponibles: {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                  </p>
+                )}
             </div>
 
             <div>

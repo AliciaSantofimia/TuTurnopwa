@@ -117,6 +117,7 @@ import AdminDetalleTarjetaRegaloNuevo from "./AdminDetalleTarjetaRegaloNuevo";
 import AdminBloqueosFechas from "./AdminBloqueosFechas";
 import AdminBonosNuevo from "./AdminBonosNuevo";
 import AdminDetalleBonoNuevo from "./AdminDetalleBonoNuevo";
+import AdminHabilitarFechas from "./AdminHabilitarFechas";
 
 
 import ChatAyuda from "./ChatAyuda.jsx";
@@ -425,6 +426,7 @@ function App() {
     </RutaAdmin>
   }
 />
+<Route path="/admin-habilitar-fechas" element={<AdminHabilitarFechas />} />
 <Route path="/admin-bonos-nuevo" element={<AdminBonosNuevo />} />
 <Route
   path="/admin-tarjetas-regalo"
@@ -433,6 +435,7 @@ function App() {
       <AdminTarjetasRegalo />
     </RutaAdmin>
   }
+  
 />
           
 

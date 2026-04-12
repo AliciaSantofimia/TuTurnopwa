@@ -70,6 +70,7 @@ export default function ReservaEspecialPintaTuPieza() {
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [fechasHabilitadas, setFechasHabilitadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -125,9 +126,50 @@ export default function ReservaEspecialPintaTuPieza() {
     cargarFechasBloqueadas();
   }, []);
 
-  const turnosDisponibles = useMemo(() => {
+  useEffect(() => {
+    const cargarFechasHabilitadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "fechasHabilitadas"));
+        if (snap.exists()) {
+          setFechasHabilitadas(snap.val() || {});
+        } else {
+          setFechasHabilitadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas habilitadas:", error);
+        setFechasHabilitadas({});
+      }
+    };
+
+    cargarFechasHabilitadas();
+  }, []);
+
+  const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
   }, [claseConfig, fecha]);
+
+  const fechaHabilitadaManual = useMemo(() => {
+    if (!fecha) return null;
+
+    const habilitacion = fechasHabilitadas?.[fecha];
+    if (habilitacion?.habilitada) {
+      return habilitacion;
+    }
+
+    return null;
+  }, [fecha, fechasHabilitadas]);
+
+  const turnosDisponibles = useMemo(() => {
+    if (turnosHabituales.length > 0) {
+      return turnosHabituales;
+    }
+
+    if (fechaHabilitadaManual) {
+      return normalizarTurnos(claseConfig?.turnos);
+    }
+
+    return [];
+  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
 
   const precioBase = Number(claseConfig?.precio || 35);
   const duracion = claseConfig?.duracion || "2 horas y media";
@@ -338,7 +380,8 @@ export default function ReservaEspecialPintaTuPieza() {
   };
 
   const puedeElegirTurno = !!fecha && !fechaBloqueada && !diaNoDisponible;
-  const puedeElegirPlazas = !!fecha && !!turno && !fechaBloqueada && !diaNoDisponible;
+  const puedeElegirPlazas =
+    !!fecha && !!turno && !fechaBloqueada && !diaNoDisponible;
 
   return (
     <div className="bg-[#fffef4] min-h-screen flex items-center justify-center px-4 py-8">
@@ -391,12 +434,23 @@ export default function ReservaEspecialPintaTuPieza() {
                       : ""}
                   </p>
                 )}
-                {fecha && !fechaBloqueada && diaNoDisponible && (
-                  <p className="mt-2 text-sm text-red-600 font-medium">
-                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                {fecha && !fechaBloqueada && fechaHabilitadaManual && (
+                  <p className="mt-2 text-sm text-green-700 font-medium">
+                    Esta fecha ha sido habilitada manualmente desde administración.
+                    {fechaHabilitadaManual.motivo
+                      ? ` Motivo: ${fechaHabilitadaManual.motivo}.`
+                      : ""}
                   </p>
                 )}
+                {fecha &&
+                  !fechaBloqueada &&
+                  !fechaHabilitadaManual &&
+                  diaNoDisponible && (
+                    <p className="mt-2 text-sm text-red-600 font-medium">
+                      Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                      {Object.keys(claseConfig?.horarios || {}).join(", ")}.
+                    </p>
+                  )}
               </div>
 
               <div>

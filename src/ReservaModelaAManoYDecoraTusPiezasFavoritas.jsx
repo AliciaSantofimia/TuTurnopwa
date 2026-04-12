@@ -79,6 +79,7 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   const [cargandoConfig, setCargandoConfig] = useState(true);
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [fechasHabilitadas, setFechasHabilitadas] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -136,9 +137,50 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     cargarFechasBloqueadas();
   }, []);
 
-  const turnosDisponibles = useMemo(() => {
+  useEffect(() => {
+    const cargarFechasHabilitadas = async () => {
+      try {
+        const snap = await get(ref(dbRealtime, "fechasHabilitadas"));
+        if (snap.exists()) {
+          setFechasHabilitadas(snap.val() || {});
+        } else {
+          setFechasHabilitadas({});
+        }
+      } catch (error) {
+        console.error("Error al cargar fechas habilitadas:", error);
+        setFechasHabilitadas({});
+      }
+    };
+
+    cargarFechasHabilitadas();
+  }, []);
+
+  const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fechaInicio);
   }, [claseConfig, fechaInicio]);
+
+  const fechaHabilitadaManual = useMemo(() => {
+    if (!fechaInicio) return null;
+
+    const habilitacion = fechasHabilitadas?.[fechaInicio];
+    if (habilitacion?.habilitada) {
+      return habilitacion;
+    }
+
+    return null;
+  }, [fechaInicio, fechasHabilitadas]);
+
+  const turnosDisponibles = useMemo(() => {
+    if (turnosHabituales.length > 0) {
+      return turnosHabituales;
+    }
+
+    if (fechaHabilitadaManual) {
+      return normalizarTurnos(claseConfig?.turnos);
+    }
+
+    return [];
+  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
 
   const precioBase = Number(claseConfig?.precio || 79);
   const extraTorno = convertirTorno
@@ -207,30 +249,32 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     try {
       const orderId = Date.now().toString().slice(-12);
       const timestamp = new Date().toISOString();
-const datosBono = {
-  claseId: CLASE_ID,
-  clase:
-    claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
-  tipo: "bono",
-  subtipo,
-  numeroClases,
-  clasesConsumidas: 0,
-  clasesRestantes: numeroClases,
-  fechaInicio,
-  fechaFinMes: sumarUnMes(fechaInicio),
-  fechaCaducidadBono: sumarTresMeses(fechaInicio),
-  turnoHabitual: turno,
-  duracionClase,
-  modalidad,
-  precioBase,
-  precioTotal,
-  estadoBono: "activo",
-  estadoPago: desdeTarjeta ? "pagado" : "pendiente",
-  orderId,
-  creadoEn: timestamp,
-  actualizadoEn: timestamp,
-  sesionesConsumidas: {},
-};
+
+      const datosBono = {
+        claseId: CLASE_ID,
+        clase:
+          claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
+        tipo: "bono",
+        subtipo,
+        numeroClases,
+        clasesConsumidas: 0,
+        clasesRestantes: numeroClases,
+        fechaInicio,
+        fechaFinMes: sumarUnMes(fechaInicio),
+        fechaCaducidadBono: sumarTresMeses(fechaInicio),
+        turnoHabitual: turno,
+        duracionClase,
+        modalidad,
+        precioBase,
+        precioTotal,
+        estadoBono: "activo",
+        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
+        orderId,
+        creadoEn: timestamp,
+        actualizadoEn: timestamp,
+        sesionesConsumidas: {},
+      };
+
       const reserva = {
         clase:
           claseConfig?.nombre || "Modela a mano y decora tus piezas favoritas",
@@ -280,21 +324,21 @@ const datosBono = {
         const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
         const bonosSnap = await get(bonosRef);
 
-       let bonoYaExiste = false;
+        let bonoYaExiste = false;
 
-if (bonosSnap.exists()) {
-  const bonos = bonosSnap.val() || {};
+        if (bonosSnap.exists()) {
+          const bonos = bonosSnap.val() || {};
 
-  for (const bono of Object.values(bonos)) {
-    if (
-      bono?.tarjetaRegaloId === tarjetaRegaloId ||
-      bono?.orderId === orderId
-    ) {
-      bonoYaExiste = true;
-      break;
-    }
-  }
-}
+          for (const bono of Object.values(bonos)) {
+            if (
+              bono?.tarjetaRegaloId === tarjetaRegaloId ||
+              bono?.orderId === orderId
+            ) {
+              bonoYaExiste = true;
+              break;
+            }
+          }
+        }
 
         if (!bonoYaExiste) {
           await crearBonoActivo({
@@ -323,9 +367,15 @@ if (bonosSnap.exists()) {
             },
           });
         }
-        const tarjetaGlobalRef = ref(dbRealtime, `tarjetasRegalo/${tarjetaRegaloId}`);
+
+        const tarjetaGlobalRef = ref(
+          dbRealtime,
+          `tarjetasRegalo/${tarjetaRegaloId}`
+        );
         const tarjetaGlobalSnap = await get(tarjetaGlobalRef);
-        const tarjetaGlobal = tarjetaGlobalSnap.exists() ? tarjetaGlobalSnap.val() : null;
+        const tarjetaGlobal = tarjetaGlobalSnap.exists()
+          ? tarjetaGlobalSnap.val()
+          : null;
         const uidComprador = tarjetaGlobal?.uidComprador || "";
 
         const datosActualizacionTarjeta = {
@@ -350,7 +400,10 @@ if (bonosSnap.exists()) {
 
         if (uidComprador) {
           await update(
-            ref(dbRealtime, `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`),
+            ref(
+              dbRealtime,
+              `usuarios/${uidComprador}/tarjetasRegalo/${tarjetaRegaloId}`
+            ),
             datosActualizacionTarjeta
           );
         }
@@ -435,125 +488,135 @@ if (bonosSnap.exists()) {
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                <p><strong>Bono mensual de {numeroClases} clases.</strong></p>
-                <p>
-                  El bono incluye {numeroClases} sesiones de {duracionClase}. El
-                  mes comienza con tu primera sesión y finaliza el mismo día del
-                  mes siguiente.
-                </p>
-              </div>
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+              <p><strong>Bono mensual de {numeroClases} clases.</strong></p>
+              <p>
+                El bono incluye {numeroClases} sesiones de {duracionClase}. El
+                mes comienza con tu primera sesión y finaliza el mismo día del
+                mes siguiente.
+              </p>
+            </div>
 
-              <div>
-                <label
-                  htmlFor="fechaInicio"
-                  className="block font-bold text-sm mb-1"
-                >
-                  Selecciona el día de tu primera clase:
-                </label>
-                <DateInputReserva
-                  id="fechaInicio"
-                  value={fechaInicio}
-                  onChange={(e) => {
-                    setFechaInicio(e.target.value);
-                    setTurno("");
-                  }}
-                />
-                {fechaBloqueada && (
+            <div>
+              <label
+                htmlFor="fechaInicio"
+                className="block font-bold text-sm mb-1"
+              >
+                Selecciona el día de tu primera clase:
+              </label>
+              <DateInputReserva
+                id="fechaInicio"
+                value={fechaInicio}
+                onChange={(e) => {
+                  setFechaInicio(e.target.value);
+                  setTurno("");
+                }}
+              />
+              {fechaBloqueada && (
+                <p className="mt-2 text-sm text-red-600 font-medium">
+                  Este día no está disponible para reservar.
+                  {fechaBloqueada.motivo
+                    ? ` Motivo: ${fechaBloqueada.motivo}.`
+                    : ""}
+                </p>
+              )}
+              {fechaInicio && !fechaBloqueada && fechaHabilitadaManual && (
+                <p className="mt-2 text-sm text-green-700 font-medium">
+                  Esta fecha ha sido habilitada manualmente desde administración.
+                  {fechaHabilitadaManual.motivo
+                    ? ` Motivo: ${fechaHabilitadaManual.motivo}.`
+                    : ""}
+                </p>
+              )}
+              {fechaInicio &&
+                !fechaBloqueada &&
+                !fechaHabilitadaManual &&
+                diaNoDisponible && (
                   <p className="mt-2 text-sm text-red-600 font-medium">
-                    Este día no está disponible para reservar.
-                    {fechaBloqueada.motivo
-                      ? ` Motivo: ${fechaBloqueada.motivo}.`
-                      : ""}
+                    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
+                    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
                   </p>
                 )}
-                {fechaInicio && !fechaBloqueada && diaNoDisponible && (
-  <p className="mt-2 text-sm text-red-600 font-medium">
-    Esta clase no se imparte el día seleccionado. Días disponibles:{" "}
-    {Object.keys(claseConfig?.horarios || {}).join(", ")}.
-  </p>
-)}
-              </div>
+            </div>
 
-              <div>
-                <label htmlFor="turno" className="block font-bold text-sm mb-1">
-                  Selecciona el turno habitual:
-                </label>
-                <select
-                  id="turno"
-                  value={turno}
-                  onChange={(e) => setTurno(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-                  required
-                  disabled={!fechaInicio || diaNoDisponible}
-                >
-                  <option value="">-- Elige turno --</option>
-                  {turnosDisponibles.map((turnoItem) => (
-                    <option key={turnoItem} value={turnoItem}>
-                      {turnoItem}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label htmlFor="turno" className="block font-bold text-sm mb-1">
+                Selecciona el turno habitual:
+              </label>
+              <select
+                id="turno"
+                value={turno}
+                onChange={(e) => setTurno(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
+                required
+                disabled={!fechaInicio || diaNoDisponible}
+              >
+                <option value="">-- Elige turno --</option>
+                {turnosDisponibles.map((turnoItem) => (
+                  <option key={turnoItem} value={turnoItem}>
+                    {turnoItem}
+                  </option>
+                ))}
+              </select>
+            </div>
 
+            <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
+              <p>
+                <strong>Modalidad principal:</strong> {modalidad}
+              </p>
+              <p>
+                <strong>Clases incluidas:</strong> {numeroClases} sesiones de{" "}
+                {duracionClase}
+              </p>
+              <p>
+                <strong>Conversión de una clase a torno:</strong>{" "}
+                {convertirTorno ? `Sí (+${extraTorno}€)` : "No"}
+              </p>
+            </div>
+
+            {fechaInicio && (
               <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
                 <p>
-                  <strong>Modalidad principal:</strong> {modalidad}
+                  <strong>Precio base:</strong>{" "}
+                  {desdeTarjeta ? "Tarjeta regalo" : `${precioBase}€`}
                 </p>
                 <p>
-                  <strong>Clases incluidas:</strong> {numeroClases} sesiones de{" "}
-                  {duracionClase}
+                  <strong>Extra torno:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${extraTorno}€`}
                 </p>
                 <p>
-                  <strong>Conversión de una clase a torno:</strong>{" "}
-                  {convertirTorno ? `Sí (+${extraTorno}€)` : "No"}
+                  <strong>Precio total:</strong>{" "}
+                  {desdeTarjeta ? "0€" : `${precioTotal}€`}
+                </p>
+                <p>
+                  <strong>Fin del bono mensual:</strong>{" "}
+                  {sumarUnMes(fechaInicio)}
+                </p>
+                <p>
+                  <strong>Validez máxima del bono:</strong>{" "}
+                  {sumarTresMeses(fechaInicio)}
                 </p>
               </div>
+            )}
 
-              {fechaInicio && (
-                <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
-                  <p>
-                    <strong>Precio base:</strong>{" "}
-                    {desdeTarjeta ? "Tarjeta regalo" : `${precioBase}€`}
-                  </p>
-                  <p>
-                    <strong>Extra torno:</strong>{" "}
-                    {desdeTarjeta ? "0€" : `${extraTorno}€`}
-                  </p>
-                  <p>
-                    <strong>Precio total:</strong>{" "}
-                    {desdeTarjeta ? "0€" : `${precioTotal}€`}
-                  </p>
-                  <p>
-                    <strong>Fin del bono mensual:</strong>{" "}
-                    {sumarUnMes(fechaInicio)}
-                  </p>
-                  <p>
-                    <strong>Validez máxima del bono:</strong>{" "}
-                    {sumarTresMeses(fechaInicio)}
-                  </p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
+            <button
+              type="submit"
+              className="w-full mt-4 px-6 py-3 rounded-full text-white font-semibold
                 bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                 shadow-md hover:shadow-lg
                 hover:from-[#F4C542] hover:to-[#E5B92F]
                 transition-all duration-200"
-                disabled={
-                  !!fechaBloqueada ||
-                  diaNoDisponible ||
-                  !fechaInicio ||
-                  !turno ||
-                  (!desdeTarjeta && !(precioBase > 0))
-                }
-              >
-                {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
-              </button>
-            </form>
-        
+              disabled={
+                !!fechaBloqueada ||
+                diaNoDisponible ||
+                !fechaInicio ||
+                !turno ||
+                (!desdeTarjeta && !(precioBase > 0))
+              }
+            >
+              {desdeTarjeta ? "Confirmar reserva" : "Confirmar y pagar"}
+            </button>
+          </form>
         )}
 
         <div className="mt-8 text-center">
