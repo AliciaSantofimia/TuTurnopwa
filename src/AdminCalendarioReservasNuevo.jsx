@@ -41,7 +41,11 @@ const AdminCalendarioReservasNuevo = () => {
   useEffect(() => {
     const cargarReservas = async () => {
       try {
-        const reservasSnap = await get(ref(dbRealtime, "reservas"));
+        const [reservasSnap, reservasGruposSnap] = await Promise.all([
+          get(ref(dbRealtime, "reservas")),
+          get(ref(dbRealtime, "reservasGrupos")),
+        ]);
+
         const datos = [];
 
         const procesarReserva = (
@@ -54,7 +58,12 @@ const AdminCalendarioReservasNuevo = () => {
           } = {}
         ) => {
           if (!reserva || typeof reserva !== "object") return;
-          if (reserva.estado !== "Confirmada") return;
+
+          const estadoNormalizado = String(reserva.estado || "")
+            .trim()
+            .toLowerCase();
+
+          if (estadoNormalizado !== "confirmada") return;
 
           const fechaFinal = reserva.fecha || fechaKey;
           if (!fechaFinal) return;
@@ -143,6 +152,36 @@ const AdminCalendarioReservasNuevo = () => {
                   }
                 });
               });
+            });
+          });
+        }
+
+        if (reservasGruposSnap.exists()) {
+          reservasGruposSnap.forEach((grupoSnap) => {
+            const grupo = grupoSnap.val();
+
+            if (!grupo || typeof grupo !== "object") return;
+
+            const estadoNormalizado = String(grupo.estado || "")
+              .trim()
+              .toLowerCase();
+
+            if (estadoNormalizado !== "confirmada") return;
+
+            const fechaFinal = grupo.fecha || "";
+            if (!fechaFinal) return;
+
+            datos.push({
+              id: grupo.orderId || grupoSnap.key || `grupo-${Math.random()}`,
+              claseId: grupo.claseId || "reserva-grupo",
+              clase: grupo.clase || "Reserva de grupo",
+              fecha: fechaFinal,
+              turno: grupo.turno || "—",
+              metodo: "grupo",
+              plazas: Number(grupo.plazas || 1),
+              estadoPago: grupo.estadoPago || "—",
+              precioTotal: Number(grupo.precioTotal || grupo.precio || 0),
+              uid: grupo.uid || "",
             });
           });
         }
