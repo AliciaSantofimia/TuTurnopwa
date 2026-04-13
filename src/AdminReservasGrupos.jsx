@@ -2,8 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ref, get, push, remove } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
+import { useLocation } from "react-router-dom";
 
 const AdminReservasGrupos = () => {
+  const location = useLocation();
+
   const [reservas, setReservas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardandoNota, setGuardandoNota] = useState({});
@@ -11,6 +14,17 @@ const AdminReservasGrupos = () => {
   const [nuevasNotas, setNuevasNotas] = useState({});
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+
+  const fechaDesdeURL = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("fecha") || "";
+  }, [location.search]);
+
+  useEffect(() => {
+    if (fechaDesdeURL) {
+      setFiltroFecha(fechaDesdeURL);
+    }
+  }, [fechaDesdeURL]);
 
   useEffect(() => {
     const cargarReservas = async () => {
