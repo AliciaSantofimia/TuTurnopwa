@@ -82,6 +82,7 @@ const AdminCalendarioReservasNuevo = () => {
             estadoPago: reserva.estadoPago || "—",
             precioTotal: Number(reserva.precioTotal || reserva.precio || 0),
             uid: reserva.uid || "",
+            esGrupo: false,
           });
         };
 
@@ -182,6 +183,7 @@ const AdminCalendarioReservasNuevo = () => {
               estadoPago: grupo.estadoPago || "—",
               precioTotal: Number(grupo.precioTotal || grupo.precio || 0),
               uid: grupo.uid || "",
+              esGrupo: true,
             });
           });
         }
@@ -387,9 +389,18 @@ const AdminCalendarioReservasNuevo = () => {
   };
 
   const irAReservasDelDia = () => {
-    if (!fechaSeleccionada) return;
-    navigate(`/admin-reservas-nuevo?fecha=${fechaSeleccionada}`);
-  };
+  if (!fechaSeleccionada || !detalleDiaSeleccionado?.reservas?.length) return;
+
+  const hayNormales = detalleDiaSeleccionado.reservas.some((r) => !r.esGrupo);
+  const hayGrupos = detalleDiaSeleccionado.reservas.some((r) => r.esGrupo);
+
+  if (!hayNormales && hayGrupos) {
+    navigate(`/admin-reservas-grupos?fecha=${fechaSeleccionada}`);
+    return;
+  }
+
+  navigate(`/admin-reservas-nuevo?fecha=${fechaSeleccionada}`);
+};
 
   return (
     <div style={{ ...styles.body, ...(isMobile ? styles.bodyMobile : {}) }}>
