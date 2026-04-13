@@ -1,0 +1,16 @@
+{
+  "ClaseSueltaContinuidad": {
+    "2026-03-19": {
+      "12:00-15:00": {
+        "torno": {
+          "-OnanHyK6NvUjZUbA19z": {
+            "clase": "Clase suelta con continuidad"
+          }
+        }
+      }
+    }
+  },
+  "CreaTuBandejaHogar": {
+    ...
+  }
+}

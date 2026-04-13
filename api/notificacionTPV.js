@@ -49,44 +49,94 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
   let reservaEncontrada = null;
   const updates = {};
 
+  const pareceReservaDirecta = (obj) => {
+    if (!obj || typeof obj !== "object") return false;
+
+    return (
+      "fecha" in obj ||
+      "estado" in obj ||
+      "estadoPago" in obj ||
+      "uid" in obj ||
+      "orderId" in obj
+    );
+  };
+
+  const prepararActualizacion = (
+    reserva,
+    rutaBase,
+    claseKey,
+    fechaKey,
+    turnoKey,
+    metodoKey = ""
+  ) => {
+    updates[`${rutaBase}/estadoPago`] = "pagado";
+    updates[`${rutaBase}/estado`] = "Confirmada";
+    updates[`${rutaBase}/procesado`] = true;
+    updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
+    updates[`${rutaBase}/actualizadoEn`] = timestamp;
+
+    reservaEncontrada = {
+      ...reserva,
+      uid: reserva.uid || "",
+      clase: reserva.clase || "",
+      claseId: reserva.claseId || claseKey,
+      fecha: reserva.fecha || fechaKey,
+      turno: reserva.turno || turnoKey,
+      metodo: reserva.metodo || metodoKey,
+      plazas: Number(reserva.plazas || 1),
+      precio: Number(
+        reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+      ),
+      precioUnitario: Number(reserva.precioUnitario ?? reserva.precio ?? 0),
+      precioTotal: Number(
+        reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+      ),
+      estado: "Confirmada",
+      estadoPago: "pagado",
+      procesado: true,
+      webhookRecibidoEn: timestamp,
+      actualizadoEn: timestamp,
+    };
+  };
+
   snapshot.forEach((claseSnap) => {
     claseSnap.forEach((fechaSnap) => {
       fechaSnap.forEach((turnoSnap) => {
-        turnoSnap.forEach((tipoSnap) => {
-          tipoSnap.forEach((reservaSnap) => {
+        turnoSnap.forEach((childSnap) => {
+          const childVal = childSnap.val();
+
+          if (!childVal || typeof childVal !== "object") return;
+
+          // Caso 1: reserva directa dentro del turno
+          if (pareceReservaDirecta(childVal)) {
+            if (childVal.orderId === orderId) {
+              const rutaBase = `reservas/${claseSnap.key}/${fechaSnap.key}/${turnoSnap.key}/${childSnap.key}`;
+              prepararActualizacion(
+                childVal,
+                rutaBase,
+                claseSnap.key,
+                fechaSnap.key,
+                turnoSnap.key,
+                childVal.metodo || ""
+              );
+            }
+            return;
+          }
+
+          // Caso 2: estructura con método -> reservaId
+          childSnap.forEach((reservaSnap) => {
             const reserva = reservaSnap.val();
 
             if (reserva?.orderId === orderId) {
-              const rutaBase = `reservas/${claseSnap.key}/${fechaSnap.key}/${turnoSnap.key}/${tipoSnap.key}/${reservaSnap.key}`;
-
-              updates[`${rutaBase}/estadoPago`] = "pagado";
-              updates[`${rutaBase}/estado`] = "Confirmada";
-              updates[`${rutaBase}/procesado`] = true;
-              updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
-              updates[`${rutaBase}/actualizadoEn`] = timestamp;
-
-              reservaEncontrada = {
-                ...reserva,
-                uid: reserva.uid || "",
-                clase: reserva.clase || "",
-                claseId: reserva.claseId || claseSnap.key,
-                fecha: reserva.fecha || fechaSnap.key,
-                turno: reserva.turno || turnoSnap.key,
-                metodo: reserva.metodo || tipoSnap.key,
-                plazas: Number(reserva.plazas || 1),
-                precio: Number(
-                  reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
-                ),
-                precioUnitario: Number(reserva.precioUnitario ?? reserva.precio ?? 0),
-                precioTotal: Number(
-                  reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
-                ),
-                estado: "Confirmada",
-                estadoPago: "pagado",
-                procesado: true,
-                webhookRecibidoEn: timestamp,
-                actualizadoEn: timestamp,
-              };
+              const rutaBase = `reservas/${claseSnap.key}/${fechaSnap.key}/${turnoSnap.key}/${childSnap.key}/${reservaSnap.key}`;
+              prepararActualizacion(
+                reserva,
+                rutaBase,
+                claseSnap.key,
+                fechaSnap.key,
+                turnoSnap.key,
+                childSnap.key
+              );
             }
           });
         });
