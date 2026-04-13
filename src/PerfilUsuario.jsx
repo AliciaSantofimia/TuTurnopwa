@@ -309,21 +309,28 @@ export default function PerfilUsuario() {
             Tu perfil
           </h1>
           <p className="text-sm text-[#7b6d62]">
-            Consulta tus reservas y datos de tu cuenta
+           Consulta y gestiona tus reservas y datos de tu cuenta
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#efe7db] px-4 py-4 shadow-sm mb-5">
-          <p className="text-sm mb-2">
-            <span className="font-semibold">Nombre:</span> {nombre || "—"}
-          </p>
-          <p className="text-sm mb-2">
-            <span className="font-semibold">Email:</span> {email || "—"}
-          </p>
-          <p className="text-sm">
-            <span className="font-semibold">Teléfono:</span> {telefono || "—"}
-          </p>
-        </div>
+  <p className="text-sm mb-2">
+    <span className="font-semibold">Nombre:</span> {nombre || "—"}
+  </p>
+  <p className="text-sm mb-2">
+    <span className="font-semibold">Email:</span> {email || "—"}
+  </p>
+  <p className="text-sm mb-3">
+    <span className="font-semibold">Teléfono:</span> {telefono || "—"}
+  </p>
+
+  <button
+    onClick={() => navigate("/editar-perfil")}
+    className="w-full bg-[#f5f1ea] hover:bg-[#ebe4da] text-[#5f5247] font-semibold py-3 rounded-2xl transition"
+  >
+    Editar perfil
+  </button>
+</div>
 
         <div className="grid grid-cols-2 gap-3 mb-5">
           <button

@@ -7,6 +7,7 @@ import BotonVolver from "./BotonVolver";
 export default function DondeReservar() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
+  const [nombre, setNombre] = useState("");
 
   const correosAdmin = [
     "aliciasmelero@gmail.com",
@@ -16,13 +17,16 @@ export default function DondeReservar() {
   const mostrarTheClub = false;
   const mostrarTearium = false;
 
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setUserEmail(user.email);
-    });
-    return () => unsubscribe();
-  }, []);
+ useEffect(() => {
+  const auth = getAuth();
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setUserEmail(user.email || "");
+      setNombre(user.displayName || "");
+    }
+  });
+  return () => unsubscribe();
+}, []);
 
   const esAdmin = correosAdmin.includes(userEmail);
 
@@ -93,22 +97,29 @@ export default function DondeReservar() {
         </div>
 
         {/* Mi perfil */}
-        <div
-          className="cursor-pointer rounded-2xl border border-[#ece7df] bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition"
-          onClick={() => navigate("/perfil")}
-        >
-          <img
-            src="/img/panel-negro.jpg"
-            alt="Mi perfil"
-            className="w-24 h-24 object-contain rounded-xl mx-auto mb-4"
-          />
-          <h2 className="text-xl font-semibold text-gray-800 text-center">
-            Mi perfil
-          </h2>
-          <p className="text-sm text-gray-600 mt-2 text-center leading-6">
-            Consulta tus reservas, edita tus datos y gestiona tu cuenta.
-          </p>
-        </div>
+        {/* Mi perfil */}
+<div
+  className="cursor-pointer rounded-2xl border border-[#ece7df] bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition"
+  onClick={() => navigate("/perfil")}
+>
+  <img
+    src="/img/panel-negro.jpg"
+    alt="Mi perfil"
+    className="w-24 h-24 object-contain rounded-xl mx-auto mb-4"
+  />
+
+  <h2 className="text-xl font-semibold text-gray-800 text-center">
+    Mi perfil
+  </h2>
+
+  <p className="text-sm text-[#7b6d62] mt-0.5 text-center font-medium">
+  {nombre || "Tu espacio personal"}
+</p>
+
+  <p className="text-sm text-gray-600 mt-2 text-center leading-6">
+    Consulta tus reservas, edita tus datos y gestiona tu cuenta.
+  </p>
+</div>
 
         {/* The Club oculto temporalmente */}
         {mostrarTheClub && (
