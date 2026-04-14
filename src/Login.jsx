@@ -70,7 +70,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-6">
             <img
-              src="/img/logoPCsin.png"
+              src="/img/logoPC.png"
               alt="Logo La Purísima Conchi"
               className="w-28 sm:w-36 md:w-40 mb-4"
             />

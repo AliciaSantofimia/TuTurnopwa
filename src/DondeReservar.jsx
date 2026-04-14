@@ -91,8 +91,7 @@ export default function DondeReservar() {
           </h2>
           <p className="text-sm text-gray-600 mt-2 text-center leading-6">
            Si sois un grupo de <strong>5 personas o más</strong> y queréis realizar una actividad de formación en el taller,
-  podéis solicitar vuestra reserva aquí. Antes de realizar el pago, es importante contactar
-  con el taller por WhatsApp para concretar los detalles.
+  podéis solicitar vuestra reserva aquí. 
           </p>
         </div>
 
