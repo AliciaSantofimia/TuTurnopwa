@@ -530,24 +530,66 @@ export default function PerfilUsuario() {
         </details>
 
         <details className="mb-5 bg-[#fbf4d8] border border-[#ead66d] rounded-2xl p-4 shadow-sm">
-          <summary className="cursor-pointer font-semibold">
-            Recoger mi pieza
-          </summary>
+  <summary className="cursor-pointer font-semibold">
+    🏺 Quiero recoger mi pieza
+  </summary>
 
-          <p className="text-sm mt-3">
-            Tus piezas necesitan secado y cocción. Cuando estén listas, podrás
-            verlas en la carpeta.
-          </p>
+  <div className="mt-3 text-sm text-[#3b3025] space-y-3">
+    <p>
+      Tus piezas necesitan secado y cocción. Cuando estén listas, podrás consultarlas aquí.
+    </p>
 
-          <a
-            href="https://drive.google.com/drive/folders/1J0f79NLH--SZ9DGIaFO2n5hSNdjU7rUn"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-4 px-5 py-2.5 text-white font-semibold bg-[#e0a800] rounded-full shadow-md"
-          >
-            Ver piezas
-          </a>
-        </details>
+    <div>
+      <p className="font-semibold mb-1">Pasos a seguir:</p>
+      <ol className="list-decimal pl-5 space-y-1">
+        <li>Elige el esmalte y sube la foto de tu pieza.</li>
+        <li>Revisa si tu pieza está lista para recoger.</li>
+        <li>Cuando esté lista, escríbenos por WhatsApp para venir a recogerla.</li>
+      </ol>
+    </div>
+
+    <div className="flex flex-col gap-2">
+      <a
+        href="https://drive.google.com/drive/folders/1Im70RbYcyCFs5pPLgq2ooHhowwtA8F0R"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full bg-[#f2c500] hover:bg-[#e4b800] text-[#3b3025] font-semibold py-3 px-4 rounded-2xl text-center transition shadow-sm"
+      >
+        Elegir esmalte y subir foto
+      </a>
+
+      <a
+        href="https://drive.google.com/drive/folders/1J0f79NLH--SZ9DGIaFO2n5hSNdjU7rUn"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full bg-[#f5f1ea] hover:bg-[#ebe4da] text-[#5f5247] font-semibold py-3 px-4 rounded-2xl text-center transition border border-[#e7dccb]"
+      >
+        Ver si mi pieza está lista
+      </a>
+    </div>
+
+    <p>
+      <span className="font-semibold">WhatsApp:</span>{" "}
+      <a
+        href="https://wa.me/34611804664"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#b58900] font-bold"
+      >
+        611 804 664
+      </a>
+    </p>
+
+    <div>
+      <p className="font-semibold mb-1">Importante:</p>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>Si viniste en grupo, las piezas pueden estar listas en momentos diferentes.</li>
+        <li>Tienes 1 mes para recogerla sin coste desde que se publique.</li>
+        <li>Si necesitas organizar un envío o tienes dudas, escríbenos por WhatsApp.</li>
+      </ul>
+    </div>
+  </div>
+</details>
 
         <details className="mb-6 bg-white border border-[#efe7db] rounded-2xl p-4 shadow-sm">
           <summary className="cursor-pointer font-semibold">
