@@ -94,11 +94,17 @@ export default function Login() {
               </div>
             )}
 
-            {mensaje && (
-              <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 text-center">
-                {mensaje}
-              </div>
-            )}
+           {mensaje && (
+  <>
+    <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 text-center">
+      {mensaje}
+    </div>
+
+    <p className="text-xs text-[#7b6d62] mt-2 text-center">
+      Si no ves el email, revisa tu carpeta de spam o correo no deseado.
+    </p>
+  </>
+)}
 
             <div>
               <label htmlFor="email" className="block font-bold text-sm mb-1">
