@@ -68,19 +68,7 @@ export default function Clases() {
       imagen: "/img/vasijapintarceramica.png",
       claseIds: ["pintatupieza", "especialpintatupieza"],
     },
-    {
-      id: 5,
-      titulo: "Tarjeta regalo",
-      descripcion: [
-        "Regala un taller sin fecha fija",
-        "Ideal para sorprender a alguien",
-      ],
-      ruta: "/tarjeta-regalo",
-      color: "border-[#F4C542]",
-      imagen: "/img/vasijatarjetaregalo.png",
-      claseIds: [],
-      siempreVisible: true,
-    },
+   
   ];
 
   useEffect(() => {

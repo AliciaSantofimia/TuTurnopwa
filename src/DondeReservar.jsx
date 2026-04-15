@@ -95,6 +95,47 @@ export default function DondeReservar() {
           </p>
         </div>
 
+        
+
+   <div
+  className="cursor-pointer rounded-2xl border border-[#ece7df] bg-[#fffaf0] p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition min-h-[360px]"
+  onClick={() => navigate("/tarjeta-regalo")}
+>
+  <div>
+    <div className="flex justify-center mb-3">
+      
+    </div>
+
+    <img
+      src="/img/tarjeta-regalo-principal.jpg"
+      alt="Tarjeta regalo"
+      className="w-24 h-24 object-cover rounded-xl mx-auto mb-4"
+    />
+
+    <h2 className="text-xl font-semibold text-gray-800 text-center">
+      Tarjeta regalo
+    </h2>
+
+    <p className="text-sm text-gray-600 mt-2 text-center leading-6">
+      Regala un taller sin fecha fija.
+    </p>
+
+    <p className="text-sm text-gray-600 mt-2 text-center leading-6">
+      Ideal para sorprender a alguien con una experiencia creativa y especial.
+    </p>
+  </div>
+
+  <button
+    className="mt-5 mx-auto px-8 py-3 rounded-full text-white font-semibold bg-gradient-to-b from-[#F6D66A] to-[#F4C542] shadow-md hover:shadow-lg hover:from-[#F4C542] hover:to-[#E5B92F] transition-all duration-200"
+    onClick={(e) => {
+      e.stopPropagation();
+      navigate("/tarjeta-regalo");
+    }}
+  >
+    Ver talleres
+  </button>
+</div>
+
         {/* Mi perfil */}
         {/* Mi perfil */}
 <div

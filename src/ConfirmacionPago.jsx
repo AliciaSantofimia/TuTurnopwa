@@ -176,6 +176,19 @@ const ConfirmacionPago = () => {
                 Ver mi perfil
               </button>
             </div>
+            <div style={styles.descargaBox}>
+  <p style={styles.descargaTexto}>
+    Descarga una tarjeta para imprimir y escribir a mano el código.
+  </p>
+
+  <a
+    href="/tarjetas-regalo/postal regalo.pdf"
+    download
+    style={styles.botonDescarga}
+  >
+    Descargar tarjeta regalo
+  </a>
+</div>
           </>
         ) : (
           <>
@@ -186,8 +199,11 @@ const ConfirmacionPago = () => {
             </p>
 
             {errorCarga ? <p style={styles.errorText}>{errorCarga}</p> : null}
+            
 
             <div style={styles.botones}>
+
+              
               <button
                 onClick={() => navigate("/dondereservar")}
                 style={styles.botonPrincipal}
@@ -330,6 +346,29 @@ const styles = {
     flexWrap: "wrap",
     marginBottom: 24,
   },
+  descargaBox: {
+  marginBottom: 24,
+},
+
+descargaTexto: {
+  fontSize: "0.92rem",
+  color: "#7a6a5a",
+  marginBottom: 12,
+  lineHeight: 1.5,
+},
+
+botonDescarga: {
+  display: "inline-block",
+  backgroundColor: "#f5f1ea",
+  color: "#5f5247",
+  padding: "12px 20px",
+  border: "1px solid #d1c7b8",
+  borderRadius: "999px",
+  fontSize: "0.98rem",
+  fontWeight: "600",
+  textDecoration: "none",
+  cursor: "pointer",
+},
   botonPrincipal: {
     backgroundColor: "#f59e8f",
     color: "white",

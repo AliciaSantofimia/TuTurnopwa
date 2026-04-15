@@ -518,6 +518,31 @@ export default function PerfilUsuario() {
                         ? "Usada"
                         : "Disponible"}
                     </p>
+                    <div className="mt-3 flex flex-col gap-2">
+  <a
+    href="/tarjetas-regalo/postal regalo.pdf"
+    download
+    className="w-full text-center bg-[#f5f1ea] hover:bg-[#ebe4da] text-[#5f5247] font-semibold py-2 px-4 rounded-xl transition border border-[#e7dccb]"
+  >
+    Descargar tarjeta clásica
+  </a>
+
+  <a
+    href="/tarjetas-regalo/regalo papa noel.pdf"
+    download
+    className="w-full text-center bg-[#f5f1ea] hover:bg-[#ebe4da] text-[#5f5247] font-semibold py-2 px-4 rounded-xl transition border border-[#e7dccb]"
+  >
+    Descargar tarjeta Navidad 1
+  </a>
+
+  <a
+    href="/tarjetas-regalo/regalo reyes.pdf"
+    download
+    className="w-full text-center bg-[#f5f1ea] hover:bg-[#ebe4da] text-[#5f5247] font-semibold py-2 px-4 rounded-xl transition border border-[#e7dccb]"
+  >
+    Descargar tarjeta Navidad 2
+  </a>
+</div>
                   </li>
                 ))}
               </ul>

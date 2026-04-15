@@ -7,9 +7,7 @@ export default function ComprarTarjetaRegalo() {
   const navigate = useNavigate();
 
   const [opcionSeleccionadaId, setOpcionSeleccionadaId] = useState("");
-  const [nombreRegalado, setNombreRegalado] = useState("");
-  const [nombreComprador, setNombreComprador] = useState("");
-  const [mensaje, setMensaje] = useState("");
+
 
   const opcionSeleccionada = OPCIONES_TARJETA_REGALO.find(
     (op) => op.id === opcionSeleccionadaId
@@ -40,9 +38,7 @@ export default function ComprarTarjetaRegalo() {
         precioTotal: opcionSeleccionada.precio,
         plazas: 1,
 
-        nombreRegalado,
-        nombreComprador,
-        mensaje,
+      
       },
     });
   };
@@ -90,44 +86,11 @@ export default function ComprarTarjetaRegalo() {
             </select>
           </div>
 
-          <div>
-            <label className="block font-bold text-sm mb-2">
-              Nombre de la persona que recibe el regalo
-            </label>
-            <input
-              type="text"
-              value={nombreRegalado}
-              onChange={(e) => setNombreRegalado(e.target.value)}
-              placeholder="Ej. María"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-            />
-          </div>
+         
 
-          <div>
-            <label className="block font-bold text-sm mb-2">
-              Tu nombre
-            </label>
-            <input
-              type="text"
-              value={nombreComprador}
-              onChange={(e) => setNombreComprador(e.target.value)}
-              placeholder="Ej. Alicia"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-            />
-          </div>
+         
 
-          <div>
-            <label className="block font-bold text-sm mb-2">
-              Mensaje personalizado
-            </label>
-            <textarea
-              value={mensaje}
-              onChange={(e) => setMensaje(e.target.value)}
-              placeholder="Escribe un mensaje bonito para incluir en la tarjeta..."
-              rows="4"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base"
-            />
-          </div>
+         
 
           {opcionSeleccionada && (
             <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4 text-sm text-[#5c3c00]">
