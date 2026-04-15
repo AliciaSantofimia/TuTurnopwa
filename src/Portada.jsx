@@ -21,9 +21,13 @@ export default function Portada() {
             Hazte un hueco. <br /> Y una taza.
           </h1>
 
-          <p className="text-lg text-gray-700 mt-4 mb-8">
-            Reserva tu clase de cerámica
-          </p>
+        <p className="text-lg text-gray-700 mt-4 mb-3">
+  Reserva tu clase o sorprende con una tarjeta regalo
+</p>
+
+<p className="text-sm text-gray-600 mb-8">
+  Regístrate o inicia sesión para empezar.
+</p>
 
           {/* Botones principales */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full sm:w-auto justify-center">
