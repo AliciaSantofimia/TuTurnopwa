@@ -390,9 +390,41 @@ if (aceptarPagoTemporalmente) {
       }
       const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
 
-      if (reservaActualizada) {
-        await guardarReservaEnPerfilUsuario(reservaActualizada);
-      }
+     if (reservaActualizada) {
+  await guardarReservaEnPerfilUsuario({
+    ...reservaActualizada,
+    uid: reservaActualizada.uid || pedido.uid || "",
+    clase: reservaActualizada.clase || pedido.clase || "",
+    claseId: reservaActualizada.claseId || pedido.claseId || "",
+    fecha: reservaActualizada.fecha || pedido.fecha || "",
+    turno: reservaActualizada.turno || pedido.turno || "",
+    metodo: reservaActualizada.metodo || pedido.metodo || "",
+    plazas: Number(reservaActualizada.plazas || pedido.plazas || 1),
+    precio: Number(
+      reservaActualizada.precio ??
+        reservaActualizada.precioTotal ??
+        pedido.precioTotal ??
+        0
+    ),
+    precioUnitario: Number(
+      reservaActualizada.precioUnitario ??
+        pedido.precioUnitario ??
+        pedido.precio ??
+        0
+    ),
+    precioTotal: Number(
+      reservaActualizada.precioTotal ??
+        pedido.precioTotal ??
+        pedido.precio ??
+        0
+    ),
+    nombreTipoClase:
+      reservaActualizada.nombreTipoClase || pedido.subtipo || "",
+    tipoClase:
+      reservaActualizada.tipoClase || pedido.tipoPieza || "",
+    actualizadoEn: timestamp,
+  });
+}
 
       console.log("Reserva actualizada en /reservas:", {
         order,
