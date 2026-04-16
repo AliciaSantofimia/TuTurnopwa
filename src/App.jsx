@@ -61,6 +61,7 @@ import GenerarCodigoTarjetaRegalo from "./GenerarCodigoTarjetaRegalo";
 import ReservaConTarjetaRegalo from "./ReservaConTarjetaRegalo";
 import ClaseSueltaContinuidad from "./ClaseSueltaContinuidad";
 import CreaTuPiezaFavoritaRegalo from "./CreaTuPiezaFavoritaRegalo.jsx";
+import PintarTuPiezaInfo from "./PintarTuPiezaInfo.jsx";
 
 // Reservas normales
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
@@ -85,6 +86,7 @@ import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 import ReservaGrupos from "./ReservaGrupos.jsx";
 import UsarBonoTornoAlfareroEmpezarDesdeCero from "./UsarBonoTornoAlfareroEmpezarDesdeCero";
 import UsarBono from "./UsarBono";
+
 // Tarjetas regalo
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
 
@@ -97,7 +99,6 @@ import ReservaTearium from "./ReservaTearium.jsx";
 // Clases online
 import ClasesOnlineInfo from "./ClasesOnlineInfo.jsx";
 import ReservaClasesOnline from "./ReservaClasesOnline.jsx";
-
 
 // Nuevo Admin
 import AdminNuevo from "./AdminNuevo";
@@ -119,7 +120,7 @@ import AdminBonosNuevo from "./AdminBonosNuevo";
 import AdminDetalleBonoNuevo from "./AdminDetalleBonoNuevo";
 import AdminHabilitarFechas from "./AdminHabilitarFechas";
 
-
+import DondeReservarV2 from "./DondeReservarV2";
 import ChatAyuda from "./ChatAyuda.jsx";
 
 function App() {
@@ -128,11 +129,9 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route element={<AppLayout />}>
-          {/* Redirección inicial */}
           <Route path="/" element={<Navigate to="/portada" replace />} />
           <Route path="/ayuda" element={<ChatAyuda />} />
 
-          {/* Páginas principales */}
           <Route path="/portada" element={<Portada />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
@@ -141,7 +140,6 @@ function App() {
           <Route path="/editar-perfil" element={<EditarPerfil />} />
           <Route path="/dondereservar" element={<DondeReservar />} />
 
-          {/* Legales y políticas */}
           <Route path="/politica-piezas" element={<PoliticaPiezas />} />
           <Route path="/aviso-legal" element={<AvisoLegal />} />
           <Route path="/politicacancelacion" element={<PoliticaCancelacion />} />
@@ -149,7 +147,6 @@ function App() {
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/condiciones-pago" element={<CondicionesPago />} />
 
-          {/* Secciones principales */}
           <Route path="/clases" element={<Clases />} />
           <Route path="/clases-solo" element={<ClasesSoloVista />} />
           <Route path="/talleres/cursos-bonos" element={<TalleresCursosBonos />} />
@@ -158,6 +155,7 @@ function App() {
           <Route path="/tarjeta-regalo" element={<TarjetaRegalo />} />
 
           {/* Clases */}
+          <Route path="/pintar-tu-pieza" element={<PintarTuPiezaInfo />} />
           <Route path="/crea-tu-brunch-bowl" element={<CreaTuBrunchBowl />} />
           <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
@@ -197,12 +195,11 @@ function App() {
             element={<ClaseSueltaContinuidad />}
           />
 
-          {/* Reservas normales */}
           <Route path="/usar-bono/:bonoId" element={<UsarBono />} />
           <Route
-  path="/usar-bono-torno-alfarero-empezar-desde-cero"
-  element={<UsarBonoTornoAlfareroEmpezarDesdeCero />}
-/>
+            path="/usar-bono-torno-alfarero-empezar-desde-cero"
+            element={<UsarBonoTornoAlfareroEmpezarDesdeCero />}
+          />
           <Route
             path="/reserva-crea-tu-pieza-favorita"
             element={<ReservaCreaTuPiezaFavorita />}
@@ -269,14 +266,12 @@ function App() {
             element={<ReservaEspecialPintaTuPieza />}
           />
           <Route path="/reserva-pinta-tu-pieza" element={<ReservaPintaTuPieza />} />
-          
           <Route
             path="/reserva-clase-suelta-continuidad"
             element={<ReservaClaseSueltaContinuidad />}
           />
           <Route path="/reserva-grupos" element={<ReservaGrupos />} />
 
-          {/* Tarjetas regalo */}
           <Route
             path="/tarjeta-regalo-solo/creapiezafavorita"
             element={<CreaTuPiezaFavoritaRegalo />}
@@ -290,8 +285,8 @@ function App() {
             path="/canjear-tarjeta-regalo"
             element={<CanjearTarjetaRegalo />}
           />
+          <Route path="/test-reservas" element={<DondeReservarV2 />} />
 
-          {/* Pagos */}
           <Route path="/resumen-pago" element={<ResumenPago />} />
           <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />
           <Route path="/resumenpagotearium" element={<ResumenPagoTearium />} />
@@ -299,149 +294,137 @@ function App() {
           <Route path="/pago/exito" element={<ConfirmacionPago />} />
           <Route path="/pago/error" element={<PagoFallido />} />
 
-          {/* Ubicaciones externas */}
           <Route path="/theclub" element={<TheClub />} />
           <Route path="/teariumInfo" element={<TeariumInfo />} />
           <Route path="/reservatheclub" element={<ReservaTheClub />} />
           <Route path="/reservatearium" element={<ReservaTearium />} />
 
-          {/* Clases online */}
           <Route path="/clases-online" element={<ClasesOnlineInfo />} />
           <Route path="/reserva-online" element={<ReservaClasesOnline />} />
 
-          
+          <Route
+            path="/admin-detalle-bono"
+            element={
+              <RutaAdmin>
+                <AdminDetalleBonoNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-reservas-grupos"
+            element={
+              <RutaAdmin>
+                <AdminReservasGrupos />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-reservas-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminReservasNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <RutaAdmin>
+                <AdminDashboard />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-clases-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminClasesNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-usuarios-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminUsuariosNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-calendario-reservas-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminCalendarioReservasNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-historial-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminHistorialNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-detalle-reserva"
+            element={
+              <RutaAdmin>
+                <AdminDetalleReservaNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-detalle-usuario"
+            element={
+              <RutaAdmin>
+                <AdminDetalleUsuarioNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-detalle-clase"
+            element={
+              <RutaAdmin>
+                <AdminDetalleClaseNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-detalle-tarjeta-regalo"
+            element={
+              <RutaAdmin>
+                <AdminDetalleTarjetaRegaloNuevo />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-bloqueos-fechas"
+            element={
+              <RutaAdmin>
+                <AdminBloqueosFechas />
+              </RutaAdmin>
+            }
+          />
+          <Route path="/admin-habilitar-fechas" element={<AdminHabilitarFechas />} />
+          <Route path="/admin-bonos-nuevo" element={<AdminBonosNuevo />} />
+          <Route
+            path="/admin-tarjetas-regalo"
+            element={
+              <RutaAdmin>
+                <AdminTarjetasRegalo />
+              </RutaAdmin>
+            }
+          />
 
-        {/* Nuevo Admin */}
-
-<Route
-  path="/admin-detalle-bono"
-  element={
-    <RutaAdmin>
-      <AdminDetalleBonoNuevo />
-    </RutaAdmin>
-  }
-/>
-        <Route
-  path="/admin-reservas-grupos"
-  element={
-    <RutaAdmin>
-      <AdminReservasGrupos />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-reservas-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminReservasNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-dashboard"
-  element={
-    <RutaAdmin>
-      <AdminDashboard />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-clases-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminClasesNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-usuarios-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminUsuariosNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-calendario-reservas-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminCalendarioReservasNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-historial-nuevo"
-  element={
-    <RutaAdmin>
-      <AdminHistorialNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-detalle-reserva"
-  element={
-    <RutaAdmin>
-      <AdminDetalleReservaNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-detalle-usuario"
-  element={
-    <RutaAdmin>
-      <AdminDetalleUsuarioNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-detalle-clase"
-  element={
-    <RutaAdmin>
-      <AdminDetalleClaseNuevo />
-    </RutaAdmin>
-  }
-  
-/>
-<Route
-  path="/admin-detalle-tarjeta-regalo"
-  element={
-    <RutaAdmin>
-      <AdminDetalleTarjetaRegaloNuevo />
-    </RutaAdmin>
-  }
-/>
-<Route
-  path="/admin-bloqueos-fechas"
-  element={
-    <RutaAdmin>
-      <AdminBloqueosFechas />
-    </RutaAdmin>
-  }
-/>
-<Route path="/admin-habilitar-fechas" element={<AdminHabilitarFechas />} />
-<Route path="/admin-bonos-nuevo" element={<AdminBonosNuevo />} />
-<Route
-  path="/admin-tarjetas-regalo"
-  element={
-    <RutaAdmin>
-      <AdminTarjetasRegalo />
-    </RutaAdmin>
-  }
-  
-/>
-          
-
-          
-
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/portada" replace />} />
         </Route>
       </Routes>
