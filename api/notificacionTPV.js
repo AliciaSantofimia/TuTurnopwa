@@ -60,6 +60,8 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
       "orderId" in obj
     );
   };
+ 
+ 
 
   const prepararActualizacion = (
     reserva,
@@ -75,28 +77,29 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
     updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
     updates[`${rutaBase}/actualizadoEn`] = timestamp;
 
-    reservaEncontrada = {
-      ...reserva,
-      uid: reserva.uid || "",
-      clase: reserva.clase || "",
-      claseId: reserva.claseId || claseKey,
-      fecha: reserva.fecha || fechaKey,
-      turno: reserva.turno || turnoKey,
-      metodo: reserva.metodo || metodoKey,
-      plazas: Number(reserva.plazas || 1),
-      precio: Number(
-        reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
-      ),
-      precioUnitario: Number(reserva.precioUnitario ?? reserva.precio ?? 0),
-      precioTotal: Number(
-        reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
-      ),
-      estado: "Confirmada",
-      estadoPago: "pagado",
-      procesado: true,
-      webhookRecibidoEn: timestamp,
-      actualizadoEn: timestamp,
-    };
+   reservaEncontrada = {
+  ...reserva,
+  orderId: reserva.orderId || "",
+  uid: reserva.uid || "",
+  clase: reserva.clase || "",
+  claseId: reserva.claseId || claseKey,
+  fecha: reserva.fecha || fechaKey,
+  turno: reserva.turno || turnoKey,
+  metodo: reserva.metodo || metodoKey,
+  plazas: Number(reserva.plazas || 1),
+  precio: Number(
+    reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+  ),
+  precioUnitario: Number(reserva.precioUnitario ?? reserva.precio ?? 0),
+  precioTotal: Number(
+    reserva.precioTotal ?? reserva.precioUnitario ?? reserva.precio ?? 0
+  ),
+  estado: "Confirmada",
+  estadoPago: "pagado",
+  procesado: true,
+  webhookRecibidoEn: timestamp,
+  actualizadoEn: timestamp,
+};
   };
 
   snapshot.forEach((claseSnap) => {
@@ -162,6 +165,62 @@ function generarCodigoTarjetaRegalo() {
   return codigo;
 }
 
+async function marcarReservaGrupoComoPagada(orderId, timestamp) {
+  const reservasGruposRef = adminDb.ref("reservasGrupos");
+  const snapshot = await reservasGruposRef.get();
+
+  if (!snapshot.exists()) return null;
+
+  let reservaEncontrada = null;
+  const updates = {};
+
+  snapshot.forEach((grupoSnap) => {
+    const grupo = grupoSnap.val();
+
+    if (!grupo || typeof grupo !== "object") return;
+
+    if (grupo.orderId === orderId) {
+      const rutaBase = `reservasGrupos/${grupoSnap.key}`;
+
+      updates[`${rutaBase}/estadoPago`] = "pagado";
+      updates[`${rutaBase}/estado`] = "Confirmada";
+      updates[`${rutaBase}/procesado`] = true;
+      updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
+      updates[`${rutaBase}/actualizadoEn`] = timestamp;
+
+      reservaEncontrada = {
+        ...grupo,
+        id: grupoSnap.key,
+        orderId: grupo.orderId || "",
+        uid: grupo.uid || "",
+        clase: grupo.clase || "Reserva de grupo",
+        claseId: grupo.claseId || "reserva-grupo",
+        fecha: grupo.fecha || "",
+        turno: grupo.turno || "",
+        metodo: grupo.metodo || "grupo",
+        plazas: Number(grupo.plazas || 1),
+        precio: Number(
+          grupo.precioTotal ?? grupo.precioUnitario ?? grupo.precio ?? 0
+        ),
+        precioUnitario: Number(grupo.precioUnitario ?? grupo.precio ?? 0),
+        precioTotal: Number(
+          grupo.precioTotal ?? grupo.precioUnitario ?? grupo.precio ?? 0
+        ),
+        estado: "Confirmada",
+        estadoPago: "pagado",
+        procesado: true,
+        webhookRecibidoEn: timestamp,
+        actualizadoEn: timestamp,
+      };
+    }
+  });
+
+  if (reservaEncontrada) {
+    await adminDb.ref().update(updates);
+  }
+
+  return reservaEncontrada;
+}
 async function generarCodigoTarjetaRegaloUnico() {
   let codigo = "";
   let existe = true;
@@ -354,9 +413,9 @@ export default async function handler(req, res) {
     const aceptarPagoTemporalmente = paidOk && amountMatches;
 
 if (aceptarPagoTemporalmente) {
-     await ref.update({
+   await ref.update({
   estadoPago: "pagado",
-  procesado: true,
+  procesado: false,
   firmaValida: signOk,
   firmaError: signOk ? "" : "Firma Redsys no validada, aceptado temporalmente por importe y respuesta correctos",
   responseCode: String(decoded.Ds_Response ?? decoded.DS_RESPONSE ?? ""),
@@ -388,7 +447,11 @@ if (aceptarPagoTemporalmente) {
 
         return res.status(200).send("OK");
       }
-      const reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
+      let reservaActualizada = await marcarReservaComoPagadaPorOrderId(order, timestamp);
+
+if (!reservaActualizada) {
+  reservaActualizada = await marcarReservaGrupoComoPagada(order, timestamp);
+}
 
      if (reservaActualizada) {
   await guardarReservaEnPerfilUsuario({
@@ -426,12 +489,19 @@ if (aceptarPagoTemporalmente) {
   });
 }
 
-      console.log("Reserva actualizada en /reservas:", {
-        order,
-        reservaActualizada: !!reservaActualizada,
-      });
+     console.log("Reserva actualizada tras webhook:", {
+  order,
+  reservaActualizada: !!reservaActualizada,
+});
 
-      return res.status(200).send("OK");
+await ref.update({
+  procesado: true,
+  actualizadoEn: timestamp,
+});
+
+return res.status(200).send("OK");
+
+      
     }
 
     await ref.update({
