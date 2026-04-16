@@ -61,7 +61,7 @@ import GenerarCodigoTarjetaRegalo from "./GenerarCodigoTarjetaRegalo";
 import ReservaConTarjetaRegalo from "./ReservaConTarjetaRegalo";
 import ClaseSueltaContinuidad from "./ClaseSueltaContinuidad";
 import CreaTuPiezaFavoritaRegalo from "./CreaTuPiezaFavoritaRegalo.jsx";
-import PintarTuPiezaInfo from "./PintarTuPiezaInfo.jsx";
+
 
 // Reservas normales
 import ReservaCreaTuPiezaFavorita from "./ReservaCreaTuPiezaFavorita.jsx";
@@ -120,7 +120,7 @@ import AdminBonosNuevo from "./AdminBonosNuevo";
 import AdminDetalleBonoNuevo from "./AdminDetalleBonoNuevo";
 import AdminHabilitarFechas from "./AdminHabilitarFechas";
 
-import DondeReservarV2 from "./DondeReservarV2";
+import DondeReservarV2 from "./DondeReservarV2.jsx";
 import ChatAyuda from "./ChatAyuda.jsx";
 
 function App() {
@@ -138,7 +138,7 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/perfil" element={<PerfilUsuario />} />
           <Route path="/editar-perfil" element={<EditarPerfil />} />
-          <Route path="/dondereservar" element={<DondeReservar />} />
+        <Route path="/dondereservar" element={<DondeReservarV2 />} />
 
           <Route path="/politica-piezas" element={<PoliticaPiezas />} />
           <Route path="/aviso-legal" element={<AvisoLegal />} />
@@ -155,7 +155,7 @@ function App() {
           <Route path="/tarjeta-regalo" element={<TarjetaRegalo />} />
 
           {/* Clases */}
-          <Route path="/pintar-tu-pieza" element={<PintarTuPiezaInfo />} />
+          
           <Route path="/crea-tu-brunch-bowl" element={<CreaTuBrunchBowl />} />
           <Route path="/crea-tu-pieza-favorita-desde-cero" element={<CreaTuPiezaFavorita />} />
           <Route path="/pintar-ceramica" element={<PintarCeramica />} />
@@ -285,7 +285,7 @@ function App() {
             path="/canjear-tarjeta-regalo"
             element={<CanjearTarjetaRegalo />}
           />
-          <Route path="/test-reservas" element={<DondeReservarV2 />} />
+          
 
           <Route path="/resumen-pago" element={<ResumenPago />} />
           <Route path="/resumenpagotheclub" element={<ResumenPagoTheClub />} />

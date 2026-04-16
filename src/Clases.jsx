@@ -14,7 +14,7 @@ export default function Clases() {
     {
       id: 1,
       titulo: "Crear piezas desde cero",
-      descripcion: ["Talleres de 1 sesión", "Talleres de 2 sesiones"],
+      descripcion: ["Entra aquí para ver todas las clases disponibles y reservar tu plaza"],
       ruta: "/talleres/crear-piezas",
       color: "border-[#F4C542]",
       imagen: "/img/vasijaedicionpremium.png",
@@ -37,7 +37,7 @@ export default function Clases() {
     {
       id: 2,
       titulo: "Cursos y bonos mensuales",
-      descripcion: ["Cursos de torno y modelado", "Bonos mensuales"],
+      descripcion: ["Compra tu bono mensual y reserva tus clases"],
       ruta: "/talleres/cursos-bonos",
       color: "border-[#F4C542]",
       imagen: "/img/vasijabono4.png",
@@ -52,22 +52,14 @@ export default function Clases() {
       id: 3,
       titulo: "Clase suelta con continuidad",
       descripcion: [
-        "Clases sueltas para continuar tu proyecto o empezar uno nuevo en el taller",
+        "Reserva clases sueltas para continuar tu proyecto o empezar uno nuevo"
       ],
       ruta: "/talleres/clase-suelta-continuidad",
       color: "border-[#F4C542]",
       imagen: "/img/vasijabono2.png",
       claseIds: ["clasesueltacontinuidad"],
     },
-    {
-      id: 4,
-      titulo: "Pinta y decora tu pieza",
-      descripcion: ["Talleres para pintar cerámica", "Opciones especiales"],
-      ruta: "/talleres/pinta-decora",
-      color: "border-[#F4C542]",
-      imagen: "/img/vasijapintarceramica.png",
-      claseIds: ["pintatupieza", "especialpintatupieza"],
-    },
+   
    
   ];
 
@@ -168,17 +160,22 @@ flex flex-col justify-between`}
                 </div>
 
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-800">
-                    {cat.titulo}
-                  </h3>
+                 <h3 className="text-xl font-semibold text-gray-800">
+  {cat.titulo}
+</h3>
 
-                  <ul className="text-[13px] text-gray-600 list-disc ml-4 mt-2 space-y-1">
-                    {cat.descripcion.map((linea, idx) => (
-                      <li key={idx}>{linea}</li>
-                    ))}
-                  </ul>
+<div className="mt-3 space-y-2">
+  {cat.descripcion.map((linea, idx) => (
+    <p
+      key={idx}
+      className="text-sm md:text-base text-[#5f3f2b] leading-7 font-medium"
+    >
+      {linea}
+    </p>
+  ))}
+</div>
 
-                  <button
+<button
                     className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
   bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
   shadow-md hover:shadow-lg

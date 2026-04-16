@@ -80,26 +80,26 @@ export default function DondeReservarV2() {
                   <img
                     src="/img/logoPCsin.png"
                     alt="Crear desde cero"
-                    className="w-24 h-24 object-contain mx-auto md:mx-0"
+                    className="w-24 h-24 object-contain mx-auto"
                   />
                 </div>
 
-                <h3 className="text-2xl font-bold text-[#3f3128] text-center md:text-left">
+               <h3 className="text-2xl font-bold text-[#3f3128] text-center">
                   Crear desde cero
                 </h3>
 
-                <p className="text-sm text-gray-600 mt-3 leading-6 text-center md:text-left">
+                <p className="text-sm text-gray-600 mt-3 leading-6 text-center">
                   Elige entre nuestras clases de cerámica para crear tu pieza
                   desde el principio.
                 </p>
 
                 <div className="mt-4 text-sm text-[#7b6d62] leading-6 text-center md:text-left">
                   <p>
-                    Entra aquí y reserva tu clase, compra tu bono mensual, etc.
+                    Entra aquí y <strong>reserva tu clase</strong>, <strong>compra tu bono </strong>, etc.
                   </p>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 flex justify-center">
                   <span className="inline-block rounded-full bg-[#f4eadf] px-5 py-2 text-sm font-semibold text-[#6b4f3f]">
                     Ver opciones
                   </span>
@@ -110,10 +110,10 @@ export default function DondeReservarV2() {
             {/* PINTAR TU PIEZA */}
             <div
               className="cursor-pointer rounded-3xl border border-[#eadfd2] bg-[#fffaf3] p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition"
-              onClick={() => navigate("/clases")}
+             onClick={() => navigate("/talleres/pinta-decora")}
             >
               <div className="flex flex-col h-full">
-                <div className="mb-5">
+                <div className="mb-5 flex justify-center">
                   <img
                     src="/img/pintartearium.jpg"
                     alt="Pintar tu pieza"
@@ -121,12 +121,12 @@ export default function DondeReservarV2() {
                   />
                 </div>
 
-                <h3 className="text-2xl font-bold text-[#3f3128] text-center md:text-left">
+                <h3 className="text-2xl font-bold text-[#3f3128] text-center">
                   Pintar tu pieza
                 </h3>
 
-                <p className="text-sm text-gray-600 mt-3 leading-6 text-center md:text-left">
-                  Reserva tu experiencia para pintar una pieza ya preparada en
+                <p className="text-sm text-gray-600 mt-3 leading-6 text-center">
+                  Reserva tu experiencia para <strong>pintar una pieza</strong> ya preparada en
                   el taller.
                 </p>
 
@@ -137,7 +137,7 @@ export default function DondeReservarV2() {
                   </p>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 flex justify-center">
                   <span className="inline-block rounded-full bg-[#f3dfbf] px-5 py-2 text-sm font-semibold text-[#6b4f3f]">
                     Reservar ahora
                   </span>
@@ -173,7 +173,9 @@ export default function DondeReservarV2() {
                 Grupos
               </h3>
               <p className="text-sm text-gray-600 mt-2 text-center leading-6">
-                Para reservas de <strong>5 personas o más</strong>.
+                <p className="text-sm text-gray-600 mt-2 text-center leading-6">
+  Si sois <strong>5 personas o más</strong>, reserva aquí vuestra experiencia en grupo.
+</p>
               </p>
             </div>
 
@@ -183,15 +185,15 @@ export default function DondeReservarV2() {
               onClick={() => navigate("/tarjeta-regalo")}
             >
               <img
-                src="/img/tarjeta-regalo-principal.jpg"
-                alt="Tarjeta regalo"
-                className="w-24 h-24 object-cover rounded-xl mx-auto mb-4"
-              />
+  src="/img/tarjetaregalo.jpg"
+  alt="Tarjeta regalo"
+  className="w-28 h-28 object-cover rounded-xl mx-auto mb-4"
+/>
               <h3 className="text-xl font-semibold text-gray-800 text-center">
                 Tarjeta regalo
               </h3>
               <p className="text-sm text-gray-600 mt-2 text-center leading-6">
-                Regala un taller sin fecha fija.
+                Regala un taller sin fecha fija. <strong>Compra aquí tu tarjeta regalo.</strong>
               </p>
 
               <button

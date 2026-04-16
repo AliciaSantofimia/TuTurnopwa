@@ -5,23 +5,26 @@ import BotonVolver from "./BotonVolver";
 
 export default function TalleresPintaDecora() {
   const navigate = useNavigate();
-
-  const talleres = [
-    {
-      id: 1,
-      titulo: "Pinta tu pieza de cerámica",
-      precio: "25€",
-      slug: "/pinta-tu-pieza",
-      imagen: "/img/vasijapintarceramica.png",
-    },
-    {
-      id: 2,
-      titulo: "Especial pinta tu pieza de cerámica",
-      precio: "35€",
-      slug: "/especial-pinta-tu-pieza",
-      imagen: "/img/vasijapintarceramica.png",
-    },
-  ];
+const talleres = [
+  {
+    id: 1,
+    titulo: "Pinta tu pieza de cerámica",
+    precio: "25€",
+    descripcion:
+      "Elige una pieza ya preparada, píntala a tu gusto y disfruta de una experiencia creativa y relajada.",
+    slug: "/pinta-tu-pieza",
+    imagen: "/img/vasijapintarceramica.png",
+  },
+  {
+    id: 2,
+    titulo: "Especial pinta tu pieza de cerámica",
+    precio: "35€",
+    descripcion:
+      "Una experiencia más completa para disfrutar del taller en un ambiente especial.",
+    slug: "/especial-pinta-tu-pieza",
+    imagen: "/img/vasijapintarceramica.png",
+  },
+];
 
   const handleReservar = (item) => {
     const currentUser = getAuth().currentUser;
@@ -73,15 +76,19 @@ export default function TalleresPintaDecora() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {item.titulo}
-                </h3>
+               <h3 className="text-lg font-semibold text-gray-800">
+  {item.titulo}
+</h3>
 
-                <p className="text-[13px] text-gray-600 mt-2">
-                  Precio: <span className="font-semibold">{item.precio}</span>
-                </p>
+<p className="text-[13px] text-gray-600 mt-2">
+  Precio: <span className="font-semibold">{item.precio}</span>
+</p>
 
-                <button
+<p className="text-base text-[#5f3f2b] mt-3 leading-7">
+  {item.descripcion}
+</p>
+
+<button
                   className="mt-4 px-6 py-2.5 rounded-full text-white font-semibold
                   bg-gradient-to-b from-[#F6D66A] to-[#F4C542]
                   shadow-md hover:shadow-lg
