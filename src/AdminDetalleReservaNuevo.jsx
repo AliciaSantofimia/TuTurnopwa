@@ -84,7 +84,7 @@ const AdminDetalleReservaNuevo = () => {
                       uid: r.uid || "",
                       orderId: r.orderId || "",
                       desdeTarjeta: r.desdeTarjeta ?? false,
-                      timestamp: r.timestamp || r.creadoEn || "—",
+                      timestamp: r.pagadoEn || r.timestamp || r.creadoEn || "—",
                       procesado: r.procesado ?? false,
                       rutaClase: claseKey,
                       rutaFecha: fechaKey,
@@ -678,11 +678,17 @@ const AdminDetalleReservaNuevo = () => {
             </span>
           </p>
 
-          <p><strong>Fecha:</strong> {reserva.fecha}</p>
-          <p><strong>Turno:</strong> {reserva.turno}</p>
-          <p><strong>Método:</strong> {reserva.metodo}</p>
-          <p><strong>Plazas:</strong> {reserva.plazas}</p>
-
+          <p>
+  <strong>Fecha de la reserva:</strong>{" "}
+  <span style={styles.fechaReserva}>{reserva.fecha}</span>
+</p>
+<p>
+  <strong>Fecha de pago:</strong>
+  <span style={styles.fechaPago}>{reserva.timestamp}</span>
+</p>
+<p><strong>Turno:</strong> {reserva.turno}</p>
+<p><strong>Método:</strong> {reserva.metodo}</p>
+<p><strong>Plazas:</strong> {reserva.plazas}</p>
           {reserva.reprogramada && (
             <>
               <hr style={styles.hr} />
@@ -748,7 +754,7 @@ const AdminDetalleReservaNuevo = () => {
 
           <hr style={styles.hr} />
 
-          <p><strong>Creado:</strong> {reserva.timestamp}</p>
+          
           <p><strong>Procesado:</strong> {reserva.procesado ? "Sí" : "No"}</p>
         </div>
 
@@ -1088,6 +1094,14 @@ const styles = {
     color: "#8a3b3b",
     fontWeight: 600,
   },
+  fechaReserva: {
+  color: "#8a6a2f",
+  fontWeight: 700,
+},
+fechaPago: {
+  color: "#5f7fa3",
+  fontWeight: 600,
+},
 };
 
 export default AdminDetalleReservaNuevo;

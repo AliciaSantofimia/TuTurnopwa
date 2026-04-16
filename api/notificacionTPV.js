@@ -76,6 +76,7 @@ async function marcarReservaComoPagadaPorOrderId(orderId, timestamp) {
     updates[`${rutaBase}/procesado`] = true;
     updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
     updates[`${rutaBase}/actualizadoEn`] = timestamp;
+    updates[`${rutaBase}/pagadoEn`] = timestamp;
 
    reservaEncontrada = {
   ...reserva,
@@ -187,6 +188,7 @@ async function marcarReservaGrupoComoPagada(orderId, timestamp) {
       updates[`${rutaBase}/procesado`] = true;
       updates[`${rutaBase}/webhookRecibidoEn`] = timestamp;
       updates[`${rutaBase}/actualizadoEn`] = timestamp;
+      updates[`${rutaBase}/pagadoEn`] = timestamp;
 
       reservaEncontrada = {
         ...grupo,
