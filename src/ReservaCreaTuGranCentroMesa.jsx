@@ -615,7 +615,9 @@ export default function ReservaCreaTuGranCentroMesa() {
                     −
                   </button>
 
-                  <span className="text-lg font-semibold">{plazasNum}</span>
+                 <span className="text-lg font-semibold">
+  {puedeElegirPlazas ? plazasNum : "—"}
+</span>
 
                   <button
                     type="button"

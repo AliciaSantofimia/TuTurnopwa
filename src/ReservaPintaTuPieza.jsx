@@ -497,13 +497,13 @@ export default function ReservaPintaTuPieza() {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-1">
-                  {!fecha
-                    ? "Primero selecciona el día."
-                    : !turno
-                    ? "Primero selecciona el turno."
-                    : `Máximo ${maxTotales} plazas disponibles.`}
-                </p>
+               <p className="text-xs text-gray-500 mt-1">
+  {!fecha
+    ? "Primero selecciona el día."
+    : !turno
+    ? "Selecciona un turno para ver las plazas disponibles."
+    : `Máximo ${maxTotales} plazas disponibles.`}
+</p>
               </div>
 
               {fecha && !diaNoDisponible && (
