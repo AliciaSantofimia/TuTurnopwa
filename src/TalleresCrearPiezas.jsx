@@ -221,10 +221,12 @@ export default function TalleresCrearPiezas() {
         text-left"
       >
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800">{titulo}</h2>
-            <p className="text-sm text-gray-600 mt-1">{subtitulo}</p>
-          </div>
+          <div className="flex-1 min-w-0">
+  <h2 className="text-xl font-bold text-gray-800">{titulo}</h2>
+  <p className="text-sm text-gray-600 mt-1 max-w-[90%] leading-5">
+    {subtitulo}
+  </p>
+</div>
 
           <div className="text-[#b8860b] font-bold text-2xl leading-none">
             {isOpen ? "−" : "+"}
@@ -250,7 +252,7 @@ export default function TalleresCrearPiezas() {
             Crear piezas desde cero
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Elige el tipo de taller y después selecciona tu opción.
+            Elige el tipo de clase y luego la pieza que quieres crear.
           </p>
         </div>
       </div>
@@ -265,18 +267,19 @@ export default function TalleresCrearPiezas() {
         </div>
       )}
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-6">
-        <TarjetaSeccion
-          id="1"
-          titulo="Taller de 1 sesión"
-          subtitulo={`${talleres1Sesion.length} opciones disponibles`}
-        />
-        <TarjetaSeccion
-          id="2"
-          titulo="Taller de 2 sesiones"
-          subtitulo={`${talleres2Sesiones.length} opciones disponibles`}
-        />
-      </div>
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <TarjetaSeccion
+    id="1"
+    titulo="Taller de 1 día"
+    subtitulo="Elige la clase que quieres hacer y reserva tu plaza."
+  />
+
+  <TarjetaSeccion
+    id="2"
+    titulo="Taller de 2 días"
+    subtitulo="Elige una clase para crear tu pieza en dos sesiones."
+  />
+</div>
 
       {openSection === "1" && (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-10">

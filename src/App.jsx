@@ -11,7 +11,7 @@ import Registro from "./Registro.jsx";
 import Menu from "./Menu.jsx";
 import PerfilUsuario from "./PerfilUsuario.jsx";
 import EditarPerfil from "./EditarPerfil.jsx";
-import DondeReservar from "./DondeReservar.jsx";
+
 
 // Legales y políticas
 import PoliticaPiezas from "./PoliticaPiezas";
@@ -138,7 +138,7 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/perfil" element={<PerfilUsuario />} />
           <Route path="/editar-perfil" element={<EditarPerfil />} />
-        <Route path="/dondereservar" element={<DondeReservarV2 />} />
+          <Route path="/dondereservar" element={<DondeReservarV2 />} />
 
           <Route path="/politica-piezas" element={<PoliticaPiezas />} />
           <Route path="/aviso-legal" element={<AvisoLegal />} />
