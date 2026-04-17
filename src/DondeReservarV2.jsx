@@ -164,19 +164,18 @@ export default function DondeReservarV2() {
               className="cursor-pointer rounded-2xl border border-[#ece7df] bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition"
               onClick={() => navigate("/reserva-grupos")}
             >
-              <img
-                src="/img/grupos/portadagrupos.jpg"
-                alt="Reservas para grupos"
-                className="w-24 h-24 object-contain rounded-xl mx-auto mb-4"
-              />
+             <img
+  src="/img/grupos/portadagrupos.jpg"
+  alt="Reservas para grupos"
+  className="w-28 h-28 object-cover rounded-xl mx-auto mb-4"
+/>
               <h3 className="text-xl font-semibold text-gray-800 text-center">
-                Grupos
+                Reservas para grupos
               </h3>
               <p className="text-sm text-gray-600 mt-2 text-center leading-6">
-                <p className="text-sm text-gray-600 mt-2 text-center leading-6">
   Si sois <strong>5 personas o más</strong>, reserva aquí vuestra experiencia en grupo.
 </p>
-              </p>
+              
             </div>
 
             {/* TARJETA REGALO */}
@@ -213,9 +212,9 @@ export default function DondeReservarV2() {
               onClick={() => navigate("/perfil")}
             >
               <img
-                src="/img/panel-negro.jpg"
+                src="/img/perfilsinfondo.jpg"
                 alt="Mi perfil"
-                className="w-24 h-24 object-contain rounded-xl mx-auto mb-4"
+                className="w-28 h-28 object-contain rounded-xl mx-auto mb-4"
               />
 
               <h3 className="text-xl font-semibold text-gray-800 text-center">
@@ -241,9 +240,9 @@ export default function DondeReservarV2() {
               className="bg-yellow-300 p-4 rounded-2xl shadow-lg hover:scale-105 transition duration-300 cursor-pointer"
             >
               <img
-                src="/img/panel-admin-negro.jpg"
+                src="/img/panel-admin-sinfondo.png"
                 alt="Panel admin"
-                className="w-24 h-auto mx-auto"
+                className="w-28 h-28 object-contain mx-auto"
               />
             </div>
             <p className="mt-2 text-sm text-gray-700 font-medium text-center">
