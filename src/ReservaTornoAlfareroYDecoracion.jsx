@@ -16,9 +16,10 @@ const sumarUnMes = (fechaISO) => {
   return d.toISOString().slice(0, 10);
 };
 
-const sumarTresMeses = (fechaISO) => {
+
+ const sumarUnMesCaducidad = (fechaISO) => {
   const d = new Date(fechaISO + "T12:00:00");
-  d.setMonth(d.getMonth() + 3);
+  d.setMonth(d.getMonth() + 1);
   return d.toISOString().slice(0, 10);
 };
 
@@ -257,7 +258,7 @@ export default function ReservaTornoAlfareroYDecoracion() {
         clasesRestantes: numeroClases,
         fechaInicio,
         fechaFinMes: sumarUnMes(fechaInicio),
-        fechaCaducidadBono: sumarTresMeses(fechaInicio),
+        fechaCaducidadBono:  sumarUnMesCaducidad(fechaInicio),
         turnoHabitual: turno,
         duracionClase,
         modalidad,
@@ -279,7 +280,7 @@ export default function ReservaTornoAlfareroYDecoracion() {
         subtipo,
         fechaInicio,
         fechaFinMes: sumarUnMes(fechaInicio),
-        fechaCaducidadBono: sumarTresMeses(fechaInicio),
+        fechaCaducidadBono:  sumarUnMesCaducidad(fechaInicio),
         turno,
         numeroClases,
         duracionClase,
@@ -346,7 +347,7 @@ export default function ReservaTornoAlfareroYDecoracion() {
             numeroClases,
             fechaInicio,
             fechaFinMes: sumarUnMes(fechaInicio),
-            fechaCaducidadBono: sumarTresMeses(fechaInicio),
+            fechaCaducidadBono:  sumarUnMesCaducidad(fechaInicio),
             turno,
             orderId,
             datosExtra: {
@@ -410,7 +411,7 @@ export default function ReservaTornoAlfareroYDecoracion() {
             claseId: CLASE_ID,
             fechaInicio,
             fechaFinMes: sumarUnMes(fechaInicio),
-            fechaCaducidadBono: sumarTresMeses(fechaInicio),
+            fechaCaducidadBono:  sumarUnMesCaducidad(fechaInicio),
             turno,
             numeroClases,
             duracionClase,
@@ -437,7 +438,7 @@ export default function ReservaTornoAlfareroYDecoracion() {
           precioTotal,
           fechaInicio,
           fechaFinMes: sumarUnMes(fechaInicio),
-          fechaCaducidadBono: sumarTresMeses(fechaInicio),
+          fechaCaducidadBono:  sumarUnMesCaducidad(fechaInicio),
           turno,
           numeroClases,
           duracionClase,
@@ -574,9 +575,9 @@ export default function ReservaTornoAlfareroYDecoracion() {
                   {sumarUnMes(fechaInicio)}
                 </p>
                 <p>
-                  <strong>Validez máxima del bono:</strong>{" "}
-                  {sumarTresMeses(fechaInicio)}
-                </p>
+  <strong>Validez máxima del bono:</strong>{" "}
+  {sumarUnMesCaducidad(fechaInicio)}
+</p>
               </div>
             )}
 
