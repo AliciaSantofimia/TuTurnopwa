@@ -176,17 +176,16 @@ export default function PintaTuPieza() {
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Disfruta mientras fluyes con el color, diviértete en un espacio
-                creativo y acogedor.
+                Trabaja el color y la decoración de forma guiada en el taller.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Reserva tu espacio y tendrás hasta <strong>dos horas y media</strong>
-                {" "}para desatar tu creatividad.
+                Reserva tu sesión y tendrás hasta <strong>dos horas y media</strong>
+                {" "}para pintar tu pieza.
               </p>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Solo necesitas ganas de pintar y pasar un buen rato.
+                No se requiere experiencia previa; solo interés  y ganas por aprender  la pintura cerámica.
               </p>
 
               <div className="bg-[#fffaf0] border-l-4 border-[#F4C542] rounded-xl p-4 mb-4">
@@ -200,8 +199,7 @@ export default function PintaTuPieza() {
               </div>
 
               <p className="text-sm text-gray-700 mb-4 leading-relaxed break-words">
-                Ven y escoge la pieza que más te guste para dar rienda suelta a
-                tu creatividad.
+                Podrás elegir la pieza que prefieras y trabajar su decoración durante la sesión.
               </p>
 
               <p className="text-sm text-gray-700 leading-relaxed break-words">

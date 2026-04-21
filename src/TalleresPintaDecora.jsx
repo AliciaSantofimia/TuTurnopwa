@@ -11,7 +11,7 @@ const talleres = [
     titulo: "Pinta tu pieza de cerámica",
     precio: "25€",
     descripcion:
-      "Elige una pieza ya preparada, píntala a tu gusto y disfruta de una experiencia creativa y relajada.",
+      "Elige una pieza ya preparada, y aprende a pintarla y decorarla a tu gusto.",
     slug: "/pinta-tu-pieza",
     imagen: "/img/vasijapintarceramica.png",
   },
@@ -20,7 +20,7 @@ const talleres = [
     titulo: "Especial pinta tu pieza de cerámica",
     precio: "35€",
     descripcion:
-      "Una experiencia más completa para disfrutar del taller en un ambiente especial.",
+      "Una sesión más completa para profundizar en la práctica del taller en un entorno cuidado",
     slug: "/especial-pinta-tu-pieza",
     imagen: "/img/vasijapintarceramica.png",
   },

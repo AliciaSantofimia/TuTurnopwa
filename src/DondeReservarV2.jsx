@@ -122,11 +122,11 @@ export default function DondeReservarV2() {
                 </div>
 
                 <h3 className="text-2xl font-bold text-[#3f3128] text-center">
-                  Pintar tu pieza
+                  Pinta tu pieza
                 </h3>
 
                 <p className="text-sm text-gray-600 mt-3 leading-6 text-center">
-                  Reserva tu experiencia para <strong>pintar una pieza</strong> ya preparada en
+                  Reserva tu sesión para aprender a  <strong>pintar una pieza</strong> ya preparada en
                   el taller.
                 </p>
 

@@ -34,13 +34,16 @@ function getUnitPrice(clase = "", metodo = "") {
     "exprés continuo",
     "express continuo",
   ]);
-  const PINTA = new Set([
-    "pinta tu pieza de ceramica",
-    "pinta tu pieza de cerámica",
-    "pinta tu pieza",
-    "especial pinta tu pieza de ceramica",
-    "especial pinta tu pieza de cerámica",
-  ]);
+  const ESPECIAL_PINTA = new Set([
+  "especial pinta tu pieza de ceramica",
+  "especial pinta tu pieza de cerámica",
+]);
+
+const PINTA = new Set([
+  "pinta tu pieza de ceramica",
+  "pinta tu pieza de cerámica",
+  "pinta tu pieza",
+]);
   const CREA_PIEZA = new Set([
     "crea tu pieza favorita",
     "crea tu pieza favorita desde cero",
@@ -75,7 +78,8 @@ function getUnitPrice(clase = "", metodo = "") {
     return isTorno ? 32 : 27;
   }
 
-  if (PINTA.has(c)) return 25;
+  if (ESPECIAL_PINTA.has(c)) return 35;
+if (PINTA.has(c)) return 25;
   if (CREA_PIEZA.has(c)) return 45;
   if (TEARIUM.has(c)) return 25;
   if (THE_CLUB.has(c)) return 25;
