@@ -41,12 +41,28 @@ const AdminCalendarioReservasNuevo = () => {
   useEffect(() => {
     const cargarReservas = async () => {
       try {
-        const [reservasSnap, reservasGruposSnap] = await Promise.all([
-          get(ref(dbRealtime, "reservas")),
-          get(ref(dbRealtime, "reservasGrupos")),
-        ]);
+        
+          const [reservasSnap, reservasGruposSnap, usuariosSnap] = await Promise.all([
+  get(ref(dbRealtime, "reservas")),
+  get(ref(dbRealtime, "reservasGrupos")),
+  get(ref(dbRealtime, "usuarios")),
+]);
 
         const datos = [];
+        const usuariosMap = {};
+
+if (usuariosSnap.exists()) {
+  usuariosSnap.forEach((userSnap) => {
+    const uid = userSnap.key;
+    const user = userSnap.val() || {};
+
+    usuariosMap[uid] = {
+      nombre: user.nombre || user.name || user.displayName || "",
+      telefono: user.telefono || user.phone || user.telefonoUsuario || "",
+      email: user.email || "",
+    };
+  });
+}
 
         const procesarReserva = (
           reserva,
@@ -65,25 +81,41 @@ const AdminCalendarioReservasNuevo = () => {
 
           if (estadoNormalizado !== "confirmada") return;
 
-          const fechaFinal = reserva.fecha || fechaKey;
-          if (!fechaFinal) return;
+         const fechaFinal = reserva.fecha || fechaKey;
+if (!fechaFinal) return;
 
-          datos.push({
-            id:
-              reserva.orderId ||
-              reserva.id ||
-              `${claseKey}-${fechaFinal}-${turnoKey}-${metodoKey}-${Math.random()}`,
-            claseId: reserva.claseId || claseKey || "",
-            clase: reserva.clase || claseKey || "Clase",
-            fecha: fechaFinal,
-            turno: reserva.turno || turnoKey || "—",
-            metodo: reserva.metodo || reserva.tipoClase || metodoKey || "—",
-            plazas: Number(reserva.plazas || 1),
-            estadoPago: reserva.estadoPago || "—",
-            precioTotal: Number(reserva.precioTotal || reserva.precio || 0),
-            uid: reserva.uid || "",
-            esGrupo: false,
-          });
+const datosUsuario = usuariosMap[reserva.uid] || {};
+
+datos.push({
+  id:
+    reserva.orderId ||
+    reserva.id ||
+    `${claseKey}-${fechaFinal}-${turnoKey}-${metodoKey}-${Math.random()}`,
+  claseId: reserva.claseId || claseKey || "",
+  clase: reserva.clase || claseKey || "Clase",
+  fecha: fechaFinal,
+  turno: reserva.turno || turnoKey || "—",
+  metodo: reserva.metodo || reserva.tipoClase || metodoKey || "—",
+  plazas: Number(reserva.plazas || 1),
+  estadoPago: reserva.estadoPago || "—",
+  precioTotal: Number(reserva.precioTotal || reserva.precio || 0),
+  uid: reserva.uid || "",
+  nombre:
+    reserva.nombre ||
+    reserva.nombreUsuario ||
+    datosUsuario.nombre ||
+    "",
+  telefono:
+    reserva.telefono ||
+    reserva.telefonoUsuario ||
+    datosUsuario.telefono ||
+    "",
+  email:
+    reserva.email ||
+    datosUsuario.email ||
+    "",
+  esGrupo: false,
+});
         };
 
         const pareceReservaDirecta = (obj) => {
@@ -171,20 +203,35 @@ const AdminCalendarioReservasNuevo = () => {
 
             const fechaFinal = grupo.fecha || "";
             if (!fechaFinal) return;
+            const datosUsuario = usuariosMap[grupo.uid] || {};
 
             datos.push({
-              id: grupo.orderId || grupoSnap.key || `grupo-${Math.random()}`,
-              claseId: grupo.claseId || "reserva-grupo",
-              clase: grupo.clase || "Reserva de grupo",
-              fecha: fechaFinal,
-              turno: grupo.turno || "—",
-              metodo: "grupo",
-              plazas: Number(grupo.plazas || 1),
-              estadoPago: grupo.estadoPago || "—",
-              precioTotal: Number(grupo.precioTotal || grupo.precio || 0),
-              uid: grupo.uid || "",
-              esGrupo: true,
-            });
+  id: grupo.orderId || grupoSnap.key || `grupo-${Math.random()}`,
+  claseId: grupo.claseId || "reserva-grupo",
+  clase: grupo.clase || "Reserva de grupo",
+  fecha: fechaFinal,
+  turno: grupo.turno || "—",
+  metodo: "grupo",
+  plazas: Number(grupo.plazas || 1),
+  estadoPago: grupo.estadoPago || "—",
+  precioTotal: Number(grupo.precioTotal || grupo.precio || 0),
+  uid: grupo.uid || "",
+  nombre:
+    grupo.nombre ||
+    grupo.nombreUsuario ||
+    datosUsuario.nombre ||
+    "",
+  telefono:
+    grupo.telefono ||
+    grupo.telefonoUsuario ||
+    datosUsuario.telefono ||
+    "",
+  email:
+    grupo.email ||
+    datosUsuario.email ||
+    "",
+  esGrupo: true,
+});
           });
         }
 
@@ -666,6 +713,12 @@ const AdminCalendarioReservasNuevo = () => {
                             {r.turno} · {r.metodo} · {r.plazas} plaza
                             {r.plazas !== 1 ? "s" : ""}
                           </p>
+                          {(r.nombre || r.telefono) && (
+  <p style={styles.reservaContacto}>
+    {r.nombre || "Sin nombre"}
+    {r.telefono ? ` · ${r.telefono}` : ""}
+  </p>
+)}
                         </div>
 
                         <div
@@ -1028,6 +1081,12 @@ const styles = {
     color: "#7a7a7a",
     fontSize: "0.9rem",
   },
+  reservaContacto: {
+  margin: "6px 0 0 0",
+  color: "#5b4a2d",
+  fontSize: "0.9rem",
+  fontWeight: 600,
+},
   reservaDer: {
     display: "flex",
     flexDirection: "column",

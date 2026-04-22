@@ -104,7 +104,10 @@ const AdminReservasNuevo = () => {
         );
 
         try {
-          const reservasSnap = await get(ref(dbRealtime, "reservas"));
+          const [reservasSnap, reservasGruposSnap] = await Promise.all([
+  get(ref(dbRealtime, "reservas")),
+  get(ref(dbRealtime, "reservasGrupos")),
+]);
           const datosReservas = [];
 
           if (reservasSnap.exists()) {
@@ -206,7 +209,32 @@ const AdminReservasNuevo = () => {
               });
             });
           }
+          if (reservasGruposSnap.exists()) {
+  reservasGruposSnap.forEach((grupoSnap) => {
+    const grupo = grupoSnap.val();
+    if (!grupo || typeof grupo !== "object") return;
 
+    datosReservas.push({
+      id: grupoSnap.key,
+      tipoRegistro: "reserva_grupo",
+      claseId: grupo.claseId || "reserva-grupo",
+      clase: grupo.clase || "Reserva de grupo",
+      fecha: grupo.fecha || "—",
+      turno: grupo.turno || "—",
+      metodo: "grupo",
+      plazas: Number(grupo.plazas || 1),
+      estado: grupo.estado || "—",
+      estadoPago: grupo.estadoPago || "—",
+      precioTotal: Number(grupo.precioTotal || grupo.precio || 0),
+      uid: grupo.uid || "",
+      orderId: grupo.orderId || grupoSnap.key,
+      procesado: grupo.procesado ?? false,
+      notasInternas: mapaNotasTemp[(grupo.orderId || grupoSnap.key) || ""] || 0,
+      reprogramada: false,
+      cancelada: grupo.cancelada === true || grupo.cancelada === "true",
+    });
+  });
+}
           datosReservas.sort((a, b) => {
             const fechaA = new Date(`${a.fecha}T00:00:00`);
             const fechaB = new Date(`${b.fecha}T00:00:00`);
@@ -500,10 +528,12 @@ const AdminReservasNuevo = () => {
                 key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
                 onClick={() =>
                   navigate(
-                    r.tipoRegistro === "tarjeta_regalo"
-                      ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
-                      : `/admin-detalle-reserva?id=${r.orderId}`
-                  )
+  r.tipoRegistro === "tarjeta_regalo"
+    ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
+    : r.tipoRegistro === "reserva_grupo"
+    ? `/admin-reservas-grupos?fecha=${r.fecha}`
+    : `/admin-detalle-reserva?id=${r.orderId}`
+)
                 }
                 style={getCardStyle(r)}
               >
@@ -574,11 +604,13 @@ const AdminReservasNuevo = () => {
                   <tr
                     key={`${r.claseId}-${r.fecha}-${r.orderId}-${r.id}`}
                     onClick={() =>
-                      navigate(
-                        r.tipoRegistro === "tarjeta_regalo"
-                          ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
-                          : `/admin-detalle-reserva?id=${r.orderId}`
-                      )
+                     navigate(
+  r.tipoRegistro === "tarjeta_regalo"
+    ? `/admin-detalle-tarjeta-regalo?id=${r.orderId}`
+    : r.tipoRegistro === "reserva_grupo"
+    ? `/admin-reservas-grupos?fecha=${r.fecha}`
+    : `/admin-detalle-reserva?id=${r.orderId}`
+)
                     }
                     style={getRowStyle(r)}
                   >
