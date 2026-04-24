@@ -4,7 +4,7 @@ import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 import { useNavigate } from "react-router-dom";
 
-const LIMITE_RESERVAS_PREVIEW = 6;
+
 
 const AdminCalendarioReservasNuevo = () => {
   const navigate = useNavigate();
@@ -285,13 +285,12 @@ datos.push({
     return resumenPorFecha[fechaSeleccionada] || null;
   }, [resumenPorFecha, fechaSeleccionada]);
 
-  const reservasPreview = useMemo(() => {
-    if (!detalleDiaSeleccionado?.reservas?.length) return [];
-    return detalleDiaSeleccionado.reservas.slice(0, LIMITE_RESERVAS_PREVIEW);
-  }, [detalleDiaSeleccionado]);
+  const reservasDelDia = useMemo(() => {
+  if (!detalleDiaSeleccionado?.reservas?.length) return [];
+  return detalleDiaSeleccionado.reservas;
+}, [detalleDiaSeleccionado]);
 
-  const hayMasReservas =
-    detalleDiaSeleccionado?.reservas?.length > LIMITE_RESERVAS_PREVIEW;
+  
 
   const nombreMes = useMemo(() => {
     return mesActual.toLocaleDateString("es-ES", {
@@ -686,15 +685,10 @@ datos.push({
 
               {detalleDiaSeleccionado?.reservas?.length ? (
                 <>
-                  {hayMasReservas && (
-                    <p style={styles.mensajeResumen}>
-                      Mostrando {LIMITE_RESERVAS_PREVIEW} de{" "}
-                      {detalleDiaSeleccionado.reservas.length} reservas.
-                    </p>
-                  )}
+                 
 
                   <div style={styles.listaReservas}>
-                    {reservasPreview.map((r, index) => (
+                    {reservasDelDia.map((r, index) => (
                       <div
                         key={`${r.id}-${index}`}
                         style={{
