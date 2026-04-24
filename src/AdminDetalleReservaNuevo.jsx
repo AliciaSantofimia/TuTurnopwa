@@ -31,12 +31,27 @@ const AdminDetalleReservaNuevo = () => {
   useEffect(() => {
     const buscarReserva = async () => {
       try {
-        const [reservasSnap, notasSnap] = await Promise.all([
-          get(ref(dbRealtime, "reservas")),
-          get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
-        ]);
+       const [reservasSnap, notasSnap, usuariosSnap] = await Promise.all([
+  get(ref(dbRealtime, "reservas")),
+  get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
+  get(ref(dbRealtime, "usuarios")),
+]);
 
         let encontrada = null;
+        const usuariosMap = {};
+
+if (usuariosSnap.exists()) {
+  usuariosSnap.forEach((userSnap) => {
+    const uid = userSnap.key;
+    const user = userSnap.val() || {};
+
+    usuariosMap[uid] = {
+      nombre: user.nombre || user.name || user.displayName || "",
+      telefono: user.telefono || user.phone || user.telefonoUsuario || "",
+      email: user.email || "",
+    };
+  });
+}
 
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
@@ -60,9 +75,11 @@ const AdminDetalleReservaNuevo = () => {
                   }
 
                   const construirReserva = (r, reservaKey) => {
-                    if (!r || typeof r !== "object") return null;
+  if (!r || typeof r !== "object") return null;
 
-                    return {
+  const datosUsuario = usuariosMap[r.uid] || {};
+
+  return {
                       ...r,
                       claseId: r.claseId || claseKey,
                       clase: r.clase || claseKey,
@@ -82,6 +99,9 @@ const AdminDetalleReservaNuevo = () => {
                         r.precioTotal || r.precioUnitario || r.precio || 0
                       ),
                       uid: r.uid || "",
+                      nombre: r.nombre || r.nombreUsuario || datosUsuario.nombre || "",
+telefono: r.telefono || r.telefonoUsuario || datosUsuario.telefono || "",
+email: r.email || datosUsuario.email || "",
                       orderId: r.orderId || "",
                       desdeTarjeta: r.desdeTarjeta ?? false,
                       timestamp: r.pagadoEn || r.timestamp || r.creadoEn || "—",
@@ -689,6 +709,11 @@ const AdminDetalleReservaNuevo = () => {
 <p><strong>Turno:</strong> {reserva.turno}</p>
 <p><strong>Método:</strong> {reserva.metodo}</p>
 <p><strong>Plazas:</strong> {reserva.plazas}</p>
+<hr style={styles.hr} />
+
+<p><strong>Nombre:</strong> {reserva.nombre || "—"}</p>
+<p><strong>Teléfono:</strong> {reserva.telefono || "—"}</p>
+<p><strong>Email:</strong> {reserva.email || "—"}</p>
           {reserva.reprogramada && (
             <>
               <hr style={styles.hr} />
