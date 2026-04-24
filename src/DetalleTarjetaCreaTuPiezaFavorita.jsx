@@ -30,7 +30,7 @@ const DetalleTarjetaCreaTuPiezaFavorita = () => {
         />
         <div style={styles.content}>
           <h1 style={styles.titulo}>Crea tu pieza favorita</h1>
-          <div style={styles.precio}>45€</div>
+          <div style={styles.precio}>55€</div>
           <p style={styles.descripcion}>
             Clase de 3 horas en la que podrás crear tu pieza favorita desde cero. Puedes elegir torno o técnicas a mano.
             Incluye todos los materiales, esmalte y cocción de tu pieza para que puedas llevártela lista para usar o regalar.
