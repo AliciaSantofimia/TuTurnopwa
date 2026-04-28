@@ -707,7 +707,10 @@ email: r.email || datosUsuario.email || "",
   <span style={styles.fechaPago}>{reserva.timestamp}</span>
 </p>
 <p><strong>Turno:</strong> {reserva.turno}</p>
-<p><strong>Método:</strong> {reserva.metodo}</p>
+{!["pintatupieza", "especialpintatupieza"].includes(reserva.claseId) &&
+  reserva.tipoTaller !== "pinta_y_decora" && (
+    <p><strong>Método:</strong> {reserva.metodo}</p>
+  )}
 <p><strong>Plazas:</strong> {reserva.plazas}</p>
 <hr style={styles.hr} />
 
