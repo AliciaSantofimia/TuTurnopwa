@@ -80,6 +80,8 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+  const [reservasGrupos, setReservasGrupos] = useState({});
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -155,6 +157,25 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
     cargarFechasHabilitadas();
   }, []);
 
+  useEffect(() => {
+  const cargarReservasGrupos = async () => {
+    try {
+      const snap = await get(ref(dbRealtime, "reservasGrupos"));
+
+      if (snap.exists()) {
+        setReservasGrupos(snap.val() || {});
+      } else {
+        setReservasGrupos({});
+      }
+    } catch (error) {
+      console.error("Error al cargar reservas de grupos:", error);
+      setReservasGrupos({});
+    }
+  };
+
+  cargarReservasGrupos();
+}, []);
+
   const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fechaInicio);
   }, [claseConfig, fechaInicio]);
@@ -171,16 +192,37 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   }, [fechaInicio, fechasHabilitadas]);
 
   const turnosDisponibles = useMemo(() => {
-    if (turnosHabituales.length > 0) {
-      return turnosHabituales;
-    }
+  const turnos = [...turnosHabituales];
 
-    if (fechaHabilitadaManual) {
-      return normalizarTurnos(claseConfig?.turnos);
-    }
+  if (fechaHabilitadaManual) {
+    normalizarTurnos(claseConfig?.turnos).forEach((t) => {
+      if (!turnos.includes(t)) {
+        turnos.push(t);
+      }
+    });
+  }
 
-    return [];
-  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
+  Object.values(reservasGrupos || {}).forEach((grupo) => {
+    if (
+      grupo?.fecha === fechaInicio &&
+      grupo?.estado === "Confirmada" &&
+      Number(grupo?.plazas || 0) >= 5 &&
+      grupo?.turno
+    ) {
+      if (!turnos.includes(grupo.turno)) {
+        turnos.push(grupo.turno);
+      }
+    }
+  });
+
+  return turnos;
+}, [
+  turnosHabituales,
+  fechaHabilitadaManual,
+  claseConfig,
+  reservasGrupos,
+  fechaInicio,
+]);
 
   const precioBase = Number(claseConfig?.precio || 79);
   const extraTorno = convertirTorno
@@ -559,6 +601,8 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
                 ))}
               </select>
             </div>
+
+            
 
             <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-3 text-sm text-[#5c3c00]">
               <p>

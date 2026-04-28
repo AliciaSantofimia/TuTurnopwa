@@ -103,6 +103,8 @@ export default function ReservaCreaTuMaceta() {
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+  const [reservasGrupos, setReservasGrupos] = useState({});
+
   
 
   const navigate = useNavigate();
@@ -177,6 +179,25 @@ export default function ReservaCreaTuMaceta() {
     cargarFechasHabilitadas();
   }, []);
 
+  useEffect(() => {
+  const cargarReservasGrupos = async () => {
+    try {
+      const snap = await get(ref(dbRealtime, "reservasGrupos"));
+
+      if (snap.exists()) {
+        setReservasGrupos(snap.val() || {});
+      } else {
+        setReservasGrupos({});
+      }
+    } catch (error) {
+      console.error("Error al cargar reservas de grupos:", error);
+      setReservasGrupos({});
+    }
+  };
+
+  cargarReservasGrupos();
+}, []);
+
   
   useEffect(() => {
     if (!fecha) {
@@ -206,17 +227,38 @@ export default function ReservaCreaTuMaceta() {
     return null;
   }, [fecha, fechasHabilitadas]);
 
-  const turnosDisponibles = useMemo(() => {
-    if (turnosHabituales.length > 0) {
-      return turnosHabituales;
-    }
+ const turnosDisponibles = useMemo(() => {
+  const turnos = [...turnosHabituales];
 
-    if (fechaHabilitadaManual) {
-      return normalizarTurnos(claseConfig?.turnos);
-    }
+  if (fechaHabilitadaManual) {
+    normalizarTurnos(claseConfig?.turnos).forEach((t) => {
+      if (!turnos.includes(t)) {
+        turnos.push(t);
+      }
+    });
+  }
 
-    return [];
-  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
+  Object.values(reservasGrupos || {}).forEach((grupo) => {
+    if (
+      grupo?.fecha === fecha &&
+      grupo?.estado === "Confirmada" &&
+      Number(grupo?.plazas || 0) >= 5 &&
+      grupo?.turno
+    ) {
+      if (!turnos.includes(grupo.turno)) {
+        turnos.push(grupo.turno);
+      }
+    }
+  });
+
+  return turnos;
+}, [
+  turnosHabituales,
+  fechaHabilitadaManual,
+  claseConfig,
+  reservasGrupos,
+  fecha,
+]);
 
   const precios = useMemo(() => {
   return claseConfig?.precios || {};
@@ -645,6 +687,12 @@ const plazasDisponibles = useMemo(() => {
               <div className="text-sm text-gray-600">
                 Máximo {maxTotales} plazas por día ({maxTorno} para torno).
               </div>
+
+              <div className="text-sm text-[#7a5a1e] bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-3">
+  <strong>¿Sois 5 o más personas?</strong>
+  <br />
+  Si queréis reservar en una fecha especial o fuera del horario habitual, haced la reserva desde la sección de <strong>Reservas para grupos</strong>.
+</div>
 
               <div>
                 <label className="block font-bold text-sm mb-2">

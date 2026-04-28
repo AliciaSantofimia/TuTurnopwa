@@ -104,6 +104,7 @@ export default function ReservaClaseSueltaContinuidad() {
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+  const [reservasGrupos, setReservasGrupos] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -176,6 +177,25 @@ export default function ReservaClaseSueltaContinuidad() {
 
     cargarFechasHabilitadas();
   }, []);
+  useEffect(() => {
+  const cargarReservasGrupos = async () => {
+    try {
+      const snap = await get(ref(dbRealtime, "reservasGrupos"));
+
+      if (snap.exists()) {
+        setReservasGrupos(snap.val() || {});
+      } else {
+        setReservasGrupos({});
+      }
+    } catch (error) {
+      console.error("Error al cargar reservas de grupos:", error);
+      setReservasGrupos({});
+    }
+  };
+
+  cargarReservasGrupos();
+}, []);
+
 
   useEffect(() => {
     if (!fecha) {
@@ -206,16 +226,39 @@ export default function ReservaClaseSueltaContinuidad() {
   }, [fecha, fechasHabilitadas]);
 
   const turnosDisponibles = useMemo(() => {
-    if (turnosHabituales.length > 0) {
-      return turnosHabituales;
-    }
+  const turnos = [...turnosHabituales];
 
-    if (fechaHabilitadaManual) {
-      return normalizarTurnos(claseConfig?.turnos);
-    }
+  // Turnos habilitados manualmente
+  if (fechaHabilitadaManual) {
+    normalizarTurnos(claseConfig?.turnos).forEach((t) => {
+      if (!turnos.includes(t)) {
+        turnos.push(t);
+      }
+    });
+  }
 
-    return [];
-  }, [turnosHabituales, fechaHabilitadaManual, claseConfig]);
+  // Turnos provenientes de reservas de grupos confirmadas
+  Object.values(reservasGrupos || {}).forEach((grupo) => {
+    if (
+      grupo?.fecha === fecha &&
+grupo?.estado === "Confirmada" &&
+Number(grupo?.plazas || 0) >= 5 &&
+grupo?.turno
+    ) {
+      if (!turnos.includes(grupo.turno)) {
+        turnos.push(grupo.turno);
+      }
+    }
+  });
+
+  return turnos;
+}, [
+  turnosHabituales,
+  fechaHabilitadaManual,
+  claseConfig,
+  reservasGrupos,
+  fecha,
+]);
 
   const precios = useMemo(() => {
     return claseConfig?.precios || {};
@@ -629,6 +672,11 @@ export default function ReservaClaseSueltaContinuidad() {
                   Quedan {plazasDisponibles} plazas disponibles para este método.
                 </div>
               )}
+              <div className="text-sm text-[#7a5a1e] bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-3">
+  <strong>¿Sois 5 o más personas?</strong>
+  <br />
+  Si queréis reservar en una fecha especial o fuera del horario habitual, haced la reserva desde la sección de <strong>Reservas para grupos</strong>.
+</div>
 
               <div>
                 <label className="block font-bold text-sm mb-2">

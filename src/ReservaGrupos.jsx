@@ -62,26 +62,12 @@ const TODAS_LAS_CLASES = [
   { nombre: "Especial pinta tu pieza de cerámica", precio: 35 },
 ];
 
-function obtenerHorarioPorFecha(fechaISO) {
-  if (!fechaISO) return "";
+const TURNOS_GRUPO = ["11:30 a 14:30", "17:30 a 20:30"];
 
-  const [year, month, day] = fechaISO.split("-").map(Number);
-  const fecha = new Date(year, month - 1, day);
-  const dia = fecha.getDay();
+function obtenerTurnosGrupoPorFecha(fechaISO) {
+  if (!fechaISO) return [];
 
-  if (dia === 2 || dia === 3 || dia === 4 || dia === 5) {
-    return "17:30 a 20:30";
-  }
-
-  if (dia === 6) {
-    return "11:30 a 14:30 o 17:30 a 20:30";
-  }
-
-  if (dia === 0) {
-    return "11:30 a 14:30";
-  }
-
-  return "Pendiente de confirmar con el taller";
+  return TURNOS_GRUPO;
 }
 
 function construirMensajeWhatsApp({
@@ -129,8 +115,6 @@ export default function ReservaGrupos() {
   const [email, setEmail] = useState("");
   const [fecha, setFecha] = useState("");
   const [horario, setHorario] = useState("");
-  const [modoHorario, setModoHorario] = useState("habitual");
-  const [horarioManual, setHorarioManual] = useState("");
   const [personas, setPersonas] = useState(5);
   const [notas, setNotas] = useState("");
   const [claseSeleccionada, setClaseSeleccionada] = useState("");
@@ -183,21 +167,15 @@ export default function ReservaGrupos() {
   }, []);
 
   useEffect(() => {
-    if (!fecha) {
-      setHorario("");
-      return;
-    }
+  if (!fecha) {
+    setHorario("");
+    return;
+  }
 
-    if (modoHorario === "habitual") {
-      setHorario(obtenerHorarioPorFecha(fecha));
-    }
-  }, [fecha, modoHorario]);
+  setHorario("");
+}, [fecha]);
 
-  useEffect(() => {
-    if (modoHorario === "habitual") {
-      setHorarioManual("");
-    }
-  }, [modoHorario]);
+ 
 
   useEffect(() => {
     const clasePreseleccionada = location.state?.clasePreseleccionada;
@@ -215,11 +193,15 @@ export default function ReservaGrupos() {
   }, [claseSeleccionada]);
 
   const precioTotal = useMemo(() => {
-    const personasNum = Number(personas) || 0;
-    return precioUnitario * personasNum;
-  }, [precioUnitario, personas]);
+  const personasNum = Number(personas) || 0;
+  return precioUnitario * personasNum;
+}, [precioUnitario, personas]);
 
-  const turnoFinal = modoHorario === "manual" ? horarioManual.trim() : horario;
+const turnosGrupoDisponibles = useMemo(() => {
+  return obtenerTurnosGrupoPorFecha(fecha);
+}, [fecha]);
+
+const turnoFinal = horario;
 
   const whatsappUrl = useMemo(() => {
     const mensaje = construirMensajeWhatsApp({
@@ -268,8 +250,6 @@ export default function ReservaGrupos() {
       email,
       fecha,
       horario,
-      horarioManual,
-      modoHorario,
       claseSeleccionada,
       contactoConfirmado,
       precioUnitario,
@@ -301,17 +281,12 @@ export default function ReservaGrupos() {
       return;
     }
 
-    if (modoHorario === "habitual" && !horario) {
-      console.log("bloqueado: sin horario habitual");
-      alert("No se ha podido asignar el horario.");
-      return;
-    }
-
-    if (modoHorario === "manual" && !horarioManual.trim()) {
-      console.log("bloqueado: sin horario manual");
-      alert("Debes indicar el horario acordado con el taller.");
-      return;
-    }
+    
+     if (!horario) {
+  console.log("bloqueado: sin horario seleccionado");
+  alert("Debes elegir un horario para la reserva.");
+  return;
+}
 
     const personasNum = Number(personas) || 0;
 
@@ -354,10 +329,6 @@ export default function ReservaGrupos() {
         tipo: "grupo",
         fecha,
         turno: turnoFinal,
-        modoHorario,
-        horarioPendienteConfirmacion:
-          modoHorario === "manual" ||
-          turnoFinal === "Pendiente de confirmar con el taller",
         metodo: "grupo",
         plazas: personasNum,
         precio: precioTotal,
@@ -423,16 +394,26 @@ return;
             para concretar bien los detalles.
           </p>
 
-          <p className="text-sm text-[#7a5a1e] bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-3 text-center mb-8">
-            Horarios habituales disponibles para grupos:
-            <br />
-            <strong>Tardes: martes, miércoles, jueves, viernes y sábados:</strong> 17:30 a 20:30
-            <br />
-            <strong>Mañanas: sábados y domingos:</strong> 11:30 a 14:30
-            <br />
-            Si necesitáis otro día u horario distinto, también se puede solicitar,
-            siempre consultándolo previamente con el taller por WhatsApp.
-          </p>
+          <p className="text-sm text-[#7a5a1e] bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-4 text-center mb-8 leading-7">
+  <strong>¿Cómo funciona la reserva para grupos?</strong>
+  <br /><br />
+
+  1. Elegid la fecha que mejor os venga.
+  <br />
+  2. Seleccionad si preferís turno de mañana o de tarde.
+  <br />
+  3. Hablad con el taller por WhatsApp para confirmar disponibilidad.
+  <br />
+  4. Después ya podéis continuar con el pago de la reserva.
+  <br /><br />
+
+  <strong>Turno de mañana:</strong> 11:30 a 14:30
+  <br />
+  <strong>Turno de tarde:</strong> 17:30 a 20:30
+  <br /><br />
+
+  Si necesitáis algo especial, como empezar antes o cualquier detalle importante, podéis indicarlo en el apartado de notas de la reserva.
+</p>
 
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-[#3b3025] mb-4 text-center">
@@ -572,8 +553,8 @@ return;
                 />
                 {fecha && !fechaBloqueada && (
                   <p className="text-sm text-gray-600 mt-2">
-                    Si eliges una fecha fuera del horario habitual, la solicitud quedará
-                    sujeta a confirmación previa con el taller.
+                    Puedes solicitar una reserva de grupo para cualquier fecha disponible. 
+Después elige si preferís venir por la mañana o por la tarde.
                   </p>
                 )}
                 {fechaBloqueada && (
@@ -587,51 +568,34 @@ return;
               </div>
 
               <div>
-                <label className="block font-bold text-sm mb-2">
-  Horario <span className="text-red-600">*</span>
-</label>
+  <label className="block font-bold text-sm mb-2">
+    Horario <span className="text-red-600">*</span>
+  </label>
 
-                <div className="flex gap-4 mb-3 flex-wrap">
-                  <label className="flex items-center text-sm">
-                    <input
-                      type="radio"
-                      value="habitual"
-                      checked={modoHorario === "habitual"}
-                      onChange={() => setModoHorario("habitual")}
-                      className="mr-2"
-                    />
-                    Horario habitual
-                  </label>
+  <p className="text-sm text-gray-600 mb-3">
+    Selecciona el turno que mejor os venga. Antes del pago, confirma con el taller que la fecha y el horario están disponibles para vuestro grupo.
+  </p>
 
-                  <label className="flex items-center text-sm">
-                    <input
-                      type="radio"
-                      value="manual"
-                      checked={modoHorario === "manual"}
-                      onChange={() => setModoHorario("manual")}
-                      className="mr-2"
-                    />
-                    Otro horario (ya acordado con el taller)
-                  </label>
-                </div>
+  <div className="grid gap-3 md:grid-cols-2">
+    {turnosGrupoDisponibles.map((turno) => (
+      <button
+        key={turno}
+        type="button"
+        onClick={() => setHorario(turno)}
+        disabled={!fecha}
+        className={`border rounded-xl px-4 py-3 text-sm font-semibold transition ${
+          horario === turno
+            ? "border-[#f4c542] bg-[#fff8df] text-[#5c3c00]"
+            : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+        } ${!fecha ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        {turno}
+      </button>
+    ))}
+  </div>
+</div>
 
-                {modoHorario === "habitual" ? (
-                  <input
-                    type="text"
-                    value={horario}
-                    readOnly
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50"
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    value={horarioManual}
-                    onChange={(e) => setHorarioManual(e.target.value)}
-                    placeholder="Ejemplo: domingo por la tarde, martes 11:30 a 14:30..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  />
-                )}
-              </div>
+                
 
               <div>
                 <label className="block font-bold text-sm mb-2">
@@ -734,8 +698,7 @@ return;
                   !nombreReserva ||
                   !telefono ||
                   !fecha ||
-                  (modoHorario === "habitual" && !horario) ||
-                  (modoHorario === "manual" && !horarioManual.trim()) ||
+                  !horario ||
                   personas < MIN_PERSONAS ||
                   !(precioUnitario > 0) ||
                   !contactoConfirmado
