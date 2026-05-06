@@ -51,12 +51,51 @@ export default function DondeReservarV2() {
 
           <button
             onClick={() => navigate("/clases-online")}
-            className="mt-2 md:mt-0 md:ml-auto bg-gradient-to-r from-pink-400 to-red-400 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:scale-105 transition text-center leading-snug w-52"
+            className="mt-2 md:mt-0 md:ml-auto bg-gradient-to-r from-pink-400 to-red-400 text-white px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-sm hover:scale-105 transition text-center leading-tight w-32"
           >
             🌟 Novedad:
             <br /> ¡Reserva tu clase online!
           </button>
         </div>
+
+     {/* ACCESOS RÁPIDOS MÓVIL */}
+<div className="grid grid-cols-2 gap-3 mb-8 md:hidden">
+
+  <button
+    onClick={() => navigate("/reserva-grupos")}
+    className="rounded-2xl bg-white border border-[#eadfd2] p-3 shadow-sm flex flex-col items-center"
+  >
+    <img
+      src="/img/grupos/portadagrupos.jpg"
+      alt="Reserva en grupo"
+      className="w-16 h-16 object-cover rounded-xl mb-2"
+    />
+
+    <span className="text-sm font-bold text-[#5f3f2b] text-center leading-tight">
+      Reservar
+      <br />
+      en grupo
+    </span>
+  </button>
+
+  <button
+    onClick={() => navigate("/talleres/pinta-decora")}
+    className="rounded-2xl bg-white border border-[#eadfd2] p-3 shadow-sm flex flex-col items-center"
+  >
+    <img
+      src="/img/pintartearium.jpg"
+      alt="Pinta tu pieza"
+      className="w-16 h-16 object-cover rounded-xl mb-2"
+    />
+
+    <span className="text-sm font-bold text-[#5f3f2b] text-center leading-tight">
+      Pinta tu
+      <br />
+      pieza
+    </span>
+  </button>
+
+</div>
 
         {/* BLOQUE PRINCIPAL */}
         <section className="mb-10">
