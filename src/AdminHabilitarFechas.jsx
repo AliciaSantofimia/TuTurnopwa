@@ -8,6 +8,8 @@ const AdminHabilitarFechas = () => {
   const [fechaFin, setFechaFin] = useState("");
   const [motivo, setMotivo] = useState("");
   const [fechasHabilitadas, setFechasHabilitadas] = useState([]);
+  const [habilitarManana, setHabilitarManana] = useState(true);
+const [habilitarTarde, setHabilitarTarde] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoFecha, setEliminandoFecha] = useState("");
 
@@ -70,6 +72,10 @@ const AdminHabilitarFechas = () => {
       alert("La fecha fin no puede ser anterior a la fecha inicio.");
       return;
     }
+    if (!habilitarManana && !habilitarTarde) {
+  alert("Selecciona al menos un turno: mañana o tarde.");
+  return;
+}
 
     try {
       setGuardando(true);
@@ -78,11 +84,15 @@ const AdminHabilitarFechas = () => {
       const updates = {};
 
       fechas.forEach((fecha) => {
-        updates[`fechasHabilitadas/${fecha}`] = {
-          habilitada: true,
-          motivo: motivo.trim() || "Apertura especial",
-          creadaEn: Date.now(),
-        };
+       updates[`fechasHabilitadas/${fecha}`] = {
+  habilitada: true,
+  motivo: motivo.trim() || "Apertura especial",
+  creadaEn: Date.now(),
+  turnosHabilitados: {
+    manana: habilitarManana,
+    tarde: habilitarTarde,
+  },
+};
       });
 
       await update(ref(dbRealtime), updates);
@@ -90,6 +100,8 @@ const AdminHabilitarFechas = () => {
       setFechaInicio("");
       setFechaFin("");
       setMotivo("");
+      setHabilitarManana(true);
+setHabilitarTarde(true);
 
       await cargarFechasHabilitadas();
       alert("Fechas habilitadas correctamente.");
@@ -167,6 +179,27 @@ const AdminHabilitarFechas = () => {
               style={styles.input}
             />
           </div>
+          <div style={styles.campo}>
+  <label style={styles.label}>Turnos habilitados</label>
+
+  <label style={styles.checkboxLabel}>
+    <input
+      type="checkbox"
+      checked={habilitarManana}
+      onChange={(e) => setHabilitarManana(e.target.checked)}
+    />
+    Mañana
+  </label>
+
+  <label style={styles.checkboxLabel}>
+    <input
+      type="checkbox"
+      checked={habilitarTarde}
+      onChange={(e) => setHabilitarTarde(e.target.checked)}
+    />
+    Tarde
+  </label>
+</div>
 
           <button
             onClick={guardarHabilitacion}
@@ -317,6 +350,13 @@ const styles = {
     color: "#8a3b3b",
     flexShrink: 0,
   },
+  checkboxLabel: {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  fontSize: "0.95rem",
+  color: "#5b4a2d",
+},
   textoVacio: {
     color: "#777",
     fontStyle: "italic",

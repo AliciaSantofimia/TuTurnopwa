@@ -184,12 +184,44 @@ export default function ReservaEspecialPintaTuPieza() {
   const turnos = [...turnosHabituales];
 
   if (fechaHabilitadaManual) {
-    normalizarTurnos(claseConfig?.turnos).forEach((t) => {
-      if (!turnos.includes(t)) {
-        turnos.push(t);
-      }
+  const todosLosTurnos = normalizarTurnos(claseConfig?.turnos);
+  const turnosConfig = fechaHabilitadaManual.turnosHabilitados;
+
+  let turnosPermitidos = todosLosTurnos;
+
+  if (turnosConfig) {
+    turnosPermitidos = todosLosTurnos.filter((t) => {
+      const turnoLower = t.toLowerCase();
+
+      const esManana =
+        turnoLower.includes("10:") ||
+        turnoLower.includes("11:") ||
+        turnoLower.includes("12:") ||
+        turnoLower.includes("13:") ||
+        turnoLower.includes("14:");
+
+      const esTarde =
+        turnoLower.includes("15:") ||
+        turnoLower.includes("16:") ||
+        turnoLower.includes("17:") ||
+        turnoLower.includes("18:") ||
+        turnoLower.includes("19:") ||
+        turnoLower.includes("20:") ||
+        turnoLower.includes("21:");
+
+      return (
+        (turnosConfig.manana && esManana) ||
+        (turnosConfig.tarde && esTarde)
+      );
     });
   }
+
+  turnosPermitidos.forEach((t) => {
+    if (!turnos.includes(t)) {
+      turnos.push(t);
+    }
+  });
+}
 
   Object.values(reservasGrupos || {}).forEach((grupo) => {
     if (
