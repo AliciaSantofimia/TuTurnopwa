@@ -209,6 +209,7 @@ datos.push({
   id: grupo.orderId || grupoSnap.key || `grupo-${Math.random()}`,
   claseId: grupo.claseId || "reserva-grupo",
   clase: grupo.clase || "Reserva de grupo",
+  nombreGrupo: grupo.nombreGrupo || "",
   fecha: fechaFinal,
   turno: grupo.turno || "—",
   metodo: "grupo",
@@ -703,6 +704,11 @@ datos.push({
                           }}
                         >
                           <p style={styles.reservaClase}>{r.clase}</p>
+                          {r.esGrupo && r.nombreGrupo && (
+  <p style={styles.reservaGrupo}>
+    Grupo: {r.nombreGrupo}
+  </p>
+)}
                           <p style={styles.reservaMeta}>
                             {r.turno} · {r.metodo} · {r.plazas} plaza
                             {r.plazas !== 1 ? "s" : ""}
@@ -1070,6 +1076,12 @@ const styles = {
     fontSize: "0.98rem",
     fontWeight: 600,
   },
+  reservaGrupo: {
+  margin: "5px 0 0 0",
+  color: "#8a5a00",
+  fontSize: "0.9rem",
+  fontWeight: 700,
+},
   reservaMeta: {
     margin: "6px 0 0 0",
     color: "#7a7a7a",

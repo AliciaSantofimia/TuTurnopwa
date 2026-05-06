@@ -111,6 +111,7 @@ export default function ReservaGrupos() {
 
   const [user, setUser] = useState(null);
   const [nombreReserva, setNombreReserva] = useState("");
+  const [nombreGrupo, setNombreGrupo] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
   const [fecha, setFecha] = useState("");
@@ -322,6 +323,7 @@ const turnoFinal = horario;
       const reservaGrupo = {
         uid: user.uid,
         nombreReserva,
+         nombreGrupo: nombreGrupo.trim() || "",
         telefono,
         email: email || "",
         clase: claseSeleccionada,
@@ -542,6 +544,21 @@ return;
                   className="w-full border border-gray-300 rounded-lg px-3 py-2"
                 />
               </div>
+              <div>
+  <label className="block font-bold text-sm mb-1">
+    Nombre del grupo
+  </label>
+  <input
+    type="text"
+    value={nombreGrupo}
+    onChange={(e) => setNombreGrupo(e.target.value)}
+    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+    placeholder="Ejemplo: Despedida Las Nenas, Cumple Laura, Equipo Marketing..."
+  />
+  <p className="text-xs text-gray-500 mt-1">
+    Opcional, pero si lo pones ayudas mucho al taller para que pueda identificar fácilmente vuestro grupo.
+  </p>
+</div>
 
               <div>
                 <label className="block font-bold text-sm mb-1">

@@ -349,10 +349,16 @@ const AdminReservasGrupos = () => {
                       </div>
 
                       <div style={styles.infoBox}>
-                        <p><strong>Nombre:</strong> {r.nombreReserva}</p>
-                        <p><strong>Teléfono:</strong> {r.telefono}</p>
-                        <p><strong>Email:</strong> {r.email || "—"}</p>
-                      </div>
+  {r.nombreGrupo && (
+    <p>
+      <strong>Grupo:</strong> {r.nombreGrupo}
+    </p>
+  )}
+
+  <p><strong>Nombre:</strong> {r.nombreReserva}</p>
+  <p><strong>Teléfono:</strong> {r.telefono}</p>
+  <p><strong>Email:</strong> {r.email || "—"}</p>
+</div>
                     </div>
 
                     {r.notas && (
