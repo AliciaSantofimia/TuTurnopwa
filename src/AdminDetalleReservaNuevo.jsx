@@ -19,7 +19,8 @@ const AdminDetalleReservaNuevo = () => {
 
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
-  const [nuevaFecha, setNuevaFecha] = useState("");
+const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+const [nuevaFecha, setNuevaFecha] = useState("");
   const [nuevoTurno, setNuevoTurno] = useState("");
   const [ocupadasTornoNuevaFecha, setOcupadasTornoNuevaFecha] = useState(0);
   const [ocupadasModeladoNuevaFecha, setOcupadasModeladoNuevaFecha] = useState(0);
@@ -147,23 +148,30 @@ email: r.email || datosUsuario.email || "",
         setReserva(encontrada);
 
         if (encontrada?.claseId) {
-          const [claseConfigSnap, bloqueosSnap] = await Promise.all([
-            get(ref(dbRealtime, `clases/${encontrada.claseId}`)),
-            get(ref(dbRealtime, "bloqueosFechas")),
-          ]);
+          const [claseConfigSnap, bloqueosSnap, habilitadasSnap] = await Promise.all([
+  get(ref(dbRealtime, `clases/${encontrada.claseId}`)),
+  get(ref(dbRealtime, "bloqueosFechas")),
+  get(ref(dbRealtime, "fechasHabilitadas")),
+]);
 
           setClaseConfig(claseConfigSnap.exists() ? claseConfigSnap.val() : null);
           setFechasBloqueadas(
-            bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
-          );
-          setNuevaFecha(encontrada.fecha || "");
-          setNuevoTurno(encontrada.turno || "");
+  bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
+);
+
+setFechasHabilitadas(
+  habilitadasSnap.exists() ? habilitadasSnap.val() || {} : {}
+);
+
+setNuevaFecha(encontrada.fecha || "");
+setNuevoTurno(encontrada.turno || "");
         } else {
-          setClaseConfig(null);
-          setFechasBloqueadas({});
-          setNuevaFecha("");
-          setNuevoTurno("");
-        }
+  setClaseConfig(null);
+  setFechasBloqueadas({});
+  setFechasHabilitadas({});
+  setNuevaFecha("");
+  setNuevoTurno("");
+}
 
         const listaNotas = [];
         if (notasSnap.exists()) {
@@ -180,12 +188,14 @@ email: r.email || datosUsuario.email || "",
         }
         setNotasInternas(listaNotas);
       } catch (error) {
-        console.error("Error al buscar reserva:", error);
-        setReserva(null);
-        setNotasInternas([]);
-        setClaseConfig(null);
-        setFechasBloqueadas({});
-      } finally {
+  console.error("Error al buscar reserva:", error);
+  setReserva(null);
+  setNotasInternas([]);
+  setClaseConfig(null);
+  setFechasBloqueadas({});
+  setFechasHabilitadas({});
+}
+      finally {
         setCargando(false);
       }
     };
@@ -292,6 +302,21 @@ email: r.email || datosUsuario.email || "",
 
     return [];
   };
+  const obtenerTurnosFechaHabilitada = (fechaISO) => {
+  const config = fechasHabilitadas?.[fechaISO];
+
+  if (!config) return [];
+  if (config.habilitada === false) return [];
+
+  return normalizarTurnos(
+    config.turnos ||
+      config.turnosHabilitados ||
+      config.horarios ||
+      config.horario ||
+      config.turno
+  );
+};
+
 
   const getNombreDiaSemana = (fechaISO) => {
     if (!fechaISO) return "";
@@ -316,11 +341,17 @@ email: r.email || datosUsuario.email || "",
   const metodoOriginal = (reserva?.metodo || "").toLowerCase();
 
   const turnosDisponiblesReprogramacion = useMemo(() => {
-    if (!nuevaFecha) return [];
+  if (!nuevaFecha) return [];
 
-    const nombreDia = getNombreDiaSemana(nuevaFecha);
-    return normalizarTurnos(horariosClase[nombreDia]);
-  }, [horariosClase, nuevaFecha]);
+  const turnosFechaHabilitada = obtenerTurnosFechaHabilitada(nuevaFecha);
+
+  if (turnosFechaHabilitada.length > 0) {
+    return turnosFechaHabilitada;
+  }
+
+  const nombreDia = getNombreDiaSemana(nuevaFecha);
+  return normalizarTurnos(horariosClase[nombreDia]);
+}, [horariosClase, nuevaFecha, fechasHabilitadas]);
 
   const fechaBloqueadaReprogramacion = useMemo(() => {
     if (!nuevaFecha) return null;

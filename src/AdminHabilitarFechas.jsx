@@ -88,10 +88,10 @@ const [habilitarTarde, setHabilitarTarde] = useState(true);
   habilitada: true,
   motivo: motivo.trim() || "Apertura especial",
   creadaEn: Date.now(),
-  turnosHabilitados: {
-    manana: habilitarManana,
-    tarde: habilitarTarde,
-  },
+  turnosHabilitados: [
+  ...(habilitarManana ? ["11:30 a 14:30"] : []),
+  ...(habilitarTarde ? ["17:30 a 20:30"] : []),
+],
 };
       });
 
