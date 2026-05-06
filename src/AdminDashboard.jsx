@@ -233,7 +233,7 @@ const AdminDashboard = () => {
   style={styles.boton}
   onClick={() => navigate("/admin-habilitar-fechas")}
 >
-  Habilitar fechas
+  Habilitar fechas y Turnos
 </button>
 <button
   style={styles.boton}

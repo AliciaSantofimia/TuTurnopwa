@@ -141,7 +141,7 @@ setHabilitarTarde(true);
       <div style={styles.container}>
         <BotonVolver />
 
-        <h1 style={styles.titulo}>Habilitar fechas</h1>
+        <h1 style={styles.titulo}>Habilitar fechas y Turnos</h1>
         <p style={styles.subtitulo}>
           Aquí puedes abrir días especiales para que sí se puedan reservar.
         </p>
