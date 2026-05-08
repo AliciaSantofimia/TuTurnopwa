@@ -19,40 +19,48 @@ const AdminDetalleReservaNuevo = () => {
 
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
-const [fechasHabilitadas, setFechasHabilitadas] = useState({});
-const [nuevaFecha, setNuevaFecha] = useState("");
+  const [fechasHabilitadas, setFechasHabilitadas] = useState({});
+  const [nuevaFecha, setNuevaFecha] = useState("");
   const [nuevoTurno, setNuevoTurno] = useState("");
   const [ocupadasTornoNuevaFecha, setOcupadasTornoNuevaFecha] = useState(0);
-  const [ocupadasModeladoNuevaFecha, setOcupadasModeladoNuevaFecha] = useState(0);
+  const [ocupadasModeladoNuevaFecha, setOcupadasModeladoNuevaFecha] =
+    useState(0);
   const [guardandoReprogramacion, setGuardandoReprogramacion] = useState(false);
 
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
   const [guardandoCancelacion, setGuardandoCancelacion] = useState(false);
 
+  const normalizarTurnoParaRuta = (turno = "") =>
+    String(turno || "")
+      .trim()
+      .replaceAll(" a ", "-")
+      .replaceAll(" -", "-")
+      .replaceAll("- ", "-");
+
   useEffect(() => {
     const buscarReserva = async () => {
       try {
-       const [reservasSnap, notasSnap, usuariosSnap] = await Promise.all([
-  get(ref(dbRealtime, "reservas")),
-  get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
-  get(ref(dbRealtime, "usuarios")),
-]);
+        const [reservasSnap, notasSnap, usuariosSnap] = await Promise.all([
+          get(ref(dbRealtime, "reservas")),
+          get(ref(dbRealtime, `reservasNotas/${orderId}/notasInternas`)),
+          get(ref(dbRealtime, "usuarios")),
+        ]);
 
         let encontrada = null;
         const usuariosMap = {};
 
-if (usuariosSnap.exists()) {
-  usuariosSnap.forEach((userSnap) => {
-    const uid = userSnap.key;
-    const user = userSnap.val() || {};
+        if (usuariosSnap.exists()) {
+          usuariosSnap.forEach((userSnap) => {
+            const uid = userSnap.key;
+            const user = userSnap.val() || {};
 
-    usuariosMap[uid] = {
-      nombre: user.nombre || user.name || user.displayName || "",
-      telefono: user.telefono || user.phone || user.telefonoUsuario || "",
-      email: user.email || "",
-    };
-  });
-}
+            usuariosMap[uid] = {
+              nombre: user.nombre || user.name || user.displayName || "",
+              telefono: user.telefono || user.phone || user.telefonoUsuario || "",
+              email: user.email || "",
+            };
+          });
+        }
 
         if (reservasSnap.exists()) {
           reservasSnap.forEach((claseSnap) => {
@@ -76,21 +84,23 @@ if (usuariosSnap.exists()) {
                   }
 
                   const construirReserva = (r, reservaKey) => {
-  if (!r || typeof r !== "object") return null;
+                    if (!r || typeof r !== "object") return null;
 
-  const datosUsuario = usuariosMap[r.uid] || {};
+                    const datosUsuario = usuariosMap[r.uid] || {};
 
-  return {
+                    return {
                       ...r,
                       claseId: r.claseId || claseKey,
                       clase: r.clase || claseKey,
                       fecha: r.fecha || fechaKey,
-                      turno: r.turno || turnoKey,
+                      turno: normalizarTurnoParaRuta(r.turno || turnoKey),
                       metodo:
                         r.metodo ||
                         r.tipoClase ||
                         r.nombreTipoClase ||
-                        (nivelKey && !String(nivelKey).startsWith("-") ? nivelKey : "") ||
+                        (nivelKey && !String(nivelKey).startsWith("-")
+                          ? nivelKey
+                          : "") ||
                         "—",
                       plazas: Number(r.plazas || 1),
                       estado: r.estado || "—",
@@ -100,16 +110,21 @@ if (usuariosSnap.exists()) {
                         r.precioTotal || r.precioUnitario || r.precio || 0
                       ),
                       uid: r.uid || "",
-                      nombre: r.nombre || r.nombreUsuario || datosUsuario.nombre || "",
-telefono: r.telefono || r.telefonoUsuario || datosUsuario.telefono || "",
-email: r.email || datosUsuario.email || "",
+                      nombre:
+                        r.nombre || r.nombreUsuario || datosUsuario.nombre || "",
+                      telefono:
+                        r.telefono ||
+                        r.telefonoUsuario ||
+                        datosUsuario.telefono ||
+                        "",
+                      email: r.email || datosUsuario.email || "",
                       orderId: r.orderId || "",
                       desdeTarjeta: r.desdeTarjeta ?? false,
                       timestamp: r.pagadoEn || r.timestamp || r.creadoEn || "—",
                       procesado: r.procesado ?? false,
                       rutaClase: claseKey,
                       rutaFecha: fechaKey,
-                      rutaTurno: turnoKey,
+                      rutaTurno: normalizarTurnoParaRuta(turnoKey),
                       rutaMetodo: nivelKey,
                       reservaKey: reservaKey || "",
                     };
@@ -148,30 +163,30 @@ email: r.email || datosUsuario.email || "",
         setReserva(encontrada);
 
         if (encontrada?.claseId) {
-          const [claseConfigSnap, bloqueosSnap, habilitadasSnap] = await Promise.all([
-  get(ref(dbRealtime, `clases/${encontrada.claseId}`)),
-  get(ref(dbRealtime, "bloqueosFechas")),
-  get(ref(dbRealtime, "fechasHabilitadas")),
-]);
+          const [claseConfigSnap, bloqueosSnap, habilitadasSnap] =
+            await Promise.all([
+              get(ref(dbRealtime, `clases/${encontrada.claseId}`)),
+              get(ref(dbRealtime, "bloqueosFechas")),
+              get(ref(dbRealtime, "fechasHabilitadas")),
+            ]);
 
           setClaseConfig(claseConfigSnap.exists() ? claseConfigSnap.val() : null);
           setFechasBloqueadas(
-  bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
-);
+            bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
+          );
+          setFechasHabilitadas(
+            habilitadasSnap.exists() ? habilitadasSnap.val() || {} : {}
+          );
 
-setFechasHabilitadas(
-  habilitadasSnap.exists() ? habilitadasSnap.val() || {} : {}
-);
-
-setNuevaFecha(encontrada.fecha || "");
-setNuevoTurno(encontrada.turno || "");
+          setNuevaFecha(encontrada.fecha || "");
+          setNuevoTurno(normalizarTurnoParaRuta(encontrada.turno || ""));
         } else {
-  setClaseConfig(null);
-  setFechasBloqueadas({});
-  setFechasHabilitadas({});
-  setNuevaFecha("");
-  setNuevoTurno("");
-}
+          setClaseConfig(null);
+          setFechasBloqueadas({});
+          setFechasHabilitadas({});
+          setNuevaFecha("");
+          setNuevoTurno("");
+        }
 
         const listaNotas = [];
         if (notasSnap.exists()) {
@@ -186,16 +201,16 @@ setNuevoTurno(encontrada.turno || "");
             }
           });
         }
+
         setNotasInternas(listaNotas);
       } catch (error) {
-  console.error("Error al buscar reserva:", error);
-  setReserva(null);
-  setNotasInternas([]);
-  setClaseConfig(null);
-  setFechasBloqueadas({});
-  setFechasHabilitadas({});
-}
-      finally {
+        console.error("Error al buscar reserva:", error);
+        setReserva(null);
+        setNotasInternas([]);
+        setClaseConfig(null);
+        setFechasBloqueadas({});
+        setFechasHabilitadas({});
+      } finally {
         setCargando(false);
       }
     };
@@ -287,36 +302,38 @@ setNuevoTurno(encontrada.turno || "");
     if (!turnosRaw) return [];
 
     if (Array.isArray(turnosRaw)) {
-      return turnosRaw.map((t) => String(t || "").trim()).filter(Boolean);
+      return turnosRaw
+        .map((t) => normalizarTurnoParaRuta(t))
+        .filter(Boolean);
     }
 
     if (typeof turnosRaw === "object") {
       return Object.values(turnosRaw)
-        .map((t) => String(t || "").trim())
+        .map((t) => normalizarTurnoParaRuta(t))
         .filter(Boolean);
     }
 
     if (typeof turnosRaw === "string") {
-      return [turnosRaw.trim()].filter(Boolean);
+      return [normalizarTurnoParaRuta(turnosRaw)].filter(Boolean);
     }
 
     return [];
   };
+
   const obtenerTurnosFechaHabilitada = (fechaISO) => {
-  const config = fechasHabilitadas?.[fechaISO];
+    const config = fechasHabilitadas?.[fechaISO];
 
-  if (!config) return [];
-  if (config.habilitada === false) return [];
+    if (!config) return [];
+    if (config.habilitada === false) return [];
 
-  return normalizarTurnos(
-    config.turnos ||
-      config.turnosHabilitados ||
-      config.horarios ||
-      config.horario ||
-      config.turno
-  );
-};
-
+    return normalizarTurnos(
+      config.turnos ||
+        config.turnosHabilitados ||
+        config.horarios ||
+        config.horario ||
+        config.turno
+    );
+  };
 
   const getNombreDiaSemana = (fechaISO) => {
     if (!fechaISO) return "";
@@ -341,17 +358,17 @@ setNuevoTurno(encontrada.turno || "");
   const metodoOriginal = (reserva?.metodo || "").toLowerCase();
 
   const turnosDisponiblesReprogramacion = useMemo(() => {
-  if (!nuevaFecha) return [];
+    if (!nuevaFecha) return [];
 
-  const turnosFechaHabilitada = obtenerTurnosFechaHabilitada(nuevaFecha);
+    const turnosFechaHabilitada = obtenerTurnosFechaHabilitada(nuevaFecha);
 
-  if (turnosFechaHabilitada.length > 0) {
-    return turnosFechaHabilitada;
-  }
+    if (turnosFechaHabilitada.length > 0) {
+      return turnosFechaHabilitada;
+    }
 
-  const nombreDia = getNombreDiaSemana(nuevaFecha);
-  return normalizarTurnos(horariosClase[nombreDia]);
-}, [horariosClase, nuevaFecha, fechasHabilitadas]);
+    const nombreDia = getNombreDiaSemana(nuevaFecha);
+    return normalizarTurnos(horariosClase[nombreDia]);
+  }, [horariosClase, nuevaFecha, fechasHabilitadas]);
 
   const fechaBloqueadaReprogramacion = useMemo(() => {
     if (!nuevaFecha) return null;
@@ -408,7 +425,8 @@ setNuevoTurno(encontrada.turno || "");
   ]);
 
   const hayCambiosReales =
-    nuevaFecha !== reserva?.fecha || nuevoTurno !== reserva?.turno;
+    nuevaFecha !== reserva?.fecha ||
+    normalizarTurnoParaRuta(nuevoTurno) !== normalizarTurnoParaRuta(reserva?.turno);
 
   const reservaYaCancelada =
     reserva?.cancelada === true || reserva?.estado === "Cancelada";
@@ -451,7 +469,11 @@ setNuevoTurno(encontrada.turno || "");
   const obtenerRutaReservaActual = () => {
     if (!reserva) return null;
 
-    const rutaBase = `reservas/${reserva.rutaClase}/${reserva.rutaFecha}/${reserva.rutaTurno}`;
+    const rutaClase = reserva.rutaClase;
+    const rutaFecha = reserva.rutaFecha || reserva.fecha;
+    const rutaTurno = normalizarTurnoParaRuta(reserva.rutaTurno || reserva.turno);
+
+    const rutaBase = `reservas/${rutaClase}/${rutaFecha}/${rutaTurno}`;
 
     const metodoEsDirecto =
       reserva.rutaMetodo === reserva.reservaKey ||
@@ -467,8 +489,11 @@ setNuevoTurno(encontrada.turno || "");
   const guardarReprogramacion = async () => {
     if (!reprogramacionValida || !reserva) return;
 
+    const turnoNormalizado = normalizarTurnoParaRuta(nuevoTurno);
+    const turnoAnteriorNormalizado = normalizarTurnoParaRuta(reserva.turno);
+
     const confirmar = window.confirm(
-      `¿Seguro que quieres reprogramar esta reserva del ${reserva.fecha} (${reserva.turno}) al ${nuevaFecha} (${nuevoTurno})?`
+      `¿Seguro que quieres reprogramar esta reserva del ${reserva.fecha} (${turnoAnteriorNormalizado}) al ${nuevaFecha} (${turnoNormalizado})?`
     );
 
     if (!confirmar) return;
@@ -489,17 +514,29 @@ setNuevoTurno(encontrada.turno || "");
       const nuevaReservaPayload = {
         ...reserva,
         fecha: nuevaFecha,
-        turno: nuevoTurno,
+        turno: turnoNormalizado,
         metodo: metodoNormalizado,
+
         reprogramada: true,
         fechaOriginal: reserva.fechaOriginal || reserva.fecha,
-        turnoOriginal: reserva.turnoOriginal || reserva.turno,
+        turnoOriginal: normalizarTurnoParaRuta(
+          reserva.turnoOriginal || reserva.turno
+        ),
+
         ultimaFechaAnterior: reserva.fecha,
-        ultimoTurnoAnterior: reserva.turno,
+        ultimoTurnoAnterior: turnoAnteriorNormalizado,
+
         fechaReprogramada: nuevaFecha,
-        turnoReprogramado: nuevoTurno,
+        turnoReprogramado: turnoNormalizado,
+
+        rutaFecha: nuevaFecha,
+        rutaTurno: turnoNormalizado,
+        rutaMetodo: metodoNormalizado,
+        rutaClase: reserva.rutaClase,
+
         reprogramadaEn: fechaReprogramacionTexto,
         reprogramadaPor: "Berto",
+
         avisoPerfil:
           "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
       };
@@ -507,7 +544,7 @@ setNuevoTurno(encontrada.turno || "");
       const nuevaReservaRef = await push(
         ref(
           dbRealtime,
-          `reservas/${reserva.rutaClase}/${nuevaFecha}/${nuevoTurno}/${metodoNormalizado}`
+          `reservas/${reserva.rutaClase}/${nuevaFecha}/${turnoNormalizado}/${metodoNormalizado}`
         ),
         nuevaReservaPayload
       );
@@ -523,23 +560,36 @@ setNuevoTurno(encontrada.turno || "");
         const datosActualizadosUsuario = {
           ...reserva,
           fecha: nuevaFecha,
-          turno: nuevoTurno,
+          turno: turnoNormalizado,
           metodo: metodoNormalizado,
+
           reprogramada: true,
+
           fechaOriginal:
             reservaUsuario?.data?.fechaOriginal ||
             reserva.fechaOriginal ||
             reserva.fecha,
-          turnoOriginal:
+
+          turnoOriginal: normalizarTurnoParaRuta(
             reservaUsuario?.data?.turnoOriginal ||
-            reserva.turnoOriginal ||
-            reserva.turno,
+              reserva.turnoOriginal ||
+              reserva.turno
+          ),
+
           ultimaFechaAnterior: reserva.fecha,
-          ultimoTurnoAnterior: reserva.turno,
+          ultimoTurnoAnterior: turnoAnteriorNormalizado,
+
           fechaReprogramada: nuevaFecha,
-          turnoReprogramado: nuevoTurno,
+          turnoReprogramado: turnoNormalizado,
+
+          rutaFecha: nuevaFecha,
+          rutaTurno: turnoNormalizado,
+          rutaMetodo: metodoNormalizado,
+          rutaClase: reserva.rutaClase,
+
           reprogramadaEn: fechaReprogramacionTexto,
           reprogramadaPor: "Berto",
+
           avisoPerfil:
             "Tu reserva ha sido reprogramada. Revisa la nueva fecha y turno.",
         };
@@ -562,15 +612,15 @@ setNuevoTurno(encontrada.turno || "");
 
       await push(ref(dbRealtime, `reservasNotas/${orderId}/reprogramaciones`), {
         fechaAnterior: reserva.fecha,
-        turnoAnterior: reserva.turno,
+        turnoAnterior: turnoAnteriorNormalizado,
         fechaNueva: nuevaFecha,
-        turnoNuevo: nuevoTurno,
+        turnoNuevo: turnoNormalizado,
         fechaCambio: fechaReprogramacionTexto,
         realizadoPor: "Berto",
       });
 
       const notaAutomatica = {
-        texto: `Reserva reprogramada por Berto. Antes: ${reserva.fecha} - ${reserva.turno}. Ahora: ${nuevaFecha} - ${nuevoTurno}.`,
+        texto: `Reserva reprogramada por Berto. Antes: ${reserva.fecha} - ${turnoAnteriorNormalizado}. Ahora: ${nuevaFecha} - ${turnoNormalizado}.`,
         fecha: fechaReprogramacionTexto,
       };
 
@@ -591,7 +641,7 @@ setNuevoTurno(encontrada.turno || "");
         ...prev,
         ...nuevaReservaPayload,
         rutaFecha: nuevaFecha,
-        rutaTurno: nuevoTurno,
+        rutaTurno: turnoNormalizado,
         rutaMetodo: metodoNormalizado,
         reservaKey: nuevaReservaRef.key,
       }));
@@ -730,24 +780,42 @@ setNuevoTurno(encontrada.turno || "");
           </p>
 
           <p>
-  <strong>Fecha de la reserva:</strong>{" "}
-  <span style={styles.fechaReserva}>{reserva.fecha}</span>
-</p>
-<p>
-  <strong>Fecha de pago:</strong>
-  <span style={styles.fechaPago}>{reserva.timestamp}</span>
-</p>
-<p><strong>Turno:</strong> {reserva.turno}</p>
-{!["pintatupieza", "especialpintatupieza"].includes(reserva.claseId) &&
-  reserva.tipoTaller !== "pinta_y_decora" && (
-    <p><strong>Método:</strong> {reserva.metodo}</p>
-  )}
-<p><strong>Plazas:</strong> {reserva.plazas}</p>
-<hr style={styles.hr} />
+            <strong>Fecha de la reserva:</strong>{" "}
+            <span style={styles.fechaReserva}>{reserva.fecha}</span>
+          </p>
 
-<p><strong>Nombre:</strong> {reserva.nombre || "—"}</p>
-<p><strong>Teléfono:</strong> {reserva.telefono || "—"}</p>
-<p><strong>Email:</strong> {reserva.email || "—"}</p>
+          <p>
+            <strong>Fecha de pago:</strong>{" "}
+            <span style={styles.fechaPago}>{reserva.timestamp}</span>
+          </p>
+
+          <p>
+            <strong>Turno:</strong> {reserva.turno}
+          </p>
+
+          {!["pintatupieza", "especialpintatupieza"].includes(reserva.claseId) &&
+            reserva.tipoTaller !== "pinta_y_decora" && (
+              <p>
+                <strong>Método:</strong> {reserva.metodo}
+              </p>
+            )}
+
+          <p>
+            <strong>Plazas:</strong> {reserva.plazas}
+          </p>
+
+          <hr style={styles.hr} />
+
+          <p>
+            <strong>Nombre:</strong> {reserva.nombre || "—"}
+          </p>
+          <p>
+            <strong>Teléfono:</strong> {reserva.telefono || "—"}
+          </p>
+          <p>
+            <strong>Email:</strong> {reserva.email || "—"}
+          </p>
+
           {reserva.reprogramada && (
             <>
               <hr style={styles.hr} />
@@ -786,13 +854,21 @@ setNuevoTurno(encontrada.turno || "");
 
           <hr style={styles.hr} />
 
-          <p><strong>Estado:</strong> {reserva.estado}</p>
-          <p><strong>Estado pago:</strong> {reserva.estadoPago}</p>
+          <p>
+            <strong>Estado:</strong> {reserva.estado}
+          </p>
+          <p>
+            <strong>Estado pago:</strong> {reserva.estadoPago}
+          </p>
 
           <hr style={styles.hr} />
 
-          <p><strong>Precio unitario:</strong> {reserva.precioUnitario}€</p>
-          <p><strong>Precio total:</strong> {reserva.precioTotal}€</p>
+          <p>
+            <strong>Precio unitario:</strong> {reserva.precioUnitario}€
+          </p>
+          <p>
+            <strong>Precio total:</strong> {reserva.precioTotal}€
+          </p>
 
           <hr style={styles.hr} />
 
@@ -808,13 +884,18 @@ setNuevoTurno(encontrada.turno || "");
             </span>
           </p>
 
-          <p><strong>Order ID:</strong> {reserva.orderId}</p>
-          <p><strong>Desde tarjeta:</strong> {reserva.desdeTarjeta ? "Sí" : "No"}</p>
+          <p>
+            <strong>Order ID:</strong> {reserva.orderId}
+          </p>
+          <p>
+            <strong>Desde tarjeta:</strong> {reserva.desdeTarjeta ? "Sí" : "No"}
+          </p>
 
           <hr style={styles.hr} />
 
-          
-          <p><strong>Procesado:</strong> {reserva.procesado ? "Sí" : "No"}</p>
+          <p>
+            <strong>Procesado:</strong> {reserva.procesado ? "Sí" : "No"}
+          </p>
         </div>
 
         <div style={styles.notasBox}>
@@ -838,7 +919,9 @@ setNuevoTurno(encontrada.turno || "");
             <label style={styles.label}>Nuevo turno</label>
             <select
               value={nuevoTurno}
-              onChange={(e) => setNuevoTurno(e.target.value)}
+              onChange={(e) =>
+                setNuevoTurno(normalizarTurnoParaRuta(e.target.value))
+              }
               style={styles.input}
               disabled={
                 !nuevaFecha || diaNoDisponibleReprogramacion || reservaYaCancelada
@@ -922,9 +1005,7 @@ setNuevoTurno(encontrada.turno || "");
           </div>
 
           {reservaYaCancelada ? (
-            <p style={styles.textoError}>
-              Esta reserva ya está cancelada.
-            </p>
+            <p style={styles.textoError}>Esta reserva ya está cancelada.</p>
           ) : (
             <p style={styles.textoVacio}>
               La reserva no se borrará. Quedará guardada como cancelada en admin
@@ -1154,13 +1235,13 @@ const styles = {
     fontWeight: 600,
   },
   fechaReserva: {
-  color: "#8a6a2f",
-  fontWeight: 700,
-},
-fechaPago: {
-  color: "#5f7fa3",
-  fontWeight: 600,
-},
+    color: "#8a6a2f",
+    fontWeight: 700,
+  },
+  fechaPago: {
+    color: "#5f7fa3",
+    fontWeight: 600,
+  },
 };
 
 export default AdminDetalleReservaNuevo;
