@@ -62,7 +62,7 @@ const TODAS_LAS_CLASES = [
   { nombre: "Especial pinta tu pieza de cerámica", precio: 35 },
 ];
 
-const TURNOS_GRUPO = ["11:30 a 14:30", "17:30 a 20:30"];
+const TURNOS_GRUPO = ["11:30-14:30", "17:30-20:30"];
 
 function obtenerTurnosGrupoPorFecha(fechaISO) {
   if (!fechaISO) return [];
@@ -114,6 +114,7 @@ export default function ReservaGrupos() {
   const [nombreGrupo, setNombreGrupo] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
+  const [modoPago, setModoPago] = useState("completo");
   const [fecha, setFecha] = useState("");
   const [horario, setHorario] = useState("");
   const [personas, setPersonas] = useState(5);
@@ -317,38 +318,65 @@ const turnoFinal = horario;
 
     try {
       setCargando(true);
-
       const orderId = Date.now().toString().slice(-12);
 
-      const reservaGrupo = {
-        uid: user.uid,
-        nombreReserva,
-         nombreGrupo: nombreGrupo.trim() || "",
-        telefono,
-        email: email || "",
-        clase: claseSeleccionada,
-        claseId: "reserva-grupo",
-        tipo: "grupo",
-        fecha,
-        turno: turnoFinal,
-        metodo: "grupo",
-        plazas: personasNum,
-        precio: precioTotal,
-        precioUnitario,
-        precioTotal,
-        notas: notas || "",
-        contactoConfirmado: true,
-        estado: "Pendiente",
-        estadoPago: "pendiente",
-        orderId,
-        timestamp: new Date().toISOString(),
-      };
+    const ahoraISO = new Date().toISOString();
+
+const reservaGrupo = {
+  uid: user.uid,
+  nombreReserva,
+  nombreGrupo: nombreGrupo.trim() || "",
+  nombreOrganizador: nombreReserva,
+  telefonoOrganizador: telefono,
+  modoPago,
+  telefono,
+  email: email || "",
+  clase: claseSeleccionada,
+  claseId: "reserva-grupo",
+  tipo: "grupo",
+  fecha,
+  turno: turnoFinal,
+  metodo: "grupo",
+  plazas: personasNum,
+  precio: precioTotal,
+  precioUnitario,
+  precioTotal,
+  notas: notas || "",
+  contactoConfirmado: true,
+  estado: modoPago === "individual" ? "pendiente_pago_individual" : "Pendiente",
+  estadoPago: modoPago === "individual" ? "parcial" : "pendiente",
+  plazasPagadas: modoPago === "individual" ? 0 : personasNum,
+  plazasPendientes: modoPago === "individual" ? personasNum : 0,
+  totalPagado: modoPago === "individual" ? 0 : precioTotal,
+  totalPendiente: modoPago === "individual" ? precioTotal : 0,
+  fechaCreacion: ahoraISO,
+  fechaLimitePago:
+    modoPago === "individual"
+      ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      : null,
+  orderId,
+  timestamp: ahoraISO,
+};
+
+if (modoPago === "individual") {
+  reservaGrupo.pagosIndividuales = {};
+}
 
       console.log("va a guardar reservaGrupo", reservaGrupo);
 
       await push(ref(dbRealtime, "reservasGrupos"), reservaGrupo);
 
       console.log("reserva guardada, navegando al resumen");
+
+      if (modoPago === "individual") {
+  alert(
+    "Reserva de grupo creada correctamente. En el siguiente paso se generará el enlace para que cada asistente pague su plaza."
+  );
+
+  console.log("grupo individual creado:", reservaGrupo);
+
+  return;
+}
 
 navigate("/resumen-pago", {
   state: {
@@ -409,11 +437,9 @@ return;
   4. Después ya podéis continuar con el pago de la reserva.
   <br /><br />
 
-  <strong>Turno de mañana:</strong> 11:30 a 14:30
-  <br />
-  <strong>Turno de tarde:</strong> 17:30 a 20:30
-  <br /><br />
-
+ <strong>Turno de mañana:</strong> 11:30-14:30
+<br />
+<strong>Turno de tarde:</strong> 17:30-20:30
   Si necesitáis algo especial, como empezar antes o cualquier detalle importante, podéis indicarlo en el apartado de notas de la reserva.
 </p>
 
@@ -546,18 +572,58 @@ return;
               </div>
               <div>
   <label className="block font-bold text-sm mb-1">
-    Nombre del grupo
+    Nombre del grupo {modoPago === "individual" && <span className="text-red-600">*</span>}
   </label>
   <input
-    type="text"
-    value={nombreGrupo}
-    onChange={(e) => setNombreGrupo(e.target.value)}
-    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-    placeholder="Ejemplo: Despedida Las Nenas, Cumple Laura, Equipo Marketing..."
-  />
+  type="text"
+  value={nombreGrupo}
+  onChange={(e) => setNombreGrupo(e.target.value)}
+  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+  placeholder="Ejemplo: Despedida Las Nenas, Cumple Laura, Equipo Marketing..."
+  required={modoPago === "individual"}
+/>
   <p className="text-xs text-gray-500 mt-1">
     Opcional, pero si lo pones ayudas mucho al taller para que pueda identificar fácilmente vuestro grupo.
   </p>
+</div>
+<div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
+  <p className="block font-bold text-sm mb-3">
+    ¿Cómo queréis pagar la reserva?
+  </p>
+
+  <div className="space-y-3">
+    <label className="flex items-start gap-3 text-sm text-gray-700">
+      <input
+        type="radio"
+        name="modoPago"
+        value="completo"
+        checked={modoPago === "completo"}
+        onChange={() => setModoPago("completo")}
+        className="mt-1"
+      />
+      <span>
+        <strong>Pagar toda la reserva ahora</strong>
+        <br />
+        Una persona paga el importe completo del grupo.
+      </span>
+    </label>
+
+    <label className="flex items-start gap-3 text-sm text-gray-700">
+      <input
+        type="radio"
+        name="modoPago"
+        value="individual"
+        checked={modoPago === "individual"}
+        onChange={() => setModoPago("individual")}
+        className="mt-1"
+      />
+      <span>
+        <strong>Dividir el pago entre asistentes</strong>
+        <br />
+        Se generará un enlace para que cada persona pague su plaza.
+      </span>
+    </label>
+  </div>
 </div>
 
               <div>
