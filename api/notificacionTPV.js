@@ -426,7 +426,121 @@ if (aceptarPagoTemporalmente) {
   webhookRecibidoEn: timestamp,
   actualizadoEn: timestamp,
 });
+async function confirmarPagoIndividualGrupo(pedido, timestamp) {
+  if (
+    !pedido?.grupoId ||
+    !pedido?.pagoIndividualId ||
+    !pedido?.orderId
+  ) {
+    return false;
+  }
 
+  const grupoRef = adminDb.ref(`reservasGrupos/${pedido.grupoId}`);
+  const grupoSnap = await grupoRef.get();
+
+  if (!grupoSnap.exists()) {
+    return false;
+  }
+
+  const grupo = grupoSnap.val() || {};
+
+  const pagoRef = adminDb.ref(
+    `reservasGrupos/${pedido.grupoId}/pagosIndividuales/${pedido.pagoIndividualId}`
+  );
+
+  const pagoSnap = await pagoRef.get();
+
+  if (!pagoSnap.exists()) {
+    return false;
+  }
+
+  const pago = pagoSnap.val() || {};
+
+  if (pago.estadoPago === "pagado") {
+    return true;
+  }
+
+  const importePagado = Number(pago.importe || 0);
+
+  const plazasPagadasActuales = Number(grupo.plazasPagadas || 0);
+  const plazasTotales = Number(grupo.plazas || 0);
+
+  const nuevoTotalPagado =
+    Number(grupo.totalPagado || 0) + importePagado;
+
+  const nuevoTotalPendiente = Math.max(
+    0,
+    Number(grupo.precioTotal || 0) - nuevoTotalPagado
+  );
+
+  const nuevasPlazasPagadas = plazasPagadasActuales + 1;
+  const nuevasPlazasPendientes = Math.max(
+    0,
+    plazasTotales - nuevasPlazasPagadas
+  );
+
+  const grupoCompleto =
+    nuevasPlazasPagadas >= plazasTotales;
+
+  await adminDb.ref().update({
+    [`reservasGrupos/${pedido.grupoId}/pagosIndividuales/${pedido.pagoIndividualId}/estadoPago`]:
+      "pagado",
+
+    [`reservasGrupos/${pedido.grupoId}/pagosIndividuales/${pedido.pagoIndividualId}/pagadoEn`]:
+      timestamp,
+
+    [`reservasGrupos/${pedido.grupoId}/plazasPagadas`]:
+      nuevasPlazasPagadas,
+
+    [`reservasGrupos/${pedido.grupoId}/plazasPendientes`]:
+      nuevasPlazasPendientes,
+
+    [`reservasGrupos/${pedido.grupoId}/totalPagado`]:
+      nuevoTotalPagado,
+
+    [`reservasGrupos/${pedido.grupoId}/totalPendiente`]:
+      nuevoTotalPendiente,
+
+    [`reservasGrupos/${pedido.grupoId}/actualizadoEn`]:
+      timestamp,
+
+    ...(grupoCompleto
+      ? {
+          [`reservasGrupos/${pedido.grupoId}/estado`]:
+            "Confirmada",
+
+          [`reservasGrupos/${pedido.grupoId}/estadoPago`]:
+            "pagado",
+
+          [`reservasGrupos/${pedido.grupoId}/pagadoEn`]:
+            timestamp,
+        }
+      : {}),
+  });
+
+  return true;
+}
+
+if (pedido?.tipo === "pago_grupo_individual") {
+  const pagoGrupoActualizado = await confirmarPagoIndividualGrupo(
+    pedido,
+    timestamp
+  );
+
+  console.log("Pago individual de grupo actualizado:", {
+    order,
+    grupoId: pedido.grupoId,
+    pagoIndividualId: pedido.pagoIndividualId,
+    actualizado: pagoGrupoActualizado,
+  });
+
+  await ref.update({
+    procesado: true,
+    actualizadoEn: timestamp,
+  });
+
+  return res.status(200).send("OK");
+}
       if (pedido?.tipo === "tarjeta_regalo") {
         const tarjetaGuardada = await guardarTarjetaRegaloPagada(order, pedido, timestamp);
 

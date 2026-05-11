@@ -136,6 +136,21 @@ const handleCrearPagoPendiente = async () => {
     };
 
     await set(nuevoPagoRef, pagoIndividual);
+    await set(ref(dbRealtime, `pedidosPendientes/${orderId}`), {
+  orderId,
+  tipo: "pago_grupo_individual",
+  grupoId: grupo.id,
+  pagoIndividualId,
+  nombreAsistente: nombreAsistente.trim(),
+  telefonoAsistente: telefonoAsistente.trim(),
+  clase: grupo.clase || "",
+  fecha: grupo.fecha || "",
+  turno: grupo.turno || "",
+  precioTotal: Number(grupo.precioUnitario || 0),
+  estadoPago: "pendiente",
+  procesado: false,
+  creadoEn: ahoraISO,
+});
     console.log("pago individual pendiente creado:", {
       grupoId: grupo.id,
       pagoIndividualId,
