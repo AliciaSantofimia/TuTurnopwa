@@ -593,45 +593,47 @@ return;
     Opcional, pero si lo pones ayudas mucho al taller para que pueda identificar fácilmente vuestro grupo.
   </p>
 </div>
-<div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
-  <p className="block font-bold text-sm mb-3">
-    ¿Cómo queréis pagar la reserva?
-  </p>
+{false && (
+  <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
+    <p className="block font-bold text-sm mb-3">
+      ¿Cómo queréis pagar la reserva?
+    </p>
 
-  <div className="space-y-3">
-    <label className="flex items-start gap-3 text-sm text-gray-700">
-      <input
-        type="radio"
-        name="modoPago"
-        value="completo"
-        checked={modoPago === "completo"}
-        onChange={() => setModoPago("completo")}
-        className="mt-1"
-      />
-      <span>
-        <strong>Pagar toda la reserva ahora</strong>
-        <br />
-        Una persona paga el importe completo del grupo.
-      </span>
-    </label>
+    <div className="space-y-3">
+      <label className="flex items-start gap-3 text-sm text-gray-700">
+        <input
+          type="radio"
+          name="modoPago"
+          value="completo"
+          checked={modoPago === "completo"}
+          onChange={() => setModoPago("completo")}
+          className="mt-1"
+        />
+        <span>
+          <strong>Pagar toda la reserva ahora</strong>
+          <br />
+          Una persona paga el importe completo del grupo.
+        </span>
+      </label>
 
-    <label className="flex items-start gap-3 text-sm text-gray-700">
-      <input
-        type="radio"
-        name="modoPago"
-        value="individual"
-        checked={modoPago === "individual"}
-        onChange={() => setModoPago("individual")}
-        className="mt-1"
-      />
-      <span>
-        <strong>Dividir el pago entre asistentes</strong>
-        <br />
-        Se generará un enlace para que cada persona pague su plaza.
-      </span>
-    </label>
+      <label className="flex items-start gap-3 text-sm text-gray-700">
+        <input
+          type="radio"
+          name="modoPago"
+          value="individual"
+          checked={modoPago === "individual"}
+          onChange={() => setModoPago("individual")}
+          className="mt-1"
+        />
+        <span>
+          <strong>Dividir el pago entre asistentes</strong>
+          <br />
+          Se generará un enlace para que cada persona pague su plaza.
+        </span>
+      </label>
+    </div>
   </div>
-</div>
+)}
 
               <div>
                 <label className="block font-bold text-sm mb-1">
