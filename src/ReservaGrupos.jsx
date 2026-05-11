@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push } from "firebase/database";
+import { ref, get, push, set } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 import BloqueoReserva from "./BloqueoReserva";
@@ -321,6 +321,10 @@ const turnoFinal = horario;
       const orderId = Date.now().toString().slice(-12);
 
     const ahoraISO = new Date().toISOString();
+const nuevaReservaRef = ref(dbRealtime, "reservasGrupos");
+const grupoRef = push(nuevaReservaRef);
+const grupoId = grupoRef.key;
+const enlacePagoGrupo = `https://app.lapurisimaconchi.com/pago-grupo/${grupoId}`;
 
 const reservaGrupo = {
   uid: user.uid,
@@ -329,6 +333,8 @@ const reservaGrupo = {
   nombreOrganizador: nombreReserva,
   telefonoOrganizador: telefono,
   modoPago,
+  enlacePagoGrupo:
+  modoPago === "individual" ? enlacePagoGrupo : null,
   telefono,
   email: email || "",
   clase: claseSeleccionada,
@@ -364,9 +370,7 @@ if (modoPago === "individual") {
 
       console.log("va a guardar reservaGrupo", reservaGrupo);
 
-      const nuevaReservaRef = await push(ref(dbRealtime, "reservasGrupos"), reservaGrupo);
-const grupoId = nuevaReservaRef.key;
-const enlacePagoGrupo = `https://app.lapurisimaconchi.com/pago-grupo/${grupoId}`;
+     await set(grupoRef, reservaGrupo);
 
       console.log("reserva guardada con grupoId:", grupoId);
 

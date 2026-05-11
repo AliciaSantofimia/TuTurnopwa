@@ -27,6 +27,7 @@ import ConfirmacionPago from "./ConfirmacionPago.jsx";
 import PagoFallido from "./PagoFallido.jsx";
 import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
 import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
+import PagoGrupoIndividual from "./PagoGrupoIndividual.jsx";
 
 // Clases y secciones principales
 import Clases from "./Clases.jsx";
@@ -86,6 +87,7 @@ import ReservaClaseSueltaContinuidad from "./ReservaClaseSueltaContinuidad";
 import ReservaGrupos from "./ReservaGrupos.jsx";
 import UsarBonoTornoAlfareroEmpezarDesdeCero from "./UsarBonoTornoAlfareroEmpezarDesdeCero";
 import UsarBono from "./UsarBono";
+
 
 // Tarjetas regalo
 import CanjearTarjetaRegalo from "./CanjearTarjetaRegalo";
@@ -293,6 +295,10 @@ function App() {
           <Route path="/pago-fallido" element={<PagoFallido />} />
           <Route path="/pago/exito" element={<ConfirmacionPago />} />
           <Route path="/pago/error" element={<PagoFallido />} />
+          <Route
+  path="/pago-grupo/:grupoId"
+  element={<PagoGrupoIndividual />}
+/>
 
           <Route path="/theclub" element={<TheClub />} />
           <Route path="/teariumInfo" element={<TeariumInfo />} />
