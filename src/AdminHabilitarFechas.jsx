@@ -9,7 +9,7 @@ const AdminHabilitarFechas = () => {
   const [motivo, setMotivo] = useState("");
   const [fechasHabilitadas, setFechasHabilitadas] = useState([]);
   const [habilitarManana, setHabilitarManana] = useState(true);
-const [habilitarTarde, setHabilitarTarde] = useState(true);
+  const [habilitarTarde, setHabilitarTarde] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoFecha, setEliminandoFecha] = useState("");
 
@@ -33,6 +33,7 @@ const [habilitarTarde, setHabilitarTarde] = useState(true);
             habilitada: data.habilitada ?? false,
             motivo: data.motivo || "",
             creadaEn: data.creadaEn || null,
+            turnosHabilitados: data.turnosHabilitados || [],
           });
         });
       }
@@ -72,10 +73,11 @@ const [habilitarTarde, setHabilitarTarde] = useState(true);
       alert("La fecha fin no puede ser anterior a la fecha inicio.");
       return;
     }
+
     if (!habilitarManana && !habilitarTarde) {
-  alert("Selecciona al menos un turno: mañana o tarde.");
-  return;
-}
+      alert("Selecciona al menos un turno: mañana o tarde.");
+      return;
+    }
 
     try {
       setGuardando(true);
@@ -84,15 +86,15 @@ const [habilitarTarde, setHabilitarTarde] = useState(true);
       const updates = {};
 
       fechas.forEach((fecha) => {
-       updates[`fechasHabilitadas/${fecha}`] = {
-  habilitada: true,
-  motivo: motivo.trim() || "Apertura especial",
-  creadaEn: Date.now(),
-  turnosHabilitados: [
-  ...(habilitarManana ? ["11:30 a 14:30"] : []),
-  ...(habilitarTarde ? ["17:30 a 20:30"] : []),
-],
-};
+        updates[`fechasHabilitadas/${fecha}`] = {
+          habilitada: true,
+          motivo: motivo.trim() || "Apertura especial",
+          creadaEn: Date.now(),
+          turnosHabilitados: [
+            ...(habilitarManana ? ["11:30-14:30"] : []),
+            ...(habilitarTarde ? ["17:30-20:30"] : []),
+          ],
+        };
       });
 
       await update(ref(dbRealtime), updates);
@@ -101,7 +103,7 @@ const [habilitarTarde, setHabilitarTarde] = useState(true);
       setFechaFin("");
       setMotivo("");
       setHabilitarManana(true);
-setHabilitarTarde(true);
+      setHabilitarTarde(true);
 
       await cargarFechasHabilitadas();
       alert("Fechas habilitadas correctamente.");
@@ -111,6 +113,19 @@ setHabilitarTarde(true);
     } finally {
       setGuardando(false);
     }
+  };
+
+  const modificarHabilitacion = (f) => {
+    setFechaInicio(f.fecha);
+    setFechaFin(f.fecha);
+    setMotivo(f.motivo || "");
+
+    const turnos = f.turnosHabilitados || [];
+
+    setHabilitarManana(turnos.includes("11:30-14:30"));
+    setHabilitarTarde(turnos.includes("17:30-20:30"));
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const eliminarHabilitacion = async (fecha) => {
@@ -179,27 +194,28 @@ setHabilitarTarde(true);
               style={styles.input}
             />
           </div>
+
           <div style={styles.campo}>
-  <label style={styles.label}>Turnos habilitados</label>
+            <label style={styles.label}>Turnos habilitados</label>
 
-  <label style={styles.checkboxLabel}>
-    <input
-      type="checkbox"
-      checked={habilitarManana}
-      onChange={(e) => setHabilitarManana(e.target.checked)}
-    />
-    Mañana
-  </label>
+            <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={habilitarManana}
+                onChange={(e) => setHabilitarManana(e.target.checked)}
+              />
+              Mañana
+            </label>
 
-  <label style={styles.checkboxLabel}>
-    <input
-      type="checkbox"
-      checked={habilitarTarde}
-      onChange={(e) => setHabilitarTarde(e.target.checked)}
-    />
-    Tarde
-  </label>
-</div>
+            <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={habilitarTarde}
+                onChange={(e) => setHabilitarTarde(e.target.checked)}
+              />
+              Tarde
+            </label>
+          </div>
 
           <button
             onClick={guardarHabilitacion}
@@ -222,17 +238,32 @@ setHabilitarTarde(true);
                   <div>
                     <p style={styles.fecha}>{f.fecha}</p>
                     <p style={styles.motivo}>{f.motivo || "Sin motivo"}</p>
+                    <p style={styles.turnos}>
+                      Turnos:{" "}
+                      {f.turnosHabilitados?.length
+                        ? f.turnosHabilitados.join(" / ")
+                        : "Todos los turnos"}
+                    </p>
                   </div>
 
-                  <button
-                    onClick={() => eliminarHabilitacion(f.fecha)}
-                    style={styles.botonEliminar}
-                    disabled={eliminandoFecha === f.fecha}
-                  >
-                    {eliminandoFecha === f.fecha
-                      ? "Quitando..."
-                      : "Quitar habilitación"}
-                  </button>
+                  <div style={styles.accionesItem}>
+                    <button
+                      onClick={() => modificarHabilitacion(f)}
+                      style={styles.botonModificar}
+                    >
+                      Modificar
+                    </button>
+
+                    <button
+                      onClick={() => eliminarHabilitacion(f.fecha)}
+                      style={styles.botonEliminar}
+                      disabled={eliminandoFecha === f.fecha}
+                    >
+                      {eliminandoFecha === f.fecha
+                        ? "Quitando..."
+                        : "Quitar habilitación"}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -340,6 +371,28 @@ const styles = {
     color: "#777",
     fontSize: "0.92rem",
   },
+  turnos: {
+    margin: "4px 0 0 0",
+    color: "#5b4a2d",
+    fontSize: "0.9rem",
+    fontWeight: 600,
+  },
+  accionesItem: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  botonModificar: {
+    padding: "10px 12px",
+    border: "1px solid #e5d8b8",
+    backgroundColor: "#fff8da",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#5b4a2d",
+    flexShrink: 0,
+  },
   botonEliminar: {
     padding: "10px 12px",
     border: "1px solid #e7c9c9",
@@ -351,12 +404,12 @@ const styles = {
     flexShrink: 0,
   },
   checkboxLabel: {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  fontSize: "0.95rem",
-  color: "#5b4a2d",
-},
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: "0.95rem",
+    color: "#5b4a2d",
+  },
   textoVacio: {
     color: "#777",
     fontStyle: "italic",

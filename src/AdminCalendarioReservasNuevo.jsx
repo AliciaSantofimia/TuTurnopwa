@@ -75,11 +75,16 @@ if (usuariosSnap.exists()) {
         ) => {
           if (!reserva || typeof reserva !== "object") return;
 
-          const estadoNormalizado = String(reserva.estado || "")
-            .trim()
-            .toLowerCase();
+         const estadoNormalizado = String(reserva.estado || "")
+  .trim()
+  .toLowerCase();
 
-          if (estadoNormalizado !== "confirmada") return;
+const estadoPagoNormalizado = String(reserva.estadoPago || "")
+  .trim()
+  .toLowerCase();
+
+if (estadoNormalizado !== "confirmada") return;
+if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) return;
 
          const fechaFinal = reserva.fecha || fechaKey;
 if (!fechaFinal) return;
@@ -195,11 +200,16 @@ datos.push({
 
             if (!grupo || typeof grupo !== "object") return;
 
-            const estadoNormalizado = String(grupo.estado || "")
-              .trim()
-              .toLowerCase();
+           const estadoNormalizado = String(grupo.estado || "")
+  .trim()
+  .toLowerCase();
 
-            if (estadoNormalizado !== "confirmada") return;
+const estadoPagoNormalizado = String(grupo.estadoPago || "")
+  .trim()
+  .toLowerCase();
+
+if (estadoNormalizado !== "confirmada") return;
+if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) return;
 
             const fechaFinal = grupo.fecha || "";
             if (!fechaFinal) return;

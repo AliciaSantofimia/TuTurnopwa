@@ -19,7 +19,8 @@ const AdminReservasNuevo = () => {
   const [filtroFecha, setFiltroFecha] = useState(fechaInicial);
   const [filtroClase, setFiltroClase] = useState(claseInicial);
   const [filtroEstado, setFiltroEstado] = useState("");
-  const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+  const [filtroTelefono, setFiltroTelefono] = useState("");
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,14 +48,17 @@ const AdminReservasNuevo = () => {
       setCargando(true);
 
       try {
-        const [clasesSnap, notasSnap] = await Promise.all([
-          get(ref(dbRealtime, "clases")),
-          get(ref(dbRealtime, "reservasNotas")),
-        ]);
+        const [clasesSnap, notasSnap, usuariosSnap] = await Promise.all([
+  get(ref(dbRealtime, "clases")),
+  get(ref(dbRealtime, "reservasNotas")),
+  get(ref(dbRealtime, "usuarios")),
+]);
 
         const mapaClases = {};
         const listaClases = [];
         const mapaNotasTemp = {};
+        const usuariosMap = {};
+
 
         if (notasSnap.exists()) {
           notasSnap.forEach((notaReservaSnap) => {
@@ -72,6 +76,18 @@ const AdminReservasNuevo = () => {
             mapaNotasTemp[orderId] = totalNotas;
           });
         }
+        if (usuariosSnap.exists()) {
+  usuariosSnap.forEach((userSnap) => {
+    const uid = userSnap.key;
+    const user = userSnap.val() || {};
+
+    usuariosMap[uid] = {
+      nombre: user.nombre || user.name || user.displayName || "",
+      telefono: user.telefono || user.phone || user.telefonoUsuario || "",
+      email: user.email || "",
+    };
+  });
+}
 
         if (clasesSnap.exists()) {
           clasesSnap.forEach((claseSnap) => {
@@ -140,6 +156,8 @@ const AdminReservasNuevo = () => {
                     ) => {
                       const claseIdReal = reserva.claseId || claseKey;
                       const claseInfo = mapaClases[claseIdReal];
+                      const datosUsuario = usuariosMap[reserva.uid] || {};
+
 
                       return {
                         id: idReserva,
@@ -166,6 +184,20 @@ const AdminReservasNuevo = () => {
                             0
                         ),
                         uid: reserva.uid || "",
+                        nombre:
+  reserva.nombre ||
+  reserva.nombreUsuario ||
+  datosUsuario.nombre ||
+  "",
+telefono:
+  reserva.telefono ||
+  reserva.telefonoUsuario ||
+  datosUsuario.telefono ||
+  "",
+email:
+  reserva.email ||
+  datosUsuario.email ||
+  "",
                         orderId: reserva.orderId || "",
                         procesado: reserva.procesado ?? false,
                         notasInternas: mapaNotasTemp[reserva.orderId || ""] || 0,
@@ -334,25 +366,46 @@ const AdminReservasNuevo = () => {
   };
 
   const reservasFiltradas = useMemo(() => {
-    return datosActivos.filter((r) => {
-      const estadoVisible = getEstadoVisible(r);
+  return datosActivos.filter((r) => {
+    const estadoVisible = getEstadoVisible(r);
 
-      const cumpleFecha = !filtroFecha || r.fecha === filtroFecha;
-      const cumpleClase = !filtroClase || r.claseId === filtroClase;
-      const cumpleEstado = !filtroEstado || estadoVisible === filtroEstado;
-      const cumpleEstadoPago =
-        !filtroEstadoPago || r.estadoPago === filtroEstadoPago;
+    const esReservaConfirmada =
+      r.tipoRegistro === "tarjeta_regalo" ||
+      (r.estado === "Confirmada" && r.estadoPago === "pagado");
 
-      return cumpleFecha && cumpleClase && cumpleEstado && cumpleEstadoPago;
-    });
-  }, [datosActivos, filtroFecha, filtroClase, filtroEstado, filtroEstadoPago]);
+    if (!esReservaConfirmada) return false;
 
-  const limpiarFiltros = () => {
-    setFiltroFecha("");
-    setFiltroClase("");
-    setFiltroEstado("");
-    setFiltroEstadoPago("");
-  };
+    const cumpleFecha = !filtroFecha || r.fecha === filtroFecha;
+    const cumpleClase = !filtroClase || r.claseId === filtroClase;
+    const cumpleEstado = !filtroEstado || estadoVisible === filtroEstado;
+   const telefonoReserva = String(r.telefono || "").replace(/\s/g, "");
+const telefonoBuscado = String(filtroTelefono || "").replace(/\s/g, "");
+
+const cumpleTelefono =
+  !telefonoBuscado || telefonoReserva.includes(telefonoBuscado);
+   
+
+    return (
+  cumpleFecha &&
+  cumpleClase &&
+  cumpleEstado &&
+  cumpleTelefono
+);
+  });
+}, [
+  datosActivos,
+  filtroFecha,
+  filtroClase,
+  filtroEstado,
+  filtroTelefono,
+]);
+const limpiarFiltros = () => {
+  setFiltroFecha("");
+  setFiltroClase("");
+  setFiltroEstado("");
+  setFiltroTelefono("");
+ 
+};
 
   const mostrandoTarjetas = filtroClase === "tarjeta_regalo";
 
@@ -465,45 +518,47 @@ const AdminReservasNuevo = () => {
             </div>
 
             <div style={styles.campo}>
-              <label style={styles.label}>
-                {mostrandoTarjetas ? "Estado canje" : "Estado reserva"}
-              </label>
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-                style={styles.input}
-              >
-                <option value="">Todos</option>
-                {mostrandoTarjetas ? (
-                  <>
-                    <option value="pendiente">Pendiente</option>
-                    <option value="canjeada">Canjeada</option>
-                    <option value="caducada">Caducada</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="Confirmada">Confirmada</option>
-                    <option value="Reprogramada">Reprogramada</option>
-                    <option value="Cancelada">Cancelada</option>
-                  </>
-                )}
-              </select>
-            </div>
+  <label style={styles.label}>
+    {mostrandoTarjetas ? "Estado canje" : "Estado reserva"}
+  </label>
 
-            <div style={styles.campo}>
-              <label style={styles.label}>Estado pago</label>
-              <select
-                value={filtroEstadoPago}
-                onChange={(e) => setFiltroEstadoPago(e.target.value)}
-                style={styles.input}
-              >
-                <option value="">Todos</option>
-                <option value="pagado">Pagado</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="fallido">Fallido</option>
-                <option value="rechazado">Rechazado</option>
-              </select>
-            </div>
+  <select
+    value={filtroEstado}
+    onChange={(e) => setFiltroEstado(e.target.value)}
+    style={styles.input}
+  >
+    <option value="">Todos</option>
+
+    {mostrandoTarjetas ? (
+      <>
+        <option value="pendiente">Pendiente</option>
+        <option value="canjeada">Canjeada</option>
+        <option value="caducada">Caducada</option>
+      </>
+    ) : (
+      <>
+        <option value="Confirmada">Confirmada</option>
+        <option value="Reprogramada">Reprogramada</option>
+        <option value="Cancelada">Cancelada</option>
+      </>
+    )}
+  </select>
+</div>
+
+<div style={styles.campo}>
+  <label style={styles.label}>Teléfono</label>
+
+  <input
+    type="text"
+    placeholder="Buscar teléfono"
+    value={filtroTelefono}
+    onChange={(e) => setFiltroTelefono(e.target.value)}
+    style={styles.input}
+  />
+</div>
+            
+
+            
           </div>
 
           <button onClick={limpiarFiltros} style={styles.botonSecundario}>
@@ -550,6 +605,13 @@ const AdminReservasNuevo = () => {
                 <div style={styles.cardBloque}>
                   <p style={styles.cardTitulo}>{r.clase}</p>
 
+                  {!mostrandoTarjetas && (
+  <p style={styles.cardTexto}>
+    <strong>Cliente:</strong> {r.nombre || "Sin nombre"}
+    {r.telefono ? ` · ${r.telefono}` : ""}
+  </p>
+)}
+
                   <p style={styles.cardTexto}>
                     <strong>
                       {mostrandoTarjetas ? "Destinatario / Info:" : "Método:"}
@@ -586,16 +648,15 @@ const AdminReservasNuevo = () => {
                   <th style={styles.th}>
                     {mostrandoTarjetas ? "Código" : "Turno"}
                   </th>
-                  <th style={styles.th}>Clase</th>
-                  <th style={styles.th}>
-                    {mostrandoTarjetas ? "Destinatario / Info" : "Método"}
-                  </th>
+                  <th style={styles.th}>Reserva</th>
+                  <th style={styles.th}>Cliente</th>
+                  
                   <th style={styles.th}>Plazas</th>
                   <th style={styles.th}>
                     {mostrandoTarjetas ? "Estado canje" : "Estado"}
                   </th>
-                  <th style={styles.th}>Pago</th>
-                  <th style={styles.th}>Notas</th>
+                  
+                  
                   <th style={styles.th}>Precio</th>
                 </tr>
               </thead>
@@ -618,16 +679,34 @@ const AdminReservasNuevo = () => {
                     <td style={styles.td}>
                       {mostrandoTarjetas ? r.codigo || "—" : r.turno}
                     </td>
-                    <td style={styles.tdClase}>{r.clase}</td>
-                    <td style={styles.tdMetodo}>
-                      {mostrandoTarjetas
-                        ? r.nombreDestinatario || r.emailDestinatario || "—"
-                        : r.metodo}
-                    </td>
+                    <td style={styles.tdClase}>
+  <strong>{r.clase}</strong>
+
+  <br />
+
+  <span style={styles.textoSuave}>
+    {mostrandoTarjetas
+      ? r.nombreDestinatario || r.emailDestinatario || "—"
+      : r.metodo}
+  </span>
+
+  {r.notasInternas > 0 && (
+    <>
+      <br />
+      {renderNotas(r)}
+    </>
+  )}
+</td>
+<td style={styles.tdCliente}>
+  <strong>{r.nombre || "Sin nombre"}</strong>
+  <br />
+  <span>{r.telefono || "Sin teléfono"}</span>
+</td>
+
                     <td style={styles.td}>{r.plazas}</td>
                     <td style={styles.td}>{renderEstado(r)}</td>
-                    <td style={styles.td}>{r.estadoPago}</td>
-                    <td style={styles.td}>{renderNotas(r)}</td>
+                    
+                    
                     <td style={styles.td}>{r.precioTotal}€</td>
                   </tr>
                 ))}
@@ -736,7 +815,7 @@ const styles = {
   },
   table: {
     width: "100%",
-    minWidth: "1100px",
+    minWidth: "900px",
     borderCollapse: "collapse",
     backgroundColor: "#fffdf7",
     overflow: "hidden",
@@ -750,29 +829,46 @@ const styles = {
     fontSize: "0.95rem",
     whiteSpace: "nowrap",
   },
-  td: {
-    padding: "14px 16px",
-    borderBottom: "1px solid #f3ead7",
-    color: "#333",
-    fontSize: "0.95rem",
-    verticalAlign: "middle",
-  },
-  tdClase: {
-    padding: "14px 16px",
-    borderBottom: "1px solid #f3ead7",
-    color: "#333",
-    fontSize: "0.95rem",
-    verticalAlign: "middle",
-    minWidth: "170px",
-  },
-  tdMetodo: {
-    padding: "14px 16px",
-    borderBottom: "1px solid #f3ead7",
-    color: "#333",
-    fontSize: "0.95rem",
-    verticalAlign: "middle",
-    minWidth: "170px",
-  },
+ td: {
+  padding: "12px 12px",
+  borderBottom: "1px solid #f3ead7",
+  color: "#333",
+  fontSize: "0.9rem",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
+},
+  
+    tdClase: {
+  padding: "12px 14px",
+  borderBottom: "1px solid #f3ead7",
+  color: "#333",
+  fontSize: "0.92rem",
+  verticalAlign: "middle",
+  minWidth: "220px",
+  maxWidth: "260px",
+  lineHeight: 1.35,
+},
+  
+  tdCliente: {
+  padding: "12px 14px",
+  borderBottom: "1px solid #f3ead7",
+  color: "#333",
+  fontSize: "0.92rem",
+  verticalAlign: "middle",
+  minWidth: "170px",
+  lineHeight: 1.35,
+},
+  
+    tdMetodo: {
+  padding: "12px 14px",
+  borderBottom: "1px solid #f3ead7",
+  color: "#333",
+  fontSize: "0.9rem",
+  verticalAlign: "middle",
+  minWidth: "160px",
+  maxWidth: "190px",
+  lineHeight: 1.35,
+},
   trClickable: {
     cursor: "pointer",
     transition: "background-color 0.2s ease",
