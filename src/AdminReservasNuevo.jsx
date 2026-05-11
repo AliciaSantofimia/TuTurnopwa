@@ -644,10 +644,7 @@ const limpiarFiltros = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Fecha</th>
-                  <th style={styles.th}>
-                    {mostrandoTarjetas ? "Código" : "Turno"}
-                  </th>
+                 <th style={styles.th}>Fecha / turno</th>
                   <th style={styles.th}>Reserva</th>
                   <th style={styles.th}>Cliente</th>
                   
@@ -675,10 +672,13 @@ const limpiarFiltros = () => {
                     }
                     style={getRowStyle(r)}
                   >
-                    <td style={styles.td}>{r.fecha}</td>
-                    <td style={styles.td}>
-                      {mostrandoTarjetas ? r.codigo || "—" : r.turno}
-                    </td>
+                    <td style={styles.tdFechaTurno}>
+  <strong>{r.fecha}</strong>
+  <br />
+  <span style={styles.textoSuave}>
+    {mostrandoTarjetas ? r.codigo || "—" : r.turno}
+  </span>
+</td>
                     <td style={styles.tdClase}>
   <strong>{r.clase}</strong>
 
@@ -815,7 +815,7 @@ const styles = {
   },
   table: {
     width: "100%",
-    minWidth: "900px",
+    minWidth: "800px",
     borderCollapse: "collapse",
     backgroundColor: "#fffdf7",
     overflow: "hidden",
@@ -836,6 +836,15 @@ const styles = {
   fontSize: "0.9rem",
   verticalAlign: "middle",
   whiteSpace: "nowrap",
+},
+tdFechaTurno: {
+  padding: "12px 12px",
+  borderBottom: "1px solid #f3ead7",
+  color: "#333",
+  fontSize: "0.9rem",
+  verticalAlign: "middle",
+  minWidth: "120px",
+  lineHeight: 1.35,
 },
   
     tdClase: {
