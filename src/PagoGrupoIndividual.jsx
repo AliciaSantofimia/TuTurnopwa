@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ref, get } from "firebase/database";
+import { ref, get, push, set } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 
@@ -92,7 +92,65 @@ setGrupo(datosGrupo);
   cargarGrupo();
 }, [grupoId]);
 
+const handleCrearPagoPendiente = async () => {
+  if (!grupo) {
+    alert("No se ha podido cargar la reserva de grupo.");
+    return;
+  }
 
+  if (!nombreAsistente.trim() || !telefonoAsistente.trim()) {
+    alert("Introduce tu nombre y teléfono para continuar.");
+    return;
+  }
+
+  const plazasPagadas = Number(grupo.plazasPagadas || 0);
+  const plazasTotales = Number(grupo.plazas || 0);
+
+  if (plazasTotales > 0 && plazasPagadas >= plazasTotales) {
+    alert("Este grupo ya está completo.");
+    return;
+  }
+
+  try {
+    setProcesando(true);
+
+    const ahoraISO = new Date().toISOString();
+    const orderId = Date.now().toString().slice(-12);
+
+    const pagosRef = ref(
+      dbRealtime,
+      `reservasGrupos/${grupo.id}/pagosIndividuales`
+    );
+
+    const nuevoPagoRef = push(pagosRef);
+    const pagoIndividualId = nuevoPagoRef.key;
+
+    const pagoIndividual = {
+      nombreAsistente: nombreAsistente.trim(),
+      telefonoAsistente: telefonoAsistente.trim(),
+      importe: Number(grupo.precioUnitario || 0),
+      estadoPago: "pendiente_redsys",
+      orderId,
+      creadoEn: ahoraISO,
+      pagadoEn: null,
+    };
+
+    await set(nuevoPagoRef, pagoIndividual);
+
+    alert("Pago individual pendiente creado correctamente. En el siguiente paso se conectará con Redsys.");
+
+    console.log("pago individual pendiente creado:", {
+      grupoId: grupo.id,
+      pagoIndividualId,
+      pagoIndividual,
+    });
+  } catch (error) {
+    console.error("Error al crear pago individual pendiente:", error);
+    alert("No se pudo preparar el pago individual.");
+  } finally {
+    setProcesando(false);
+  }
+};
  return (
   <div style={styles.body}>
     {cargando ? (
@@ -177,9 +235,7 @@ setGrupo(datosGrupo);
         : "pointer",
   }}
   disabled={procesando || !nombreAsistente.trim() || !telefonoAsistente.trim()}
-  onClick={() => {
-    alert("En el siguiente paso conectaremos este botón con el pago individual.");
-  }}
+ onClick={handleCrearPagoPendiente}
 >
     {procesando ? "Preparando pago..." : "Pagar mi plaza"}
   </button>
