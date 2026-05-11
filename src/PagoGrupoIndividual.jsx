@@ -136,14 +136,30 @@ const handleCrearPagoPendiente = async () => {
     };
 
     await set(nuevoPagoRef, pagoIndividual);
-
-    alert("Pago individual pendiente creado correctamente. En el siguiente paso se conectará con Redsys.");
-
     console.log("pago individual pendiente creado:", {
       grupoId: grupo.id,
       pagoIndividualId,
       pagoIndividual,
     });
+
+console.log("redirigiendo pago individual a Redsys...", {
+  orderId,
+  importe: pagoIndividual.importe,
+});
+
+const amountCents = Math.round(
+  Number(pagoIndividual.importe || 0) * 100
+);
+
+window.location.href =
+  `/api/crear-sesion?` +
+  new URLSearchParams({
+    orderId,
+    amountCents: String(amountCents),
+    payMethod: "card",
+  }).toString();
+
+    
   } catch (error) {
     console.error("Error al crear pago individual pendiente:", error);
     alert("No se pudo preparar el pago individual.");
