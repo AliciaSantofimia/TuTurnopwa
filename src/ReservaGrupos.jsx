@@ -364,16 +364,19 @@ if (modoPago === "individual") {
 
       console.log("va a guardar reservaGrupo", reservaGrupo);
 
-      await push(ref(dbRealtime, "reservasGrupos"), reservaGrupo);
+      const nuevaReservaRef = await push(ref(dbRealtime, "reservasGrupos"), reservaGrupo);
+const grupoId = nuevaReservaRef.key;
+const enlacePagoGrupo = `https://app.lapurisimaconchi.com/pago-grupo/${grupoId}`;
 
-      console.log("reserva guardada, navegando al resumen");
+      console.log("reserva guardada con grupoId:", grupoId);
 
-      if (modoPago === "individual") {
+     if (modoPago === "individual") {
   alert(
-    "Reserva de grupo creada correctamente. En el siguiente paso se generará el enlace para que cada asistente pague su plaza."
+    `Reserva de grupo creada correctamente.\n\nEnlace para compartir el pago:\n${enlacePagoGrupo}`
   );
 
   console.log("grupo individual creado:", reservaGrupo);
+  console.log("enlace de pago del grupo:", enlacePagoGrupo);
 
   return;
 }
