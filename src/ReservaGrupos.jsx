@@ -357,6 +357,12 @@ if (modoPago === "individual") {
       
 
      await set(grupoRef, reservaGrupo);
+     const comprobarSnap = await get(grupoRef);
+
+if (!comprobarSnap.exists()) {
+  alert("La reserva NO se ha guardado en Firebase. No continúes.");
+  return;
+}
 
       
 

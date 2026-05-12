@@ -28,6 +28,8 @@ import PagoFallido from "./PagoFallido.jsx";
 import ResumenPagoTheClub from "./ResumenPagoTheClub.jsx";
 import ResumenPagoTearium from "./ResumenPagoTearium.jsx";
 import PagoGrupoIndividual from "./PagoGrupoIndividual.jsx";
+import PagoGrupoExitoso from "./PagoGrupoExitoso.jsx";
+import PagoGrupoError from "./PagoGrupoError.jsx";
 
 // Clases y secciones principales
 import Clases from "./Clases.jsx";
@@ -298,6 +300,15 @@ function App() {
           <Route
   path="/pago-grupo/:grupoId"
   element={<PagoGrupoIndividual />}
+/>
+<Route
+  path="/pago-grupo-exitoso/:grupoId"
+  element={<PagoGrupoExitoso />}
+/>
+
+<Route
+  path="/pago-grupo-error/:grupoId"
+  element={<PagoGrupoError />}
 />
 
           <Route path="/theclub" element={<TheClub />} />

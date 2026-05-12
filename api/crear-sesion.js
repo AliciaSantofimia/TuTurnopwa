@@ -101,13 +101,23 @@ if (!cents && amount != null) {
 if (!cents || !/^\d+$/.test(cents) || Number(cents) < 1) {
   return res.status(400).send("amountCents/amount inválido");
 }
-    // URLs
-    const URL_OK = "https://app.lapurisimaconchi.com/pago/exito"; //isHttps(okUrl) ? okUrl : process.env.REDSYS_URL_OK;
-    const URL_KO = "https://app.lapurisimaconchi.com/pago/error"; //isHttps(koUrl) ? koUrl : process.env.REDSYS_URL_KO;
-    const URL_NOTIFY = "https://app.lapurisimaconchi.com/api/notificacionTPV";//isHttps(notifyUrl) ? notifyUrl : process.env.REDSYS_NOTIFY_URL;
-    if (!isHttps(URL_OK) || !isHttps(URL_KO)) {
-      return res.status(400).send("Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)");
-    }
+   // URLs
+const URL_OK = isHttps(okUrl)
+  ? okUrl
+  : "https://app.lapurisimaconchi.com/pago/exito";
+
+const URL_KO = isHttps(koUrl)
+  ? koUrl
+  : "https://app.lapurisimaconchi.com/pago/error";
+
+const URL_NOTIFY =
+  "https://app.lapurisimaconchi.com/api/notificacionTPV";
+
+if (!isHttps(URL_OK) || !isHttps(URL_KO)) {
+  return res.status(400).send(
+    "Faltan okUrl/koUrl https (o define REDSYS_URL_OK/KO)"
+  );
+}
 
     // Parámetros Redsys (usar camel-case EXACTO)
     const dsJson = {
