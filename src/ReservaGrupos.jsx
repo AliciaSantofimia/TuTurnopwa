@@ -124,6 +124,7 @@ export default function ReservaGrupos() {
   const [cargando, setCargando] = useState(false);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
   const [enlaceGrupoGenerado, setEnlaceGrupoGenerado] = useState("");
+  const [fechaLimiteGrupoGenerado, setFechaLimiteGrupoGenerado] = useState("");
 
   useEffect(() => {
     const auth = getAuth();
@@ -254,7 +255,7 @@ const turnoFinal = horario;
       return;
     }
 
-    if (!nombreReserva || !telefono || !claseSeleccionada || !fecha) {
+    if (!nombreReserva || !telefono || !claseSeleccionada || !fecha || !nombreGrupo.trim()) {
       
       alert("Completa todos los campos obligatorios.");
       return;
@@ -366,9 +367,9 @@ if (!comprobarSnap.exists()) {
 }
 
       
-
-    if (modoPago === "individual") {
+if (modoPago === "individual") {
   setEnlaceGrupoGenerado(enlacePagoGrupo);
+  setFechaLimiteGrupoGenerado(reservaGrupo.fechaLimitePago || "");
   return;
 }
 
@@ -428,7 +429,7 @@ return;
   <br />
   3. Hablad con el taller por WhatsApp para confirmar disponibilidad.
   <br />
-  4. Después ya podéis continuar con el pago de la reserva.
+  4. Después podréis elegir si pagar toda la reserva o dividir el pago entre asistentes.
   <br /><br />
 
  <strong>Turno de mañana:</strong> 11:30-14:30
@@ -514,7 +515,24 @@ return;
     <p className="text-sm text-gray-700 mb-4">
       Comparte este enlace con las personas del grupo para que cada una pueda pagar su plaza.
     </p>
+<div className="mb-4 rounded-xl border border-[#eadfbe] bg-white px-4 py-3 text-sm text-[#7a5a1e]">
+  <p className="font-semibold">
+    El enlace estará disponible durante 24 horas.
+  </p>
 
+  {fechaLimiteGrupoGenerado && (
+    <p className="mt-1">
+      Fecha límite para pagar:{" "}
+      <strong>
+        {new Date(fechaLimiteGrupoGenerado).toLocaleString("es-ES")}
+      </strong>
+    </p>
+  )}
+
+  <p className="mt-1 text-xs text-[#8a7650]">
+    Pasado ese plazo, las personas del grupo ya no podrán pagar online desde el enlace.
+  </p>
+</div>
    <div className="bg-white border border-[#eadfbe] rounded-xl p-3 text-sm text-[#5c3c00] mb-4 text-center">
   <strong>Enlace generado</strong>. Usa los botones de abajo para compartir el enlace de pago del grupo.
 </div>
@@ -605,24 +623,25 @@ return;
                   className="w-full border border-gray-300 rounded-lg px-3 py-2"
                 />
               </div>
-              <div>
+             <div>
   <label className="block font-bold text-sm mb-1">
-    Nombre del grupo {modoPago === "individual" && <span className="text-red-600">*</span>}
+    Nombre del grupo <span className="text-red-600">*</span>
   </label>
+
   <input
-  type="text"
-  value={nombreGrupo}
-  onChange={(e) => setNombreGrupo(e.target.value)}
-  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-  placeholder="Ejemplo: Despedida Las Nenas, Cumple Laura, Equipo Marketing..."
-  required={modoPago === "individual"}
-/>
+    type="text"
+    value={nombreGrupo}
+    onChange={(e) => setNombreGrupo(e.target.value)}
+    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+    placeholder="Ejemplo: Despedida Las Nenas, Cumple Laura, Equipo Marketing..."
+    required
+  />
+
   <p className="text-xs text-gray-500 mt-1">
-    Opcional, pero si lo pones ayudas mucho al taller para que pueda identificar fácilmente vuestro grupo.
+    Este nombre ayudará al taller a identificar fácilmente vuestro grupo.
   </p>
 </div>
-{user?.email === "aliciasmelero@gmail.com" && (
-  <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
+<div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
     <p className="block font-bold text-sm mb-3">
       ¿Cómo queréis pagar la reserva?
     </p>
@@ -661,7 +680,7 @@ return;
       </label>
     </div>
   </div>
-)}
+
 
               <div>
                 <label className="block font-bold text-sm mb-1">
@@ -812,17 +831,18 @@ Después elige si preferís venir por la mañana o por la tarde.
               <button
                 type="submit"
                 disabled={
-                  cargando ||
-                  !!fechaBloqueada ||
-                  !claseSeleccionada ||
-                  !nombreReserva ||
-                  !telefono ||
-                  !fecha ||
-                  !horario ||
-                  personas < MIN_PERSONAS ||
-                  !(precioUnitario > 0) ||
-                  !contactoConfirmado
-                }
+  cargando ||
+  !!fechaBloqueada ||
+  !claseSeleccionada ||
+  !nombreReserva ||
+  !telefono ||
+  !fecha ||
+  !horario ||
+  !nombreGrupo.trim() ||
+  personas < MIN_PERSONAS ||
+  !(precioUnitario > 0) ||
+  !contactoConfirmado
+}
                 className={`w-full mt-4 px-6 py-3 rounded-full text-white font-semibold transition-all duration-200 ${
                   cargando
                     ? "bg-gray-400 cursor-not-allowed"
