@@ -245,36 +245,22 @@ const turnoFinal = horario;
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("submit lanzado", {
-      user,
-      nombreReserva,
-      telefono,
-      email,
-      fecha,
-      horario,
-      claseSeleccionada,
-      contactoConfirmado,
-      precioUnitario,
-      precioTotal,
-      fechaBloqueada,
-      personas,
-      turnoFinal,
-    });
+ 
 
     if (!user) {
-      console.log("bloqueado: sin usuario");
+      
       alert("Debes iniciar sesión para reservar.");
       return;
     }
 
     if (!nombreReserva || !telefono || !claseSeleccionada || !fecha) {
-      console.log("bloqueado: faltan campos obligatorios");
+      
       alert("Completa todos los campos obligatorios.");
       return;
     }
 
     if (fechaBloqueada) {
-      console.log("bloqueado: fecha bloqueada", fechaBloqueada);
+      
       alert(
         `No se puede reservar el día ${fecha}. Motivo: ${
           fechaBloqueada.motivo || "día bloqueado"
@@ -285,7 +271,7 @@ const turnoFinal = horario;
 
     
      if (!horario) {
-  console.log("bloqueado: sin horario seleccionado");
+  
   alert("Debes elegir un horario para la reserva.");
   return;
 }
@@ -293,25 +279,25 @@ const turnoFinal = horario;
     const personasNum = Number(personas) || 0;
 
     if (personasNum < MIN_PERSONAS) {
-      console.log("bloqueado: menos de 5 personas");
+      
       alert("El mínimo para reservar en grupo es de 5 personas.");
       return;
     }
 
     if (personasNum > MAX_PERSONAS) {
-      console.log("bloqueado: más de 45 personas");
+      
       alert("El máximo de plazas para grupos es de 45 personas.");
       return;
     }
 
     if (!(precioUnitario > 0)) {
-      console.log("bloqueado: precio no válido");
+      
       alert("No se ha podido calcular el precio del taller.");
       return;
     }
 
     if (!contactoConfirmado) {
-      console.log("bloqueado: falta confirmar contacto");
+      
       alert("Debes confirmar antes que ya has contactado con Berto por WhatsApp.");
       return;
     }
@@ -368,19 +354,19 @@ if (modoPago === "individual") {
   reservaGrupo.pagosIndividuales = {};
 }
 
-      console.log("va a guardar reservaGrupo", reservaGrupo);
+      
 
      await set(grupoRef, reservaGrupo);
 
-      console.log("reserva guardada con grupoId:", grupoId);
+      
 
      if (modoPago === "individual") {
   alert(
     `Reserva de grupo creada correctamente.\n\nEnlace para compartir el pago:\n${enlacePagoGrupo}`
   );
 
-  console.log("grupo individual creado:", reservaGrupo);
-  console.log("enlace de pago del grupo:", enlacePagoGrupo);
+  
+  
 
   return;
 }
@@ -593,7 +579,7 @@ return;
     Opcional, pero si lo pones ayudas mucho al taller para que pueda identificar fácilmente vuestro grupo.
   </p>
 </div>
-{false && (
+{user?.email === "aliciasmelero@gmail.com" && (
   <div className="bg-[#fffaf0] border border-[#f1e7c6] rounded-xl p-4">
     <p className="block font-bold text-sm mb-3">
       ¿Cómo queréis pagar la reserva?

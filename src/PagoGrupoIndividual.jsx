@@ -6,6 +6,10 @@ import BotonVolver from "./BotonVolver";
 
 const PagoGrupoIndividual = () => {
   const { grupoId } = useParams();
+
+  console.log("ESTOY EN PAGO GRUPO INDIVIDUAL");
+  console.log("grupoId recibido:", grupoId);
+
   const [grupo, setGrupo] = useState(null);
 const [cargando, setCargando] = useState(true);
 const [mensaje, setMensaje] = useState("");
@@ -27,6 +31,9 @@ useEffect(() => {
 
       const grupoRef = ref(dbRealtime, `reservasGrupos/${grupoId}`);
       const snap = await get(grupoRef);
+      console.log("snapshot existe:", snap.exists());
+console.log("snapshot valor:", snap.val());
+console.log("dbRealtime:", dbRealtime.app.options.databaseURL);
 
       if (!snap.exists()) {
         setMensaje("Este enlace ya no está disponible.");
@@ -66,6 +73,12 @@ if (plazasTotales > 0 && plazasPagadas >= plazasTotales) {
   setGrupo(null);
   setCargando(false);
   return;
+}
+console.log("DEBUG grupo cargado:", datosGrupo);
+console.log("DEBUG fechaLimitePago:", datosGrupo.fechaLimitePago);
+console.log("DEBUG ahora:", new Date().toISOString());
+if (datosGrupo.fechaLimitePago) {
+  console.log("DEBUG limite:", new Date(datosGrupo.fechaLimitePago).toISOString());
 }
 
 if (datosGrupo.fechaLimitePago) {
