@@ -605,13 +605,27 @@ const limpiarFiltros = () => {
                 <div style={styles.cardBloque}>
                   <p style={styles.cardTitulo}>{r.clase}</p>
 
-                  {!mostrandoTarjetas && (
-  <p style={styles.cardTexto}>
-    <strong>Cliente:</strong> {r.nombre || "Sin nombre"}
-    {r.telefono ? ` · ${r.telefono}` : ""}
-  </p>
-)}
+                  
+  {!mostrandoTarjetas && (
+  <>
+    <p style={styles.cardTexto}>
+      <strong>Cliente:</strong> {r.nombre || "Sin nombre"}
+      {r.telefono ? ` · ${r.telefono}` : ""}
+    </p>
 
+    {r.telefono && (
+      <a
+        href={`https://wa.me/34${String(r.telefono).replace(/\D/g, "")}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={styles.btnWhatsApp}
+        onClick={(e) => e.stopPropagation()}
+      >
+        WhatsApp cliente
+      </a>
+    )}
+  </>
+)}
                   <p style={styles.cardTexto}>
                     <strong>
                       {mostrandoTarjetas ? "Destinatario / Info:" : "Método:"}
@@ -701,6 +715,21 @@ const limpiarFiltros = () => {
   <strong>{r.nombre || "Sin nombre"}</strong>
   <br />
   <span>{r.telefono || "Sin teléfono"}</span>
+
+  {r.telefono && (
+    <>
+      <br />
+      <a
+        href={`https://wa.me/34${String(r.telefono).replace(/\D/g, "")}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={styles.btnWhatsAppMini}
+        onClick={(e) => e.stopPropagation()}
+      >
+        WhatsApp
+      </a>
+    </>
+  )}
 </td>
 
                     <td style={styles.td}>{r.plazas}</td>
@@ -795,6 +824,30 @@ const styles = {
     color: "#5b4a2d",
     alignSelf: "flex-start",
   },
+  btnWhatsApp: {
+  display: "inline-block",
+  marginTop: 8,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "8px 14px",
+  borderRadius: 20,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.85rem",
+  alignSelf: "flex-start",
+},
+
+btnWhatsAppMini: {
+  display: "inline-block",
+  marginTop: 6,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "5px 10px",
+  borderRadius: 16,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.78rem",
+},
   resumen: {
     marginBottom: 14,
   },

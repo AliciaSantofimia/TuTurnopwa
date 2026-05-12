@@ -123,6 +123,7 @@ export default function ReservaGrupos() {
   const [contactoConfirmado, setContactoConfirmado] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [enlaceGrupoGenerado, setEnlaceGrupoGenerado] = useState("");
 
   useEffect(() => {
     const auth = getAuth();
@@ -366,14 +367,8 @@ if (!comprobarSnap.exists()) {
 
       
 
-     if (modoPago === "individual") {
-  alert(
-    `Reserva de grupo creada correctamente.\n\nEnlace para compartir el pago:\n${enlacePagoGrupo}`
-  );
-
-  
-  
-
+    if (modoPago === "individual") {
+  setEnlaceGrupoGenerado(enlacePagoGrupo);
   return;
 }
 
@@ -504,12 +499,53 @@ return;
               })}
             </div>
           </div>
-          <p className="text-sm text-center text-[#7a5a1e] mb-4">
-  Los campos marcados con <span className="font-bold text-red-600">*</span> son obligatorios.
-</p>
+         {!enlaceGrupoGenerado && (
+  <p className="text-sm text-center text-[#7a5a1e] mb-4">
+    Los campos marcados con <span className="font-bold text-red-600">*</span> son obligatorios.
+  </p>
+)}
 
+{enlaceGrupoGenerado && (
+  <div className="max-w-3xl mx-auto mb-6 bg-[#fffaf0] border border-[#f1e7c6] rounded-2xl p-5 text-center shadow-sm">
+    <h2 className="text-xl font-bold text-[#5c3c00] mb-3">
+      Reserva de grupo creada correctamente
+    </h2>
 
-          <BloqueoReserva>
+    <p className="text-sm text-gray-700 mb-4">
+      Comparte este enlace con las personas del grupo para que cada una pueda pagar su plaza.
+    </p>
+
+   <div className="bg-white border border-[#eadfbe] rounded-xl p-3 text-sm text-[#5c3c00] mb-4 text-center">
+  <strong>Enlace generado</strong>. Usa los botones de abajo para compartir el enlace de pago del grupo.
+</div>
+
+    <div className="flex flex-col md:flex-row gap-3 justify-center">
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard.writeText(enlaceGrupoGenerado);
+          alert("Enlace copiado");
+        }}
+        className="px-5 py-3 rounded-full bg-[#f4c542] text-[#5c3c00] font-semibold hover:bg-[#e8b932] transition"
+      >
+        Copiar enlace
+      </button>
+
+      <a
+        href={`https://wa.me/?text=${encodeURIComponent(
+          `Hola, te paso el enlace para pagar tu plaza dentro de la reserva de grupo:\n\n${enlaceGrupoGenerado}`
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-5 py-3 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+      >
+        Enviar por WhatsApp
+      </a>
+    </div>
+  </div>
+)}
+          {!enlaceGrupoGenerado && (
+  <BloqueoReserva>
             <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl mx-auto">
               <div>
                 <label className="block font-bold text-sm mb-1">
@@ -796,7 +832,8 @@ Después elige si preferís venir por la mañana o por la tarde.
                 {cargando ? "Guardando..." : "Continuar al pago"}
               </button>
             </form>
-          </BloqueoReserva>
+            </BloqueoReserva>
+)}
 
           <div className="mt-8 text-center">
             <img

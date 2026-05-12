@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ref, get, push, remove } from "firebase/database";
+import { ref, get, push, remove, set } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 import { useLocation } from "react-router-dom";
@@ -7,18 +7,49 @@ import { useLocation } from "react-router-dom";
 const AdminReservasGrupos = () => {
   const location = useLocation();
 
-  const [reservas, setReservas] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [guardandoNota, setGuardandoNota] = useState({});
-  const [eliminandoNota, setEliminandoNota] = useState({});
-  const [nuevasNotas, setNuevasNotas] = useState({});
-  const [filtroFecha, setFiltroFecha] = useState("");
-  const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+ const [reservas, setReservas] = useState([]);
+const [cargando, setCargando] = useState(true);
+const [guardandoNota, setGuardandoNota] = useState({});
+const [eliminandoNota, setEliminandoNota] = useState({});
+const [nuevasNotas, setNuevasNotas] = useState({});
+
+const [nombreManual, setNombreManual] = useState({});
+const [telefonoManual, setTelefonoManual] = useState({});
+const [metodoManual, setMetodoManual] = useState({});
+const [guardandoManual, setGuardandoManual] = useState({});
+
+const [filtroFecha, setFiltroFecha] = useState("");
+const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
 
   const fechaDesdeURL = useMemo(() => {
+    
     const params = new URLSearchParams(location.search);
     return params.get("fecha") || "";
   }, [location.search]);
+  const calcularTiempoRestante = (fechaLimitePago) => {
+  if (!fechaLimitePago) return "—";
+
+  const ahora = new Date();
+  const limite = new Date(fechaLimitePago);
+
+  if (Number.isNaN(limite.getTime())) {
+    return "—";
+  }
+
+  const diferencia = limite - ahora;
+
+  if (diferencia <= 0) {
+    return "Plazo finalizado";
+  }
+
+  const horas = Math.floor(diferencia / (1000 * 60 * 60));
+
+  const minutos = Math.floor(
+    (diferencia % (1000 * 60 * 60)) / (1000 * 60)
+  );
+
+  return `${horas}h ${minutos}m`;
+};
 
   useEffect(() => {
     if (fechaDesdeURL) {
@@ -202,6 +233,184 @@ const AdminReservasGrupos = () => {
       }));
     }
   };
+const registrarPagoManual = async (r) => {
+  const nombre = (nombreManual[r.id] || "").trim();
+  const telefono = (telefonoManual[r.id] || "").trim();
+  const metodo = (metodoManual[r.id] || "").trim();
+
+  if (!nombre || !telefono || !metodo) {
+    alert("Completa nombre, teléfono y método de pago.");
+    return;
+  }
+
+  try {
+    setGuardandoManual((prev) => ({
+      ...prev,
+      [r.id]: true,
+    }));
+
+    const pagoId = push(
+      ref(dbRealtime, `reservasGrupos/${r.id}/pagosIndividuales`)
+    ).key;
+
+    const importe = Number(r.precioUnitario || 0);
+
+    const nuevoPago = {
+      nombreAsistente: nombre,
+      telefonoAsistente: telefono,
+      importe,
+      estadoPago: "pagado_manual",
+      metodoPagoManual: metodo,
+      creadoManualPorAdmin: true,
+      pagadoEn: new Date().toISOString(),
+    };
+
+    await set(
+      ref(
+        dbRealtime,
+        `reservasGrupos/${r.id}/pagosIndividuales/${pagoId}`
+      ),
+      nuevoPago
+    );
+
+    const nuevasPagadas = Number(r.plazasPagadas || 0) + 1;
+    const nuevasPendientes = Math.max(
+      0,
+      Number(r.plazas || 0) - nuevasPagadas
+    );
+
+    const nuevoTotalPagado =
+      Number(r.totalPagado || 0) + importe;
+
+    const nuevoTotalPendiente = Math.max(
+      0,
+      Number(r.precioTotal || 0) - nuevoTotalPagado
+    );
+
+    const grupoActualizado = {
+      plazasPagadas: nuevasPagadas,
+      plazasPendientes: nuevasPendientes,
+      totalPagado: nuevoTotalPagado,
+      totalPendiente: nuevoTotalPendiente,
+      estado:
+        nuevasPendientes <= 0
+          ? "Confirmada"
+          : "pendiente_pago_individual",
+      estadoPago:
+        nuevasPendientes <= 0 ? "pagado" : "parcial",
+    };
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/plazasPagadas`),
+      grupoActualizado.plazasPagadas
+    );
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/plazasPendientes`),
+      grupoActualizado.plazasPendientes
+    );
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/totalPagado`),
+      grupoActualizado.totalPagado
+    );
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/totalPendiente`),
+      grupoActualizado.totalPendiente
+    );
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/estado`),
+      grupoActualizado.estado
+    );
+
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/estadoPago`),
+      grupoActualizado.estadoPago
+    );
+
+    setReservas((prev) =>
+      prev.map((grupo) => {
+        if (grupo.id !== r.id) return grupo;
+
+        return {
+          ...grupo,
+          ...grupoActualizado,
+          pagosIndividuales: {
+            ...(grupo.pagosIndividuales || {}),
+            [pagoId]: nuevoPago,
+          },
+        };
+      })
+    );
+
+    setNombreManual((prev) => ({
+      ...prev,
+      [r.id]: "",
+    }));
+
+    setTelefonoManual((prev) => ({
+      ...prev,
+      [r.id]: "",
+    }));
+
+    setMetodoManual((prev) => ({
+      ...prev,
+      [r.id]: "",
+    }));
+
+    alert("Pago manual añadido correctamente.");
+  } catch (error) {
+    console.error("Error al registrar pago manual:", error);
+    alert("No se pudo registrar el pago manual.");
+  } finally {
+    setGuardandoManual((prev) => ({
+      ...prev,
+      [r.id]: false,
+    }));
+  }
+};
+const cancelarGrupoManual = async (r) => {
+  const confirmar = window.confirm(
+    "¿Seguro que quieres cancelar esta reserva de grupo? El enlace de pago dejará de funcionar."
+  );
+
+  if (!confirmar) return;
+
+  try {
+    const ahoraISO = new Date().toISOString();
+
+    await set(ref(dbRealtime, `reservasGrupos/${r.id}/estado`), "Cancelada");
+    await set(ref(dbRealtime, `reservasGrupos/${r.id}/estadoPago`), "cancelado");
+    await set(ref(dbRealtime, `reservasGrupos/${r.id}/cancelada`), true);
+    await set(ref(dbRealtime, `reservasGrupos/${r.id}/canceladaEn`), ahoraISO);
+    await set(
+      ref(dbRealtime, `reservasGrupos/${r.id}/motivoCancelacion`),
+      "Cancelada manualmente desde admin"
+    );
+
+    setReservas((prev) =>
+      prev.map((grupo) =>
+        grupo.id === r.id
+          ? {
+              ...grupo,
+              estado: "Cancelada",
+              estadoPago: "cancelado",
+              cancelada: true,
+              canceladaEn: ahoraISO,
+              motivoCancelacion: "Cancelada manualmente desde admin",
+            }
+          : grupo
+      )
+    );
+
+    alert("Reserva de grupo cancelada correctamente.");
+  } catch (error) {
+    console.error("Error al cancelar grupo:", error);
+    alert("No se pudo cancelar la reserva de grupo.");
+  }
+};
 
   const limpiarFiltros = () => {
     setFiltroFecha("");
@@ -324,7 +533,15 @@ const AdminReservasGrupos = () => {
             ) : (
               <div style={styles.lista}>
                 {reservasFiltradas.map((r) => (
-                  <div key={r.id} style={styles.card}>
+                  <div
+  key={r.id}
+  style={{
+    ...styles.card,
+    ...(r.estado === "Cancelada" || r.cancelada
+      ? styles.cardCancelada
+      : {}),
+  }}
+>
                     <div style={styles.cardTop}>
                       <div>
                         <h2 style={styles.cardTitulo}>
@@ -343,9 +560,97 @@ const AdminReservasGrupos = () => {
 
                     <div style={styles.infoGrid}>
                       <div style={styles.infoBox}>
-                        <p><strong>Personas:</strong> {r.plazas}</p>
-                        <p><strong>Total:</strong> {r.precioTotal}€</p>
-                        <p><strong>OrderId:</strong> {r.orderId || "—"}</p>
+                       <p><strong>Personas:</strong> {r.plazas}</p>
+
+<p>
+  <strong>Modo de pago:</strong>{" "}
+  {r.modoPago === "individual" ? "Individual" : "Completo"}
+</p>
+
+{r.modoPago === "individual" && (
+  <>
+    <p>
+      <strong>Pagadas:</strong> {r.plazasPagadas ?? 0}/{r.plazas || 0}
+    </p>
+    <div style={styles.progresoWrapper}>
+  <div
+    style={{
+      ...styles.progresoBarra,
+      width: `${Math.min(
+        100,
+        Math.round(((r.plazasPagadas || 0) / (r.plazas || 1)) * 100)
+      )}%`,
+    }}
+  />
+</div>
+
+<p style={styles.textoProgreso}>
+  {Math.round(((r.plazasPagadas || 0) / (r.plazas || 1)) * 100)}% completado
+</p>
+
+    <p>
+      <strong>Pendientes:</strong> {r.plazasPendientes ?? 0}
+    </p>
+
+    <p>
+      <strong>Total pagado:</strong> {r.totalPagado ?? 0}€
+    </p>
+
+    <p>
+      <strong>Total pendiente:</strong> {r.totalPendiente ?? 0}€
+    </p>
+
+    <p>
+      <strong>Fecha límite pago:</strong>{" "}
+      {r.fechaLimitePago
+        ? new Date(r.fechaLimitePago).toLocaleString("es-ES")
+        : "—"}
+    </p>
+    <p>
+  <strong>Tiempo restante:</strong>{" "}
+  {calcularTiempoRestante(r.fechaLimitePago)}
+</p>
+  </>
+)}
+
+<p><strong>Total:</strong> {r.precioTotal}€</p>
+<p><strong>OrderId:</strong> {r.orderId || "—"}</p>
+{r.modoPago === "individual" && r.enlacePagoGrupo && (
+  <div style={{ marginTop: 12 }}>
+    <p
+      style={{
+        fontSize: "0.9rem",
+        wordBreak: "break-word",
+        marginBottom: 10,
+      }}
+    >
+      <strong>Enlace de pago:</strong>
+      <br />
+      {r.enlacePagoGrupo}
+    </p>
+
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(r.enlacePagoGrupo);
+        alert("Enlace copiado");
+      }}
+      style={styles.btnCopiar}
+    >
+      Copiar enlace
+    </button>
+
+    {r.estadoPago !== "pagado" && r.estado !== "Cancelada" && (
+      <button
+        type="button"
+        onClick={() => cancelarGrupoManual(r)}
+        style={styles.btnCancelarGrupo}
+      >
+        Cancelar grupo
+      </button>
+    )}
+  </div>
+)}
                       </div>
 
                       <div style={styles.infoBox}>
@@ -358,8 +663,105 @@ const AdminReservasGrupos = () => {
   <p><strong>Nombre:</strong> {r.nombreReserva}</p>
   <p><strong>Teléfono:</strong> {r.telefono}</p>
   <p><strong>Email:</strong> {r.email || "—"}</p>
+  {r.telefono && (
+  <a
+    href={`https://wa.me/34${String(r.telefono).replace(/\D/g, "")}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={styles.btnWhatsApp}
+  >
+    WhatsApp organizador
+  </a>
+)}
 </div>
                     </div>
+                    {r.modoPago === "individual" && r.estadoPago !== "pagado" && (
+  <div style={styles.notasBox}>
+    <strong>Registrar pago manual</strong>
+
+    <input
+      type="text"
+      placeholder="Nombre del asistente"
+      value={nombreManual[r.id] || ""}
+      onChange={(e) =>
+        setNombreManual((prev) => ({
+          ...prev,
+          [r.id]: e.target.value,
+        }))
+      }
+      style={styles.inputManual}
+    />
+
+    <input
+      type="tel"
+      placeholder="Teléfono del asistente"
+      value={telefonoManual[r.id] || ""}
+      onChange={(e) =>
+        setTelefonoManual((prev) => ({
+          ...prev,
+          [r.id]: e.target.value,
+        }))
+      }
+      style={styles.inputManual}
+    />
+
+    <select
+      value={metodoManual[r.id] || ""}
+      onChange={(e) =>
+        setMetodoManual((prev) => ({
+          ...prev,
+          [r.id]: e.target.value,
+        }))
+      }
+      style={styles.inputManual}
+    >
+      <option value="">Método de pago</option>
+      <option value="efectivo">Efectivo</option>
+      <option value="bizum">Bizum</option>
+      <option value="transferencia">Transferencia</option>
+    </select>
+
+    <button
+      type="button"
+      onClick={() => registrarPagoManual(r)}
+      style={styles.botonGuardar}
+      disabled={guardandoManual[r.id]}
+    >
+      {guardandoManual[r.id]
+        ? "Guardando..."
+        : "Registrar plaza pagada"}
+    </button>
+  </div>
+)}
+                    {r.modoPago === "individual" && (
+                      
+  <div style={styles.notasBox}>
+    <strong>Pagos individuales del grupo</strong>
+
+    {r.pagosIndividuales && Object.keys(r.pagosIndividuales).length > 0 ? (
+      <div style={{ marginTop: 10 }}>
+        {Object.entries(r.pagosIndividuales).map(([pagoId, pago]) => (
+          <div key={pagoId} style={styles.asistenteItem}>
+            <p style={styles.notaTexto}>
+              <strong>{pago.nombreAsistente || "Sin nombre"}</strong>
+              {" — "}
+              {pago.telefonoAsistente || "Sin teléfono"}
+            </p>
+
+            <p style={styles.notaFecha}>
+              Estado: {pago.estadoPago || "—"} · Importe: {pago.importe || 0}€
+              {pago.pagadoEn
+                ? ` · Pagado: ${new Date(pago.pagadoEn).toLocaleString("es-ES")}`
+                : ""}
+            </p>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p style={styles.vacio}>Aún no hay asistentes pagados.</p>
+    )}
+  </div>
+)}
 
                     {r.notas && (
                       <div style={styles.notasBox}>
@@ -506,6 +908,62 @@ const styles = {
     fontWeight: 600,
     color: "#5b4a2d",
   },
+ btnCancelarGrupo: {
+  display: "inline-block",
+  marginTop: 12,
+  marginLeft: 18,
+  backgroundColor: "#fff1f1",
+  color: "#8a3b3b",
+  border: "1px solid #e7c9c9",
+  borderRadius: 20,
+  padding: "8px 14px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  fontSize: "0.85rem",
+},
+  btnWhatsApp: {
+  display: "inline-block",
+  marginTop: 10,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "8px 14px",
+  borderRadius: 20,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.85rem",
+},
+  btnCopiar: {
+  backgroundColor: "#f4c542",
+  color: "#5c3c00",
+  border: "none",
+  borderRadius: 20,
+  padding: "8px 14px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  fontSize: "0.85rem",
+},
+progresoWrapper: {
+  width: "100%",
+  height: 10,
+  backgroundColor: "#f0e5cf",
+  borderRadius: 999,
+  overflow: "hidden",
+  marginTop: 8,
+  marginBottom: 6,
+},
+
+progresoBarra: {
+  height: "100%",
+  backgroundColor: "#f4c542",
+  borderRadius: 999,
+},
+
+textoProgreso: {
+  margin: "0 0 8px 0",
+  fontSize: "0.85rem",
+  color: "#7a6331",
+  fontWeight: 600,
+},
   gridResumen: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -519,6 +977,13 @@ const styles = {
     padding: 20,
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   },
+  asistenteItem: {
+  marginTop: 10,
+  padding: 10,
+  borderTop: "1px solid #eee",
+  backgroundColor: "#fffaf0",
+  borderRadius: 10,
+},
   cardLabel: {
     margin: 0,
     color: "#7a6331",
@@ -543,6 +1008,11 @@ const styles = {
     padding: 18,
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
   },
+  cardCancelada: {
+  backgroundColor: "#fff3f3",
+  border: "1px solid #efcaca",
+  opacity: 0.92,
+},
   cardTop: {
     display: "flex",
     justifyContent: "space-between",
