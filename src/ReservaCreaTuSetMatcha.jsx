@@ -611,9 +611,7 @@ export default function ReservaCreaTuSetMatcha() {
                 {fecha && !fechaBloqueada && fechaHabilitadaManual && (
                   <p className="mt-2 text-sm text-green-700 font-medium">
                     Esta fecha ha sido habilitada manualmente desde administración.
-                    {fechaHabilitadaManual.motivo
-                      ? ` Motivo: ${fechaHabilitadaManual.motivo}.`
-                      : ""}
+                    
                   </p>
                 )}
                 {fecha &&
