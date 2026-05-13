@@ -515,6 +515,19 @@ return;
     <p className="text-sm text-gray-700 mb-4">
       Comparte este enlace con las personas del grupo para que cada una pueda pagar su plaza.
     </p>
+    <div className="mb-4 rounded-xl border border-[#f3c6a0] bg-[#fff7ed] px-4 py-3 text-sm text-[#7a3f00] text-left">
+  <p className="font-semibold mb-1">
+    Importante
+  </p>
+
+  <p>
+    La persona que ha creado la reserva también debe pagar su plaza desde este mismo enlace.
+  </p>
+
+  <p className="mt-1">
+    Además, podrás volver a consultar y compartir este enlace desde tu perfil, en el apartado “Reservas de grupo”.
+  </p>
+</div>
 <div className="mb-4 rounded-xl border border-[#eadfbe] bg-white px-4 py-3 text-sm text-[#7a5a1e]">
   <p className="font-semibold">
     El enlace estará disponible durante 24 horas.
