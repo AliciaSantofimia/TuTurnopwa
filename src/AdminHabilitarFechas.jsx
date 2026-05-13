@@ -8,10 +8,11 @@ const AdminHabilitarFechas = () => {
   const [fechaFin, setFechaFin] = useState("");
   const [motivo, setMotivo] = useState("");
   const [fechasHabilitadas, setFechasHabilitadas] = useState([]);
-  const [habilitarManana, setHabilitarManana] = useState(true);
-  const [habilitarTarde, setHabilitarTarde] = useState(true);
+  const [habilitarManana, setHabilitarManana] = useState(false);
+const [habilitarTarde, setHabilitarTarde] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoFecha, setEliminandoFecha] = useState("");
+  const [fechaEditando, setFechaEditando] = useState(null);
 
   useEffect(() => {
     cargarFechasHabilitadas();
@@ -99,11 +100,12 @@ const AdminHabilitarFechas = () => {
 
       await update(ref(dbRealtime), updates);
 
-      setFechaInicio("");
-      setFechaFin("");
-      setMotivo("");
-      setHabilitarManana(true);
-      setHabilitarTarde(true);
+     setFechaInicio("");
+setFechaFin("");
+setMotivo("");
+setHabilitarManana(false);
+setHabilitarTarde(false);
+setFechaEditando(null);
 
       await cargarFechasHabilitadas();
       alert("Fechas habilitadas correctamente.");
@@ -115,18 +117,20 @@ const AdminHabilitarFechas = () => {
     }
   };
 
-  const modificarHabilitacion = (f) => {
-    setFechaInicio(f.fecha);
-    setFechaFin(f.fecha);
-    setMotivo(f.motivo || "");
+ const modificarHabilitacion = (f) => {
+  setFechaEditando(f.fecha);
 
-    const turnos = f.turnosHabilitados || [];
+  setFechaInicio(f.fecha);
+  setFechaFin(f.fecha);
+  setMotivo(f.motivo || "");
 
-    setHabilitarManana(turnos.includes("11:30-14:30"));
-    setHabilitarTarde(turnos.includes("17:30-20:30"));
+  const turnos = f.turnosHabilitados || [];
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  setHabilitarManana(turnos.includes("11:30-14:30"));
+  setHabilitarTarde(turnos.includes("17:30-20:30"));
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
   const eliminarHabilitacion = async (fecha) => {
     const confirmar = window.confirm(
@@ -215,6 +219,16 @@ const AdminHabilitarFechas = () => {
               />
               Tarde
             </label>
+            <p style={styles.avisoTurnos}>
+  Debes marcar solo los turnos que quieras habilitar. Si marcas mañana y tarde,
+  la fecha quedará abierta en ambos turnos.
+</p>
+{fechaEditando && (
+  <p style={styles.avisoEdicion}>
+    Estás modificando la fecha {fechaEditando}. Revisa bien los turnos marcados
+    antes de guardar los cambios.
+  </p>
+)}
           </div>
 
           <button
@@ -222,7 +236,11 @@ const AdminHabilitarFechas = () => {
             style={styles.botonGuardar}
             disabled={guardando}
           >
-            {guardando ? "Guardando..." : "Habilitar fechas"}
+            {guardando
+  ? "Guardando..."
+  : fechaEditando
+  ? "Guardar cambios"
+  : "Habilitar fechas"}
           </button>
         </div>
 
@@ -341,6 +359,19 @@ const styles = {
     fontWeight: 600,
     color: "#5b4a2d",
   },
+  avisoTurnos: {
+  margin: "4px 0 0 0",
+  color: "#8a6d3b",
+  fontSize: "0.85rem",
+  lineHeight: 1.4,
+},
+avisoEdicion: {
+  margin: "8px 0 0 0",
+  color: "#8a3b3b",
+  fontSize: "0.85rem",
+  fontWeight: 600,
+  lineHeight: 1.4,
+},
   subtituloBloque: {
     marginTop: 0,
     marginBottom: 14,
