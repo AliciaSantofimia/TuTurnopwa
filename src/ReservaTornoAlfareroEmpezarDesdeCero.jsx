@@ -199,9 +199,7 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
   let turnosPermitidos = todosLosTurnos;
 
  if (turnosConfig) {
-  turnosPermitidos = normalizarTurnos(turnosConfig).map((t) =>
-    t.replaceAll(" a ", "-")
-  );
+  turnosPermitidos = normalizarTurnos(turnosConfig);
 }
 
   turnosPermitidos.forEach((t) => {

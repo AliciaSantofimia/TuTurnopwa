@@ -192,26 +192,16 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
   }, [fechaInicio, fechasHabilitadas]);
 
   const turnosDisponibles = useMemo(() => {
-  const turnos = [...turnosHabituales];
+  let turnos = [...turnosHabituales];
 
- if (fechaHabilitadaManual) {
-  const todosLosTurnos = normalizarTurnos(claseConfig?.turnos);
-  const turnosConfig = fechaHabilitadaManual.turnosHabilitados;
+  if (fechaHabilitadaManual) {
+    const turnosConfig = fechaHabilitadaManual.turnosHabilitados;
+    const turnosManual = normalizarTurnos(turnosConfig);
 
-  let turnosPermitidos = todosLosTurnos;
-
- if (turnosConfig) {
-  turnosPermitidos = normalizarTurnos(turnosConfig).map((t) =>
-    t.replaceAll(" a ", "-")
-  );
-}
-
-  turnosPermitidos.forEach((t) => {
-    if (!turnos.includes(t)) {
-      turnos.push(t);
+    if (turnosManual.length > 0) {
+      turnos = turnosManual;
     }
-  });
-}
+  }
 
   Object.values(reservasGrupos || {}).forEach((grupo) => {
     if (
@@ -230,7 +220,6 @@ export default function ReservaModelaAManoYDecoraTusPiezasFavoritas() {
 }, [
   turnosHabituales,
   fechaHabilitadaManual,
-  claseConfig,
   reservasGrupos,
   fechaInicio,
 ]);
