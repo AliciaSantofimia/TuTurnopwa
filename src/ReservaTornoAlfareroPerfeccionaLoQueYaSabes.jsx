@@ -69,7 +69,9 @@ const getTurnosDesdeHorarios = (horarios, fechaISO) => {
   const nombreDia = getNombreDiaSemana(fechaISO);
   const turnosDia = horarios[nombreDia];
 
-  return normalizarTurnos(turnosDia);
+ return normalizarTurnos(turnosDia).map((t) =>
+  String(t).replaceAll(" a ", "-").trim()
+);
 };
 
 export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
@@ -179,27 +181,44 @@ export default function ReservaTornoAlfareroPerfeccionaLoQueYaSabes() {
   }, [claseConfig, fechaInicio]);
 
   const fechaHabilitadaManual = useMemo(() => {
-    if (!fechaInicio) return null;
+  if (!fechaInicio) return null;
 
-    const habilitacion = fechasHabilitadas?.[fechaInicio];
-    if (habilitacion?.habilitada) {
-      return habilitacion;
-    }
+  const habilitacion = fechasHabilitadas?.[fechaInicio];
 
-    return null;
-  }, [fechaInicio, fechasHabilitadas]);
+  if (!habilitacion) return null;
+
+  if (
+    habilitacion.habilitada === true ||
+    habilitacion.activo === true ||
+    habilitacion.estado === "activa" ||
+    habilitacion.tipo === "apertura_especial" ||
+    habilitacion.turnos ||
+    habilitacion.turnosHabilitados ||
+    habilitacion.turnosDisponibles
+  ) {
+    return habilitacion;
+  }
+
+  return null;
+}, [fechaInicio, fechasHabilitadas]);
 
   const turnosDisponibles = useMemo(() => {
   const turnos = [...turnosHabituales];
 
   if (fechaHabilitadaManual) {
   const todosLosTurnos = normalizarTurnos(claseConfig?.turnos);
-  const turnosConfig = fechaHabilitadaManual.turnosHabilitados;
+ const turnosConfig =
+  fechaHabilitadaManual.turnosHabilitados ||
+  fechaHabilitadaManual.turnos ||
+  fechaHabilitadaManual.turnosDisponibles ||
+  [];
 
-  let turnosPermitidos = todosLosTurnos;
+let turnosPermitidos = todosLosTurnos;
 
- if (turnosConfig) {
-  turnosPermitidos = normalizarTurnos(turnosConfig);
+if (turnosConfig) {
+  turnosPermitidos = normalizarTurnos(turnosConfig).map((t) =>
+    String(t).replaceAll(" a ", "-").trim()
+  );
 }
 
   turnosPermitidos.forEach((t) => {

@@ -49,7 +49,9 @@ const getNombreDiaSemana = (fechaISO) => {
 const getTurnosDesdeHorarios = (horarios, fechaISO) => {
   if (!horarios || !fechaISO) return [];
   const nombreDia = getNombreDiaSemana(fechaISO);
-  return normalizarTurnos(horarios[nombreDia]);
+  return normalizarTurnos(horarios[nombreDia]).map((t) =>
+  String(t).replaceAll(" a ", "-").trim()
+);
 };
 
 function obtenerEstadoVisibleBono(bono) {
@@ -96,6 +98,7 @@ export default function UsarBono() {
   const [bono, setBono] = useState(null);
   const [claseConfig, setClaseConfig] = useState(null);
   const [fechasBloqueadas, setFechasBloqueadas] = useState({});
+  const [fechasHabilitadas, setFechasHabilitadas] = useState({});
   const [fechaSesion, setFechaSesion] = useState("");
   const [turno, setTurno] = useState("");
   const [cargando, setCargando] = useState(true);
@@ -140,6 +143,10 @@ export default function UsarBono() {
         setFechasBloqueadas(
           bloqueosSnap.exists() ? bloqueosSnap.val() || {} : {}
         );
+        const habilitadasSnap = await get(ref(dbRealtime, "fechasHabilitadas"));
+setFechasHabilitadas(
+  habilitadasSnap.exists() ? habilitadasSnap.val() || {} : {}
+);
       } catch (error) {
         console.error("Error al cargar bono:", error);
         setBono(null);
@@ -151,13 +158,51 @@ export default function UsarBono() {
 
     cargarTodo();
   }, [user, bonoId]);
+  const fechaHabilitadaManual = useMemo(() => {
+  if (!fechaSesion) return null;
+
+  const habilitacion = fechasHabilitadas?.[fechaSesion];
+
+  if (!habilitacion) return null;
+
+  if (
+    habilitacion.habilitada === true ||
+    habilitacion.activo === true ||
+    habilitacion.estado === "activa" ||
+    habilitacion.tipo === "apertura_especial" ||
+    habilitacion.turnos ||
+    habilitacion.turnosHabilitados ||
+    habilitacion.turnosDisponibles
+  ) {
+    return habilitacion;
+  }
+
+  return null;
+}, [fechaSesion, fechasHabilitadas]);
 
   const estadoVisible = useMemo(() => obtenerEstadoVisibleBono(bono), [bono]);
 
-  const turnosDisponibles = useMemo(() => {
-    return getTurnosDesdeHorarios(claseConfig?.horarios, fechaSesion);
-  }, [claseConfig, fechaSesion]);
+const turnosDisponibles = useMemo(() => {
+  let turnos = getTurnosDesdeHorarios(claseConfig?.horarios, fechaSesion);
 
+  if (fechaHabilitadaManual) {
+    const turnosConfig =
+      fechaHabilitadaManual.turnosHabilitados ||
+      fechaHabilitadaManual.turnos ||
+      fechaHabilitadaManual.turnosDisponibles ||
+      [];
+
+    const turnosManual = normalizarTurnos(turnosConfig).map((t) =>
+      String(t).replaceAll(" a ", "-").trim()
+    );
+
+    if (turnosManual.length > 0) {
+      turnos = turnosManual;
+    }
+  }
+
+  return turnos;
+}, [claseConfig, fechaSesion, fechaHabilitadaManual]);
   const fechaBloqueada = useMemo(() => {
     if (!fechaSesion) return null;
     const bloqueo = fechasBloqueadas?.[fechaSesion];
@@ -214,7 +259,7 @@ export default function UsarBono() {
 
       const nombreClase = bono.clase || claseConfig?.nombre || "Bono";
       const claseId = bono.claseId || "";
-      const turnoElegido = turno;
+      const turnoElegido = String(turno).replaceAll(" a ", "-").trim();
       const modalidad = bono.modalidad || claseConfig?.modalidad || "";
       const reservasPathKey = obtenerReservasPathKey(claseId);
 
@@ -344,7 +389,13 @@ export default function UsarBono() {
                     <p className="mt-2 text-sm text-red-600 font-medium">
                       Esta clase no se imparte el día seleccionado.
                     </p>
+                    
                   )}
+                  {fechaSesion && !fechaBloqueada && fechaHabilitadaManual && (
+  <p className="mt-2 text-sm text-green-700 font-medium">
+    Esta fecha ha sido habilitada manualmente desde administración.
+  </p>
+)}
                 </div>
 
                 <div>
