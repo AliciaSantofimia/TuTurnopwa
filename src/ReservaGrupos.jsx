@@ -345,9 +345,9 @@ const reservaGrupo = {
   totalPendiente: modoPago === "individual" ? precioTotal : 0,
   fechaCreacion: ahoraISO,
   fechaLimitePago:
-    modoPago === "individual"
-      ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      : null,
+   modoPago === "individual"
+  ? new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
+  : null,
   orderId,
   timestamp: ahoraISO,
 };
@@ -435,7 +435,7 @@ return;
  <strong>Turno de mañana:</strong> 11:30-14:30
 <br />
 <strong>Turno de tarde:</strong> 17:30-20:30
-  Si necesitáis algo especial, como empezar antes o cualquier detalle importante, podéis indicarlo en el apartado de notas de la reserva.
+ <br></br> Si necesitáis algo especial, como empezar antes o cualquier detalle importante, podéis indicarlo en el apartado de notas de la reserva.
 </p>
 
           <div className="mb-8">
@@ -530,7 +530,7 @@ return;
 </div>
 <div className="mb-4 rounded-xl border border-[#eadfbe] bg-white px-4 py-3 text-sm text-[#7a5a1e]">
   <p className="font-semibold">
-    El enlace estará disponible durante 24 horas.
+    El enlace estará disponible durante 72 horas.
   </p>
 
   {fechaLimiteGrupoGenerado && (

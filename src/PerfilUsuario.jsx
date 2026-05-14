@@ -434,6 +434,9 @@ if (snapReservasGrupos.exists()) {
             {grupo.plazasPendientes ?? 0}
           </p>
           <p>
+            <p>
+  <strong>Duración del enlace:</strong> 72 horas
+</p>
   <strong>Enlace válido hasta:</strong>{" "}
   {grupo.fechaLimitePago
     ? new Date(grupo.fechaLimitePago).toLocaleString("es-ES")
