@@ -33,12 +33,12 @@ export default function ReservaTornoIntensivoRegalo() {
 
   useEffect(() => {
     if (fecha) {
-      contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+      contarPlazasPorMetodo(fecha, turno).then(({ torno, modelado }) => {
         setOcupadasTorno(torno);
         setOcupadasModelado(modelado);
       });
     }
-  }, [fecha]);
+  }, [fecha, turno]);
 
   useEffect(() => {
     if (location.state?.codigo) {

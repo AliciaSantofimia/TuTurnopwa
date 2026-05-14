@@ -204,7 +204,7 @@ export default function ReservaClaseSueltaContinuidad() {
       return;
     }
 
-    contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+    contarPlazasPorMetodo(fecha, turno).then(({ torno, modelado }) => {
       setOcupadasTorno(torno);
       setOcupadasModelado(modelado);
     });

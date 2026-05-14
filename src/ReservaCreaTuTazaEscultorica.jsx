@@ -205,11 +205,11 @@ export default function ReservaCreaTuTazaEscultorica() {
       return;
     }
 
-    contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+    contarPlazasPorMetodo(fecha, turno).then(({ torno, modelado }) => {
       setOcupadasTorno(torno);
       setOcupadasModelado(modelado);
     });
-  }, [fecha]);
+  }, [fecha, turno]);
 
   const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);

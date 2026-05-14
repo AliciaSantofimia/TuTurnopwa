@@ -52,7 +52,7 @@ function pareceReservaDirecta(obj) {
  * @param {string} fechaStr - Fecha en formato YYYY-MM-DD.
  * @returns {Promise<{torno: number, modelado: number}>}
  */
-export async function contarPlazasPorMetodo(fechaStr) {
+export async function contarPlazasPorMetodo(fechaStr, turnoStr = "") {
   try {
     const snapshot = await get(child(ref(dbRealtime), "reservas"));
     let torno = 0;
@@ -80,8 +80,10 @@ export async function contarPlazasPorMetodo(fechaStr) {
       const fechaSnap = claseSnap.child(fechaStr);
       if (!fechaSnap.exists()) return;
 
-      fechaSnap.forEach((turnoSnap) => {
-        turnoSnap.forEach((tipoSnap) => {
+     fechaSnap.forEach((turnoSnap) => {
+  if (turnoStr && turnoSnap.key !== turnoStr) return;
+
+  turnoSnap.forEach((tipoSnap) => {
           const tipoVal = tipoSnap.val();
 
           if (!tipoVal || typeof tipoVal !== "object") return;

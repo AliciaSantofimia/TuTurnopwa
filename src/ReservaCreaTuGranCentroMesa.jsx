@@ -201,7 +201,7 @@ export default function ReservaCreaTuGranCentroMesa() {
 
   useEffect(() => {
     if (fecha) {
-      contarPlazasPorMetodo(fecha).then(({ torno, modelado }) => {
+      contarPlazasPorMetodo(fecha, turno).then(({ torno, modelado }) => {
         setOcupadasTorno(torno);
         setOcupadasModelado(modelado);
       });
@@ -209,7 +209,7 @@ export default function ReservaCreaTuGranCentroMesa() {
       setOcupadasTorno(0);
       setOcupadasModelado(0);
     }
-  }, [fecha]);
+  }, [fecha, turno]);
 
   const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
