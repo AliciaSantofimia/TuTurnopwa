@@ -80,8 +80,13 @@ const AdminBonosNuevo = () => {
               listaBonos.push({
                 bonoId,
                 uid,
-                nombreUsuario: usuario.nombre || "",
-                emailUsuario: usuario.email || "",
+               nombreUsuario: usuario.nombre || "",
+emailUsuario: usuario.email || "",
+telefonoUsuario:
+  usuario.telefono ||
+  usuario.phoneNumber ||
+  usuario.phone ||
+  "",
                 clase: bono.clase || "Bono",
                 claseId: bono.claseId || "",
                 fechaInicio: bono.fechaInicio || "",
@@ -280,10 +285,30 @@ const AdminBonosNuevo = () => {
                     {renderNotasBadge(bono)}
                   </div>
 
-                  <p style={styles.cardTexto}>
-                    <strong>Usuario:</strong>{" "}
-                    {bono.nombreUsuario || bono.emailUsuario || bono.uid}
-                  </p>
+                 <p style={styles.cardTexto}>
+  <strong>Usuario:</strong>{" "}
+  {bono.nombreUsuario || bono.emailUsuario || bono.uid}
+</p>
+
+{bono.telefonoUsuario && (
+  <>
+    <p style={styles.cardTexto}>
+      <strong>Teléfono:</strong> {bono.telefonoUsuario}
+    </p>
+
+    <a
+      href={`https://wa.me/34${String(
+        bono.telefonoUsuario
+      ).replace(/\D/g, "")}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={styles.btnWhatsApp}
+      onClick={(e) => e.stopPropagation()}
+    >
+      WhatsApp usuario
+    </a>
+  </>
+)}
 
                   <div style={styles.cardGrid}>
                     <p style={styles.cardTexto}>
@@ -327,9 +352,32 @@ const AdminBonosNuevo = () => {
                   >
                     <td style={styles.tdInicio}>{bono.fechaInicio || "—"}</td>
                     <td style={styles.tdClase}>{bono.clase}</td>
-                    <td style={styles.tdUsuario}>
-                      {bono.nombreUsuario || bono.emailUsuario || bono.uid}
-                    </td>
+                   <td style={styles.tdUsuario}>
+  <strong>
+    {bono.nombreUsuario || bono.emailUsuario || bono.uid}
+  </strong>
+
+  {bono.telefonoUsuario && (
+    <>
+      <br />
+      <span>{bono.telefonoUsuario}</span>
+
+      <br />
+
+      <a
+        href={`https://wa.me/34${String(
+          bono.telefonoUsuario
+        ).replace(/\D/g, "")}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={styles.btnWhatsAppMini}
+        onClick={(e) => e.stopPropagation()}
+      >
+        WhatsApp
+      </a>
+    </>
+  )}
+</td>
                     <td style={styles.tdNotas}>{renderNotasBadge(bono)}</td>
                     <td style={styles.tdEstado}>{renderEstado(bono)}</td>
                   </tr>
@@ -429,6 +477,30 @@ const styles = {
     color: "#5b4a2d",
     alignSelf: "flex-start",
   },
+  btnWhatsApp: {
+  display: "inline-block",
+  marginTop: 8,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "8px 14px",
+  borderRadius: 20,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.85rem",
+  alignSelf: "flex-start",
+},
+
+btnWhatsAppMini: {
+  display: "inline-block",
+  marginTop: 6,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "5px 10px",
+  borderRadius: 16,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.78rem",
+},
   resumen: {
     marginBottom: 14,
   },
