@@ -66,8 +66,8 @@ export default function Login() {
 
   return (
     <PantallaConVolver>
-      <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-4 py-8 text-[#333]">
-        <div className="w-full max-w-md">
+      <div className="bg-[#fdfaf5] min-h-screen flex items-center justify-center px-2 sm:px-4 py-6 sm:py-8 text-[#333]">
+  <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-6">
             <img
               src="/img/logoPC.png"
@@ -86,7 +86,7 @@ export default function Login() {
 
           <form
             onSubmit={handleLogin}
-            className="bg-white shadow-md rounded-2xl p-5 sm:p-6 w-full flex flex-col gap-4"
+           className="bg-white shadow-md rounded-2xl p-4 sm:p-6 w-full flex flex-col gap-4"
           >
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 text-center">

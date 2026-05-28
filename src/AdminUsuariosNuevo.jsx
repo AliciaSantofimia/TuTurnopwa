@@ -193,8 +193,20 @@ useEffect(() => {
                     <strong>UID:</strong> {usuario.uid}
                   </p>
                   <p style={styles.linea}>
-                    <strong>Teléfono:</strong> {usuario.telefono || "—"}
-                  </p>
+  <strong>Teléfono:</strong> {usuario.telefono || "—"}
+</p>
+
+{usuario.telefono && (
+  <a
+    href={`https://wa.me/34${String(usuario.telefono).replace(/\D/g, "")}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={styles.btnWhatsApp}
+    onClick={(e) => e.stopPropagation()}
+  >
+    WhatsApp usuario
+  </a>
+)}
                 </div>
               </div>
             ))}
@@ -367,6 +379,18 @@ const styles = {
     fontSize: "0.94rem",
     wordBreak: "break-word",
   },
+  btnWhatsApp: {
+  display: "inline-block",
+  marginTop: 6,
+  backgroundColor: "#25D366",
+  color: "white",
+  padding: "8px 14px",
+  borderRadius: 20,
+  textDecoration: "none",
+  fontWeight: "bold",
+  fontSize: "0.85rem",
+  width: "fit-content",
+},
 };
 
 export default AdminUsuariosNuevo;
