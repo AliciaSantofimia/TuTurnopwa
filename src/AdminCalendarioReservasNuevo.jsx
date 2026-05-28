@@ -789,7 +789,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
   },
   bodyMobile: {
-    padding: 12,
+    padding: 4,
   },
   container: {
     maxWidth: 1200,
@@ -799,10 +799,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
-  containerMobile: {
-    borderRadius: 18,
-    padding: 14,
-  },
+ containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   header: {
     textAlign: "center",
     marginBottom: 24,
