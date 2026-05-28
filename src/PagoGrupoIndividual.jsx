@@ -28,8 +28,12 @@ useEffect(() => {
         return;
       }
 
-      const grupoRef = ref(dbRealtime, `reservasGrupos/${grupoId}`);
-      const snap = await get(grupoRef);
+      console.log("grupoId recibido:", grupoId);
+console.log("ruta Firebase:", `reservasGrupos/${grupoId}`);
+console.log("userAgent:", navigator.userAgent);
+
+const grupoRef = ref(dbRealtime, `reservasGrupos/${grupoId}`);
+const snap = await get(grupoRef);
       
 
       if (!snap.exists()) {
@@ -88,7 +92,11 @@ if (datosGrupo.fechaLimitePago) {
 setGrupo(datosGrupo);
     } catch (error) {
       console.error("Error al cargar el grupo:", error);
-      setMensaje("No se pudo cargar la reserva de grupo.");
+      setMensaje(
+  `No se pudo cargar la reserva de grupo. Error: ${
+    error?.message || "error desconocido"
+  }`
+);
     } finally {
       setCargando(false);
     }

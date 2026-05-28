@@ -208,7 +208,7 @@ export default function ReservaClaseSueltaContinuidad() {
       setOcupadasTorno(torno);
       setOcupadasModelado(modelado);
     });
-  }, [fecha]);
+  }, [fecha, turno]);
 
   const turnosHabituales = useMemo(() => {
     return getTurnosDesdeHorarios(claseConfig?.horarios, fecha);
