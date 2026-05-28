@@ -10,6 +10,17 @@ const AdminBloqueosFechas = () => {
   const [bloqueos, setBloqueos] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoFecha, setEliminandoFecha] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     cargarBloqueos();
@@ -123,8 +134,18 @@ const AdminBloqueosFechas = () => {
   }, [bloqueos]);
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Bloqueo de fechas</h1>
@@ -183,7 +204,13 @@ const AdminBloqueosFechas = () => {
           ) : (
             <div style={styles.lista}>
               {bloqueosActivos.map((b) => (
-                <div key={b.fecha} style={styles.item}>
+                <div
+  key={b.fecha}
+  style={{
+    ...styles.item,
+    ...(isMobile ? styles.itemMobile : {}),
+  }}
+>
                   <div>
                     <p style={styles.fecha}>{b.fecha}</p>
                     <p style={styles.motivo}>{b.motivo || "Sin motivo"}</p>
@@ -215,6 +242,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 900,
     margin: "0 auto",
@@ -223,6 +253,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     textAlign: "center",
     margin: 0,
@@ -305,6 +342,10 @@ const styles = {
     color: "#777",
     fontSize: "0.92rem",
   },
+  itemMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   botonEliminar: {
     padding: "10px 12px",
     border: "1px solid #e7c9c9",

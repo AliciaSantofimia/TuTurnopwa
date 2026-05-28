@@ -27,6 +27,17 @@ const AdminDetalleClaseNuevo = () => {
   const [incluyeEditado, setIncluyeEditado] = useState("");
   const [notaImportanteEditada, setNotaImportanteEditada] = useState("");
   const [estadoEditado, setEstadoEditado] = useState("activa");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   const normalizarEstadoClase = (data = {}) => {
     if (typeof data.estado === "string" && data.estado.trim()) {
@@ -369,8 +380,18 @@ const AdminDetalleClaseNuevo = () => {
   }
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Detalle de clase</h1>
@@ -515,8 +536,19 @@ Acompañamiento en el taller`}
           {notasInternas.length > 0 ? (
             <div style={styles.listaNotas}>
               {notasInternas.map((nota) => (
-                <div key={nota.id} style={styles.notaItem}>
-                  <div style={styles.notaHeader}>
+                <div
+  key={nota.id}
+  style={{
+    ...styles.notaItem,
+    ...(isMobile ? styles.notaItemMobile : {}),
+  }}
+>
+                  <div
+  style={{
+    ...styles.notaHeader,
+    ...(isMobile ? styles.notaHeaderMobile : {}),
+  }}
+>
                     <div>
                       <p style={styles.notaTexto}>{nota.texto}</p>
                       <p style={styles.notaFecha}>
@@ -617,6 +649,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 850,
     margin: "0 auto",
@@ -625,17 +660,31 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     textAlign: "center",
     margin: "0 0 20px 0",
     color: "#2f2f2f",
     fontSize: "2rem",
   },
+  notaHeaderMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   subtitulo: {
     margin: "0 0 14px 0",
     color: "#4b3a2a",
     fontSize: "1.2rem",
   },
+  notaItemMobile: {
+  padding: 10,
+},
   card: {
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",

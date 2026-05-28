@@ -29,6 +29,17 @@ const AdminDetalleReservaNuevo = () => {
 
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
   const [guardandoCancelacion, setGuardandoCancelacion] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   const normalizarTurnoParaRuta = (turno = "") =>
     String(turno || "")
@@ -756,8 +767,18 @@ const AdminDetalleReservaNuevo = () => {
   }
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Detalle de reserva</h1>
@@ -1031,8 +1052,19 @@ const AdminDetalleReservaNuevo = () => {
 
           {notasInternas.length > 0 ? (
             notasInternas.map((nota) => (
-              <div key={nota.id} style={styles.notaItem}>
-                <div style={styles.notaHeader}>
+             <div
+  key={nota.id}
+  style={{
+    ...styles.notaItem,
+    ...(isMobile ? styles.notaItemMobile : {}),
+  }}
+>
+               <div
+  style={{
+    ...styles.notaHeader,
+    ...(isMobile ? styles.notaHeaderMobile : {}),
+  }}
+>
                   <div>
                     <p style={styles.notaTexto}>{nota.texto}</p>
                     <p style={styles.notaFecha}>{nota.fecha}</p>
@@ -1079,6 +1111,9 @@ const styles = {
     minHeight: "100vh",
     padding: 30,
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 700,
     margin: "0 auto",
@@ -1087,10 +1122,24 @@ const styles = {
     padding: 24,
     boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     textAlign: "center",
     marginBottom: 20,
   },
+  notaItemMobile: {
+  paddingBottom: 10,
+},
+notaHeaderMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   card: {
     display: "flex",
     flexDirection: "column",

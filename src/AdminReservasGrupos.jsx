@@ -20,7 +20,17 @@ const [guardandoManual, setGuardandoManual] = useState({});
 
 const [filtroFecha, setFiltroFecha] = useState("");
 const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
+const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
   const fechaDesdeURL = useMemo(() => {
     
     const params = new URLSearchParams(location.search);
@@ -457,8 +467,18 @@ const cancelarGrupoManual = async (r) => {
   }, [reservasFiltradas]);
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <div style={styles.header}>
@@ -535,12 +555,13 @@ const cancelarGrupoManual = async (r) => {
                 {reservasFiltradas.map((r) => (
                   <div
   key={r.id}
-  style={{
-    ...styles.card,
-    ...(r.estado === "Cancelada" || r.cancelada
-      ? styles.cardCancelada
-      : {}),
-  }}
+ style={{
+  ...styles.card,
+  ...(isMobile ? styles.cardMobile : {}),
+  ...(r.estado === "Cancelada" || r.cancelada
+    ? styles.cardCancelada
+    : {}),
+}}
 >
                     <div style={styles.cardTop}>
                       <div>
@@ -644,7 +665,10 @@ const cancelarGrupoManual = async (r) => {
       <button
         type="button"
         onClick={() => cancelarGrupoManual(r)}
-        style={styles.btnCancelarGrupo}
+        style={{
+  ...styles.btnCancelarGrupo,
+  ...(isMobile ? styles.btnCancelarGrupoMobile : {}),
+}}
       >
         Cancelar grupo
       </button>
@@ -786,8 +810,19 @@ const cancelarGrupoManual = async (r) => {
 
                       {r.notasInternas && r.notasInternas.length > 0 ? (
                         r.notasInternas.map((nota) => (
-                          <div key={nota.id} style={styles.notaInternaItem}>
-                            <div style={styles.notaHeader}>
+                          <div
+  key={nota.id}
+  style={{
+    ...styles.notaInternaItem,
+    ...(isMobile ? styles.notaInternaItemMobile : {}),
+  }}
+>
+                            <div
+  style={{
+    ...styles.notaHeader,
+    ...(isMobile ? styles.notaHeaderMobile : {}),
+  }}
+>
                               <div>
                                 <p style={styles.notaTexto}>{nota.texto}</p>
                                 <p style={styles.notaFecha}>{nota.fecha}</p>
@@ -851,6 +886,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1100,
     margin: "0 auto",
@@ -859,6 +897,21 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
+cardMobile: {
+  padding: 12,
+},
+btnCancelarGrupoMobile: {
+  marginLeft: 0,
+  display: "block",
+  width: "100%",
+},
   header: {
     textAlign: "center",
     marginBottom: 24,
@@ -875,6 +928,10 @@ const styles = {
     marginTop: 8,
     marginBottom: 0,
   },
+  notaHeaderMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   mensaje: {
     textAlign: "center",
     color: "#777",
@@ -887,6 +944,9 @@ const styles = {
     padding: 18,
     marginBottom: 18,
   },
+  notaInternaItemMobile: {
+  paddingTop: 8,
+},
   filtrosGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",

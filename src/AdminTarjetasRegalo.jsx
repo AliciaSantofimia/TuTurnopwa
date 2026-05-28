@@ -418,7 +418,7 @@ const styles = {
     fontFamily: "'Segoe UI', sans-serif",
   },
   bodyMobile: {
-    padding: 12,
+    padding: 4,
   },
   container: {
     maxWidth: 1200,
@@ -429,9 +429,12 @@ const styles = {
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
   containerMobile: {
-    borderRadius: 18,
-    padding: 14,
-  },
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     margin: 0,
     textAlign: "center",
@@ -609,11 +612,11 @@ const styles = {
     fontSize: "1rem",
     whiteSpace: "nowrap",
   },
-  cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 10,
-  },
+cardGrid: {
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: 8,
+},
   cardItem: {
     display: "flex",
     flexDirection: "column",

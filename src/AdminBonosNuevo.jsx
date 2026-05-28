@@ -179,8 +179,18 @@ const AdminBonosNuevo = () => {
   };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div
+  style={{
+    ...styles.body,
+    ...(esMovil ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(esMovil ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Bonos</h1>
@@ -340,6 +350,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -348,6 +361,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     margin: 0,
     textAlign: "center",
@@ -526,14 +546,14 @@ const styles = {
     flexDirection: "column",
     gap: 14,
   },
-  cardMovil: {
-    backgroundColor: "#fffdf7",
-    border: "1px solid #f0e5cf",
-    borderRadius: 18,
-    padding: 16,
-    boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
-    cursor: "pointer",
-  },
+ cardMovil: {
+  backgroundColor: "#fffdf7",
+  border: "1px solid #f0e5cf",
+  borderRadius: 18,
+  padding: 12,
+  boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+  cursor: "pointer",
+},
   cardTop: {
     display: "flex",
     justifyContent: "space-between",
@@ -570,11 +590,11 @@ const styles = {
     lineHeight: 1.45,
   },
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 8,
-    marginTop: 4,
-  },
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: 6,
+  marginTop: 4,
+},
   badgesFila: {
     display: "flex",
     gap: 8,

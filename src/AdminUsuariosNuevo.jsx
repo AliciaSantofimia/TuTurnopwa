@@ -8,6 +8,17 @@ const AdminUsuariosNuevo = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -91,8 +102,18 @@ const AdminUsuariosNuevo = () => {
   }, [usuarios, busqueda]);
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <div style={styles.header}>
@@ -124,16 +145,29 @@ const AdminUsuariosNuevo = () => {
         ) : usuariosFiltrados.length === 0 ? (
           <p style={styles.mensaje}>No hay usuarios para mostrar.</p>
         ) : (
-          <div style={styles.grid}>
+        <div
+  style={{
+    ...styles.grid,
+    ...(isMobile ? styles.gridMobile : {}),
+  }}
+>
             {usuariosFiltrados.map((usuario) => (
               <div
                 key={usuario.uid}
-                style={styles.card}
+                style={{
+  ...styles.card,
+  ...(isMobile ? styles.cardMobile : {}),
+}}
                 onClick={() =>
                   navigate(`/admin-detalle-usuario?uid=${usuario.uid}`)
                 }
               >
-                <div style={styles.cardTop}>
+                <div
+  style={{
+    ...styles.cardTop,
+    ...(isMobile ? styles.cardTopMobile : {}),
+  }}
+>
                   <div>
                     <h2 style={styles.nombre}>{usuario.nombre}</h2>
                     <p style={styles.email}>{usuario.email}</p>
@@ -178,6 +212,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -186,6 +223,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   header: {
     textAlign: "center",
     marginBottom: 24,
@@ -239,6 +283,10 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
     gap: 18,
   },
+  gridMobile: {
+  gridTemplateColumns: "1fr",
+  gap: 14,
+},
   card: {
     backgroundColor: "#fffdf7",
     border: "1px solid #f0e5cf",
@@ -248,6 +296,9 @@ const styles = {
     cursor: "pointer",
     transition: "0.2s",
   },
+  cardMobile: {
+  padding: 14,
+},
   cardTop: {
     display: "flex",
     justifyContent: "space-between",
@@ -255,6 +306,10 @@ const styles = {
     gap: 12,
     marginBottom: 16,
   },
+  cardTopMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   nombre: {
     margin: 0,
     color: "#4b3a2a",
@@ -267,11 +322,11 @@ const styles = {
     wordBreak: "break-word",
   },
   badgesCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    alignItems: "flex-end",
-  },
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  alignItems: "flex-start",
+},
   badge: {
     backgroundColor: "#fff8da",
     color: "#7a6331",

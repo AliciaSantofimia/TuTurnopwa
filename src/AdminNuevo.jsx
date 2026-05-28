@@ -10,6 +10,17 @@ const AdminNuevo = () => {
     semana: 0,
     futuras: 0,
   });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     const cargarReservas = async () => {
@@ -90,13 +101,23 @@ const AdminNuevo = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <div
+  style={{
+    ...styles.container,
+    ...(isMobile ? styles.containerMobile : {}),
+  }}
+>
       <BotonVolver />
 
       <h2 style={styles.titulo}>📊 Panel de Control</h2>
 
       {/* TARJETAS */}
-      <div style={styles.grid}>
+     <div
+  style={{
+    ...styles.grid,
+    ...(isMobile ? styles.gridMobile : {}),
+  }}
+>
         <div style={styles.card}>
           <h4>Reservas hoy</h4>
           <p>{stats.hoy}</p>
@@ -114,7 +135,12 @@ const AdminNuevo = () => {
       </div>
 
       {/* PRÓXIMAS RESERVAS */}
-      <div style={styles.bloque}>
+      <div
+  style={{
+    ...styles.bloque,
+    ...(isMobile ? styles.bloqueMobile : {}),
+  }}
+>
         <h3>📅 Próximas reservas</h3>
 
         {obtenerProximasReservas().length === 0 ? (
@@ -137,6 +163,12 @@ const styles = {
     padding: 20,
     fontFamily: "sans-serif",
   },
+  containerMobile: {
+  padding: 4,
+  width: "100%",
+  boxSizing: "border-box",
+},
+
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -147,6 +179,10 @@ const styles = {
     justifyContent: "center",
     marginBottom: 30,
   },
+  gridMobile: {
+  flexDirection: "column",
+  gap: 12,
+},
   card: {
     background: "#f3e4b6",
     padding: 20,
@@ -161,6 +197,11 @@ const styles = {
     maxWidth: 600,
     margin: "auto",
   },
+  bloqueMobile: {
+  maxWidth: "100%",
+  padding: 12,
+  boxSizing: "border-box",
+},
   item: {
     padding: 10,
     borderBottom: "1px solid #eee",

@@ -15,6 +15,17 @@ const AdminDetalleTarjetaRegaloNuevo = () => {
   const [guardandoNota, setGuardandoNota] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     const cargarDetalleTarjeta = async () => {
@@ -190,8 +201,18 @@ const AdminDetalleTarjetaRegaloNuevo = () => {
   }
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Detalle de tarjeta regalo</h1>
@@ -256,8 +277,19 @@ const AdminDetalleTarjetaRegaloNuevo = () => {
 
           {notasInternas.length > 0 ? (
             notasInternas.map((nota) => (
-              <div key={nota.id} style={styles.notaItem}>
-                <div style={styles.notaHeader}>
+              <div
+  key={nota.id}
+  style={{
+    ...styles.notaItem,
+    ...(isMobile ? styles.notaItemMobile : {}),
+  }}
+>
+                <div
+  style={{
+    ...styles.notaHeader,
+    ...(isMobile ? styles.notaHeaderMobile : {}),
+  }}
+>
                   <div>
                     <p style={styles.notaTexto}>{nota.texto}</p>
                     <p style={styles.notaFecha}>{formatearFechaNota(nota.fecha)}</p>
@@ -304,6 +336,9 @@ const styles = {
     minHeight: "100vh",
     padding: 30,
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 700,
     margin: "0 auto",
@@ -312,6 +347,16 @@ const styles = {
     padding: 24,
     boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
+notaItemMobile: {
+  paddingBottom: 10,
+},
   titulo: {
     textAlign: "center",
     marginBottom: 20,
@@ -333,6 +378,10 @@ const styles = {
     textDecoration: "underline",
     fontWeight: 500,
   },
+  notaHeaderMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   mensaje: {
     textAlign: "center",
     padding: 40,

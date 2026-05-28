@@ -64,6 +64,17 @@ const AdminDetalleBonoNuevo = () => {
   const [notasInternas, setNotasInternas] = useState([]);
   const [nuevaNota, setNuevaNota] = useState("");
   const [guardandoNota, setGuardandoNota] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -247,8 +258,18 @@ const AdminDetalleBonoNuevo = () => {
   };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Detalle del bono</h1>
@@ -345,32 +366,62 @@ const AdminDetalleBonoNuevo = () => {
               <h2 style={styles.bloqueTitulo}>Datos técnicos del bono</h2>
 
               <div style={styles.listaDatos}>
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Order ID</span>
                   <span style={styles.filaValor}>{bono.orderId || "—"}</span>
                 </div>
 
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Clase ID</span>
                   <span style={styles.filaValor}>{bono.claseId || "—"}</span>
                 </div>
 
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Subtipo</span>
                   <span style={styles.filaValor}>{bono.subtipo || "—"}</span>
                 </div>
 
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Tipo taller</span>
                   <span style={styles.filaValor}>{bono.tipoTaller || "—"}</span>
                 </div>
 
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Creado en</span>
                   <span style={styles.filaValor}>{bono.creadoEn || "—"}</span>
                 </div>
 
-                <div style={styles.filaDato}>
+                <div
+  style={{
+    ...styles.filaDato,
+    ...(isMobile ? styles.filaDatoMobile : {}),
+  }}
+>
                   <span style={styles.filaLabel}>Actualizado en</span>
                   <span style={styles.filaValor}>{bono.actualizadoEn || "—"}</span>
                 </div>
@@ -471,6 +522,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1100,
     margin: "0 auto",
@@ -479,6 +533,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     margin: 0,
     textAlign: "center",
@@ -624,6 +685,10 @@ const styles = {
     padding: "10px 0",
     borderBottom: "1px solid #f3ead7",
   },
+  filaDatoMobile: {
+  gridTemplateColumns: "1fr",
+  gap: 4,
+},
   filaLabel: {
     color: "#7a6331",
     fontSize: "0.9rem",

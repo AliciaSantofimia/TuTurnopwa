@@ -18,6 +18,18 @@ const AdminClasesNuevo = () => {
   const [editandoHorarios, setEditandoHorarios] = useState({});
   const [guardandoHorarios, setGuardandoHorarios] = useState({});
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
+
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -442,8 +454,18 @@ listaClases.push({
     });
   };
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <div style={styles.header}>
@@ -458,15 +480,23 @@ listaClases.push({
         ) : clasesConResumen.length === 0 ? (
           <p style={styles.mensaje}>No hay clases para mostrar.</p>
         ) : (
-          <div style={styles.grid}>
-            {clasesConResumen.map((clase) => (
-              <div
-                key={clase.id}
-                style={styles.card}
-                onClick={() =>
-                  navigate(`/admin-detalle-clase?clase=${clase.id}`)
-                }
-              >
+          <div
+  style={{
+    ...styles.grid,
+    ...(isMobile ? styles.gridMobile : {}),
+  }}
+>
+  {clasesConResumen.map((clase) => (
+             <div
+  key={clase.id}
+  style={{
+    ...styles.card,
+    ...(isMobile ? styles.cardMobile : {}),
+  }}
+  onClick={() =>
+    navigate(`/admin-detalle-clase?clase=${clase.id}`)
+  }
+>
                 <div style={styles.cardTop}>
                   <div>
                     <h2 style={styles.nombre}>{clase.nombre}</h2>
@@ -541,7 +571,7 @@ listaClases.push({
 
                                    {!editandoPrecios[clase.id] ? (
                     <button
-                      style={{ ...styles.boton, marginLeft: 10 }}
+                      style={{ ...styles.boton, }}
                       onClick={(e) => {
                         e.stopPropagation();
                         iniciarEdicionPrecios(clase);
@@ -595,7 +625,7 @@ listaClases.push({
 
                                    {!editandoPlazas[clase.id] ? (
                     <button
-                      style={{ ...styles.boton, marginLeft: 10 }}
+                      style={{ ...styles.boton, }}
                       onClick={(e) => {
                         e.stopPropagation();
                         iniciarEdicionPlazas(clase);
@@ -649,7 +679,7 @@ listaClases.push({
 
                   {!editandoHorarios[clase.id] ? (
                     <button
-                      style={{ ...styles.boton, marginLeft: 10 }}
+                      style={{ ...styles.boton, }}
                       onClick={(e) => {
                         e.stopPropagation();
                         iniciarEdicionHorarios(clase);
@@ -718,6 +748,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -726,10 +759,21 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   header: {
     textAlign: "center",
     marginBottom: 26,
   },
+  gridMobile: {
+  gridTemplateColumns: "1fr",
+  gap: 14,
+},
   titulo: {
     margin: 0,
     color: "#2f2f2f",
@@ -758,6 +802,9 @@ const styles = {
     cursor: "pointer",
     transition: "0.2s",
   },
+  cardMobile: {
+  padding: 14,
+},
   cardTop: {
     display: "flex",
     justifyContent: "space-between",
@@ -808,8 +855,11 @@ const styles = {
     fontSize: "0.94rem",
   },
   acciones: {
-    marginTop: 8,
-  },
+  marginTop: 8,
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+},
   boton: {
     display: "inline-block",
     padding: "12px 16px",

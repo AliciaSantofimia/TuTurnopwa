@@ -29,6 +29,17 @@ const AdminDetalleUsuarioNuevo = () => {
   const [nuevaNota, setNuevaNota] = useState("");
   const [guardandoNota, setGuardandoNota] = useState(false);
   const [eliminandoNotaId, setEliminandoNotaId] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     const cargarUsuario = async () => {
@@ -197,8 +208,18 @@ const AdminDetalleUsuarioNuevo = () => {
   }
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Detalle de usuario</h1>
@@ -219,8 +240,19 @@ const AdminDetalleUsuarioNuevo = () => {
           ) : (
             <div style={styles.listaNotas}>
               {notasInternas.map((nota) => (
-                <div key={nota.id} style={styles.notaItem}>
-                  <div style={styles.notaHeader}>
+               <div
+  key={nota.id}
+  style={{
+    ...styles.notaItem,
+    ...(isMobile ? styles.notaItemMobile : {}),
+  }}
+>
+                  <div
+  style={{
+    ...styles.notaHeader,
+    ...(isMobile ? styles.notaHeaderMobile : {}),
+  }}
+>
                     <div>
                       <p style={styles.notaTexto}>{nota.texto}</p>
                       <p style={styles.notaFecha}>
@@ -314,6 +346,16 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
+notaItemMobile: {
+  padding: 10,
+},
+notaHeaderMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
   container: {
     maxWidth: 800,
     margin: "0 auto",
@@ -322,6 +364,14 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
+
   titulo: {
     textAlign: "center",
     margin: "0 0 20px 0",

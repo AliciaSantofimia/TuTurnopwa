@@ -907,7 +907,7 @@ const styles = {
     marginBottom: 22,
   },
   calendarioBoxMobile: {
-    padding: 10,
+    padding: 6,
     borderRadius: 16,
   },
   semanaHeader: {

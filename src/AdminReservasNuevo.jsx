@@ -480,8 +480,18 @@ const limpiarFiltros = () => {
   };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    <div
+  style={{
+    ...styles.body,
+    ...(esMovil ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(esMovil ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Reservas</h1>
@@ -755,6 +765,9 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -763,6 +776,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     margin: 0,
     textAlign: "center",
@@ -946,14 +966,15 @@ tdFechaTurno: {
     flexDirection: "column",
     gap: 14,
   },
+ 
   cardMovil: {
-    backgroundColor: "#fffdf7",
-    border: "1px solid #f0e5cf",
-    borderRadius: 18,
-    padding: 16,
-    cursor: "pointer",
-    boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
-  },
+  backgroundColor: "#fffdf7",
+  border: "1px solid #f0e5cf",
+  borderRadius: 18,
+  padding: 12,
+  cursor: "pointer",
+  boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
+},
   cardCancelada: {
     backgroundColor: "#fff3f3",
     border: "1px solid #efcaca",
@@ -997,12 +1018,13 @@ tdFechaTurno: {
     fontSize: "0.93rem",
     lineHeight: 1.45,
   },
+  
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 8,
-    marginTop: 4,
-  },
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: 6,
+  marginTop: 4,
+},
   badgeNotas: {
     display: "inline-block",
     padding: "4px 10px",

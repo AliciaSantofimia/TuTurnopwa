@@ -11,6 +11,17 @@ const AdminHistorialNuevo = () => {
   const [vista, setVista] = useState("pasadas"); // pasadas | canceladas | todas
   const [filtroClase, setFiltroClase] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -164,8 +175,19 @@ const AdminHistorialNuevo = () => {
   };
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+    
+      <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <div style={styles.header}>
@@ -241,7 +263,12 @@ const AdminHistorialNuevo = () => {
         ) : reservasFiltradas.length === 0 ? (
           <p style={styles.mensaje}>No hay reservas para mostrar.</p>
         ) : (
-          <div style={styles.tablaWrapper}>
+          <div
+  style={{
+    ...styles.tablaWrapper,
+    ...(isMobile ? styles.tablaWrapperMobile : {}),
+  }}
+>
             <table style={styles.table}>
               <thead>
                 <tr>
@@ -284,6 +311,13 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
+tablaWrapperMobile: {
+  marginLeft: -4,
+  marginRight: -4,
+},
   container: {
     maxWidth: 1200,
     margin: "0 auto",
@@ -292,6 +326,13 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   header: {
     textAlign: "center",
     marginBottom: 24,

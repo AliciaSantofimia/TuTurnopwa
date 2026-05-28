@@ -13,6 +13,17 @@ const [habilitarTarde, setHabilitarTarde] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoFecha, setEliminandoFecha] = useState("");
   const [fechaEditando, setFechaEditando] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+useEffect(() => {
+  const onResize = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
+
+  window.addEventListener("resize", onResize);
+
+  return () => window.removeEventListener("resize", onResize);
+}, []);
 
   useEffect(() => {
     cargarFechasHabilitadas();
@@ -156,8 +167,18 @@ setFechaEditando(null);
   }, [fechasHabilitadas]);
 
   return (
-    <div style={styles.body}>
-      <div style={styles.container}>
+   <div
+  style={{
+    ...styles.body,
+    ...(isMobile ? styles.bodyMobile : {}),
+  }}
+>
+  <div
+    style={{
+      ...styles.container,
+      ...(isMobile ? styles.containerMobile : {}),
+    }}
+  >
         <BotonVolver />
 
         <h1 style={styles.titulo}>Habilitar fechas y Turnos</h1>
@@ -252,7 +273,13 @@ setFechaEditando(null);
           ) : (
             <div style={styles.lista}>
               {habilitacionesActivas.map((f) => (
-                <div key={f.fecha} style={styles.item}>
+                <div
+  key={f.fecha}
+  style={{
+    ...styles.item,
+    ...(isMobile ? styles.itemMobile : {}),
+  }}
+>
                   <div>
                     <p style={styles.fecha}>{f.fecha}</p>
                     <p style={styles.motivo}>{f.motivo || "Sin motivo"}</p>
@@ -264,17 +291,28 @@ setFechaEditando(null);
                     </p>
                   </div>
 
-                  <div style={styles.accionesItem}>
+                  <div
+  style={{
+    ...styles.accionesItem,
+    ...(isMobile ? styles.accionesItemMobile : {}),
+  }}
+>
                     <button
                       onClick={() => modificarHabilitacion(f)}
-                      style={styles.botonModificar}
+                      style={{
+  ...styles.botonModificar,
+  ...(isMobile ? styles.botonItemMobile : {}),
+}}
                     >
                       Modificar
                     </button>
 
                     <button
                       onClick={() => eliminarHabilitacion(f.fecha)}
-                      style={styles.botonEliminar}
+                      style={{
+  ...styles.botonEliminar,
+  ...(isMobile ? styles.botonItemMobile : {}),
+}}
                       disabled={eliminandoFecha === f.fecha}
                     >
                       {eliminandoFecha === f.fecha
@@ -299,6 +337,16 @@ const styles = {
     padding: 30,
     fontFamily: "'Segoe UI', sans-serif",
   },
+  bodyMobile: {
+  padding: 4,
+},
+itemMobile: {
+  flexDirection: "column",
+  alignItems: "stretch",
+},
+botonItemMobile: {
+  width: "100%",
+},
   container: {
     maxWidth: 900,
     margin: "0 auto",
@@ -307,6 +355,18 @@ const styles = {
     padding: 28,
     boxShadow: "0 10px 28px rgba(0,0,0,0.10)",
   },
+  accionesItemMobile: {
+  width: "100%",
+  flexDirection: "column",
+  alignItems: "stretch",
+},
+  containerMobile: {
+  width: "100%",
+  maxWidth: "100%",
+  borderRadius: 16,
+  padding: 10,
+  boxSizing: "border-box",
+},
   titulo: {
     textAlign: "center",
     margin: 0,
