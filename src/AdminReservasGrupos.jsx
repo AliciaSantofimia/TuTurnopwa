@@ -741,7 +741,18 @@ const cancelarGrupoManual = async (r) => {
     {r.pagosIndividuales && Object.keys(r.pagosIndividuales).length > 0 ? (
       <div style={{ marginTop: 10 }}>
         {Object.entries(r.pagosIndividuales).map(([pagoId, pago]) => (
-          <div key={pagoId} style={styles.asistenteItem}>
+          <div
+  key={pagoId}
+  style={{
+    ...styles.asistenteItem,
+    ...(pago.estadoPago === "pagado" ||
+    pago.estadoPago === "pagado_manual"
+      ? styles.pagoCompletado
+      : pago.estadoPago === "pendiente_redsys"
+      ? styles.pagoPendiente
+      : styles.pagoFallido),
+  }}
+>
             <p style={styles.notaTexto}>
               <strong>{pago.nombreAsistente || "Sin nombre"}</strong>
               {" — "}
@@ -908,6 +919,20 @@ const styles = {
     fontWeight: 600,
     color: "#5b4a2d",
   },
+  pagoCompletado: {
+  backgroundColor: "#eefaf0",
+  border: "1px solid #b7e4c0",
+},
+
+pagoPendiente: {
+  backgroundColor: "#fff8e8",
+  border: "1px solid #f1d48a",
+},
+
+pagoFallido: {
+  backgroundColor: "#fff1f1",
+  border: "1px solid #efcaca",
+},
  btnCancelarGrupo: {
   display: "inline-block",
   marginTop: 12,

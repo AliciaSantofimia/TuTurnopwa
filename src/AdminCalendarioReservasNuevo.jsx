@@ -208,8 +208,18 @@ const estadoPagoNormalizado = String(grupo.estadoPago || "")
   .trim()
   .toLowerCase();
 
-if (estadoNormalizado !== "confirmada") return;
-if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) return;
+const esGrupoIndividualEnProceso =
+  grupo.modoPago === "individual" &&
+  (
+    estadoNormalizado === "pendiente_pago_individual" ||
+    estadoPagoNormalizado === "parcial"
+  );
+
+const esGrupoConfirmado =
+  estadoNormalizado === "confirmada" &&
+  !["pendiente", "rechazado", "fallido", "cancelado"].includes(estadoPagoNormalizado);
+
+if (!esGrupoConfirmado && !esGrupoIndividualEnProceso) return;
 
             const fechaFinal = grupo.fecha || "";
             if (!fechaFinal) return;
@@ -242,6 +252,12 @@ if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) retur
     datosUsuario.email ||
     "",
   esGrupo: true,
+  estadoCalendario: esGrupoIndividualEnProceso
+  ? "grupo_individual_en_proceso"
+  : "confirmada",
+
+plazasPagadas: Number(grupo.plazasPagadas || 0),
+plazasPendientes: Number(grupo.plazasPendientes || 0),
 });
           });
         }
@@ -702,10 +718,13 @@ if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) retur
                     {reservasDelDia.map((r, index) => (
                       <div
                         key={`${r.id}-${index}`}
-                        style={{
-                          ...styles.reservaFila,
-                          ...(isMobile ? styles.reservaFilaMobile : {}),
-                        }}
+                       style={{
+  ...styles.reservaFila,
+  ...(r.estadoCalendario === "grupo_individual_en_proceso"
+    ? styles.reservaFilaGrupoEnProceso
+    : {}),
+  ...(isMobile ? styles.reservaFilaMobile : {}),
+}}
                       >
                         <div
                           style={{
@@ -717,6 +736,13 @@ if (["pendiente", "rechazado", "fallido"].includes(estadoPagoNormalizado)) retur
                           {r.esGrupo && r.nombreGrupo && (
   <p style={styles.reservaGrupo}>
     Grupo: {r.nombreGrupo}
+  </p>
+)}
+{r.estadoCalendario === "grupo_individual_en_proceso" && (
+  <p style={styles.reservaGrupoProceso}>
+    🟡 Pago individual en proceso · {r.plazasPagadas || 0} pagada
+    {(r.plazasPagadas || 0) !== 1 ? "s" : ""} / {r.plazasPendientes || 0} pendiente
+    {(r.plazasPendientes || 0) !== 1 ? "s" : ""}
   </p>
 )}
                           <p style={styles.reservaMeta}>
@@ -1132,6 +1158,20 @@ const styles = {
     color: "#7a7a7a",
     margin: 0,
   },
+  reservaFilaGrupoEnProceso: {
+  backgroundColor: "#fff3c4",
+  border: "2px solid #d99a00",
+  borderRadius: 14,
+  padding: 12,
+  boxShadow: "0 0 0 2px rgba(217, 154, 0, 0.12)",
+},
+
+reservaGrupoProceso: {
+  margin: "6px 0 0 0",
+  color: "#8a4f00",
+  fontSize: "0.88rem",
+  fontWeight: 800,
+},
 };
 
 export default AdminCalendarioReservasNuevo;
