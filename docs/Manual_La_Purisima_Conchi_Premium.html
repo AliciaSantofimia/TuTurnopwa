@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual Premium — La Purísima Conchi</title>
+<style>
+@page { margin: 2cm 2.5cm; @bottom-center { content: counter(page); } }
+body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.55; color: #1f2937; max-width: 21cm; margin: 0 auto; padding: 1.2cm; }
+.cover { text-align: center; page-break-after: always; padding: 3.5cm 1cm 2cm; min-height: 25cm; background: linear-gradient(180deg,#fffef8 0%,#fff 40%); }
+.badge { display:inline-block; background:#5c2e00; color:#fff; font-size:9pt; letter-spacing:2px; text-transform:uppercase; padding:0.2cm 0.6cm; border-radius:2px; margin-bottom:1cm; }
+.cover h1 { font-size: 30pt; color: #5c2e00; font-weight: 300; margin: 0.4cm 0; line-height: 1.2; }
+.cover h2 { font-size: 16pt; color: #8b6914; font-weight: 400; }
+.cover-url { font-size: 12pt; color: #5c2e00; margin-top: 1.5cm; }
+.cover-meta { font-size: 10pt; color: #6b7280; margin-top: 2.5cm; }
+.rule { width: 7cm; height: 3px; background: linear-gradient(90deg,#d4a84b,#f4c542); margin: 1cm auto; border: none; }
+h1.chapter { font-size: 22pt; color: #5c2e00; font-weight: 600; border-bottom: 3px solid #d4a84b; padding-bottom: 0.25cm; margin-top: 0; page-break-before: always; }
+h2 { font-size: 14pt; color: #5c2e00; margin-top: 0.9cm; border-left: 4px solid #d4a84b; padding-left: 0.4cm; }
+h3 { font-size: 12pt; color: #6b4f3f; margin-top: 0.6cm; }
+.toc, .toc-fig { page-break-after: always; }
+.toc h1, .toc-fig h1 { page-break-before: avoid; border: none; font-size: 20pt; }
+.toc table, table.data { width: 100%; border-collapse: collapse; margin: 0.4cm 0; font-size: 10pt; }
+.toc td { padding: 0.2cm 0; }
+.toc td.num { width: 1cm; color: #8b6914; font-weight: 700; }
+.toc td.page { text-align: right; color: #9ca3af; width: 1.2cm; }
+table.data th { background: #f5f0e6; color: #5c2e00; padding: 0.35cm; border: 1px solid #e5e7eb; text-align: left; }
+table.data td { padding: 0.35cm; border: 1px solid #e5e7eb; vertical-align: top; }
+.box-info { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #d4a84b; padding: 0.45cm 0.6cm; margin: 0.5cm 0; }
+.box-warning { background: #fff7ed; border: 1px solid #fed7aa; border-left: 4px solid #ea580c; padding: 0.45cm 0.6cm; margin: 0.5cm 0; }
+.box-tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; padding: 0.45cm 0.6cm; margin: 0.5cm 0; }
+.box-info strong, .box-warning strong, .box-tip strong { display: block; margin-bottom: 0.15cm; color: inherit; }
+.figure { border: 1px solid #d1d5db; margin: 0.7cm 0; page-break-inside: avoid; background: #fff; }
+.figure-head { background: #f5f0e6; padding: 0.35cm 0.5cm; border-bottom: 1px solid #e5e7eb; }
+.figure-num { font-size: 9pt; font-weight: 700; color: #8b6914; text-transform: uppercase; letter-spacing: 1px; }
+.figure-title { font-size: 11pt; font-weight: 600; color: #5c2e00; margin-top: 0.1cm; }
+.figure-spec { padding: 0.4cm 0.5cm; font-size: 9.5pt; background: #fafafa; border-bottom: 1px dashed #e5e7eb; }
+.figure-spec dt { font-weight: 600; color: #374151; margin-top: 0.2cm; }
+.figure-spec dd { margin: 0.1cm 0 0.2cm 0; color: #4b5563; }
+.figure-placeholder { min-height: 5.5cm; background: repeating-linear-gradient(-45deg,#f9fafb,#f9fafb 8px,#f3f4f6 8px,#f3f4f6 16px); display:flex; align-items:center; justify-content:center; color: #9ca3af; font-size: 10pt; text-align: center; padding: 1cm; }
+.figure-caption { padding: 0.3cm 0.5cm; font-size: 9pt; color: #6b7280; font-style: italic; text-align: center; border-top: 1px solid #f3f4f6; }
+.steps { list-style: none; padding: 0; counter-reset: st; }
+.steps li { counter-increment: st; padding-left: 1.1cm; position: relative; margin-bottom: 0.35cm; }
+.steps li::before { content: counter(st); position: absolute; left: 0; width: 0.75cm; height: 0.75cm; background: #5c2e00; color: #fff; border-radius: 2px; text-align: center; line-height: 0.75cm; font-size: 8pt; font-weight: 700; }
+.footer-note { text-align: center; font-size: 9pt; color: #9ca3af; margin-top: 1.5cm; padding-top: 0.4cm; border-top: 1px solid #e5e7eb; }
+ul { margin: 0.25cm 0; }
+li { margin-bottom: 0.15cm; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <span class="badge">Edición Premium</span>
+  <hr class="rule">
+  <h1>Manual de Uso<br>y Administración</h1>
+  <h2>La Purísima Conchi</h2>
+  <p style="font-size:13pt;color:#6b7280;margin-top:0.5cm;">Aplicación de reservas online</p>
+  <hr class="rule">
+  <p class="cover-url"><strong>https://app.lapurisimaconchi.com</strong></p>
+  <p class="cover-meta">Versión Premium 1.0 · Junio 2025<br>Documento de uso interno · Equipo del taller<br>Incluye guía de capturas de pantalla</p>
+</div>
+
+<div class="toc">
+<h1>Índice de contenidos</h1>
+<table class="toc">
+<tr><td class="num">1</td><td>Introducción</td><td class="page">5</td></tr>
+<tr><td class="num">2</td><td>Acceso al panel de administración</td><td class="page">8</td></tr>
+<tr><td class="num">3</td><td>Vista general del panel</td><td class="page">13</td></tr>
+<tr><td class="num">4</td><td>Gestión de reservas</td><td class="page">18</td></tr>
+<tr><td class="num">5</td><td>Gestión de usuarios</td><td class="page">24</td></tr>
+<tr><td class="num">6</td><td>Gestión de bonos</td><td class="page">27</td></tr>
+<tr><td class="num">7</td><td>Gestión de tarjetas regalo</td><td class="page">30</td></tr>
+<tr><td class="num">8</td><td>Reservas de grupo</td><td class="page">34</td></tr>
+<tr><td class="num">9</td><td>Calendario y plazas</td><td class="page">39</td></tr>
+<tr><td class="num">10</td><td>Pagos</td><td class="page">45</td></tr>
+<tr><td class="num">11</td><td>Notificaciones</td><td class="page">49</td></tr>
+<tr><td class="num">12</td><td>Casos prácticos</td><td class="page">52</td></tr>
+<tr><td class="num">13</td><td>Preguntas frecuentes</td><td class="page">58</td></tr>
+<tr><td class="num">14</td><td>Buenas prácticas</td><td class="page">60</td></tr>
+<tr><td class="num">15</td><td>Contacto técnico</td><td class="page">61</td></tr>
+<tr><td class="num">A</td><td>Índice de figuras y checklist de capturas</td><td class="page">63</td></tr>
+</table>
+</div>
+
+<div class="toc-fig">
+<h1>Índice de figuras</h1>
+<table class="data">
+<tr><th>Figura</th><th>Título</th><th>Archivo sugerido</th></tr>
+<tr><td>1.1</td><td>Portada de la aplicación</td><td>fig-01-portada.png</td></tr>
+<tr><td>1.2</td><td>Página principal de reservas</td><td>fig-02-donde-reservar.png</td></tr>
+<tr><td>2.1</td><td>Inicio de sesión</td><td>fig-03-login.png</td></tr>
+<tr><td>2.2</td><td>Recuperación de contraseña</td><td>fig-04-recuperar-password.png</td></tr>
+<tr><td>2.3</td><td>Acceso al panel de administración</td><td>fig-05-panel-admin-icono.png</td></tr>
+<tr><td>3.1</td><td>Panel de control — Dashboard</td><td>fig-06-admin-dashboard.png</td></tr>
+<tr><td>3.2</td><td>Resumen de reservas del día</td><td>fig-07-admin-resumen.png</td></tr>
+<tr><td>3.3</td><td>Accesos rápidos del panel</td><td>fig-08-accesos-rapidos.png</td></tr>
+<tr><td>4.1</td><td>Listado de reservas</td><td>fig-09-listado-reservas.png</td></tr>
+<tr><td>4.2</td><td>Filtros de búsqueda de reservas</td><td>fig-10-filtros-reservas.png</td></tr>
+<tr><td>4.3</td><td>Detalle de una reserva</td><td>fig-11-detalle-reserva.png</td></tr>
+<tr><td>4.4</td><td>Cancelación de reserva</td><td>fig-12-cancelar-reserva.png</td></tr>
+<tr><td>4.5</td><td>Reprogramación de reserva</td><td>fig-13-reprogramar-reserva.png</td></tr>
+<tr><td>5.1</td><td>Listado de usuarios</td><td>fig-14-listado-usuarios.png</td></tr>
+<tr><td>5.2</td><td>Detalle de usuario</td><td>fig-15-detalle-usuario.png</td></tr>
+<tr><td>6.1</td><td>Listado de bonos</td><td>fig-16-listado-bonos.png</td></tr>
+<tr><td>6.2</td><td>Detalle de bono</td><td>fig-17-detalle-bono.png</td></tr>
+<tr><td>7.1</td><td>Listado de tarjetas regalo</td><td>fig-18-listado-tarjetas.png</td></tr>
+<tr><td>7.2</td><td>Detalle de tarjeta regalo con código</td><td>fig-19-detalle-tarjeta.png</td></tr>
+<tr><td>7.3</td><td>Canje de tarjeta regalo (cliente)</td><td>fig-20-canjear-tarjeta.png</td></tr>
+<tr><td>8.1</td><td>Formulario de reserva de grupo</td><td>fig-21-reserva-grupo.png</td></tr>
+<tr><td>8.2</td><td>Panel de reservas de grupo</td><td>fig-22-admin-grupos.png</td></tr>
+<tr><td>8.3</td><td>Pago individual de grupo</td><td>fig-23-pago-grupo-individual.png</td></tr>
+<tr><td>9.1</td><td>Calendario mensual</td><td>fig-24-calendario.png</td></tr>
+<tr><td>9.2</td><td>Detalle de reservas en un día</td><td>fig-25-calendario-dia.png</td></tr>
+<tr><td>9.3</td><td>Bloqueo de fechas</td><td>fig-26-bloquear-fechas.png</td></tr>
+<tr><td>9.4</td><td>Habilitación de fechas y turnos</td><td>fig-27-habilitar-fechas.png</td></tr>
+<tr><td>9.5</td><td>Gestión de clases — precios y plazas</td><td>fig-28-gestion-clases.png</td></tr>
+<tr><td>10.1</td><td>Resumen de pago</td><td>fig-29-resumen-pago.png</td></tr>
+<tr><td>10.2</td><td>Confirmación de pago exitoso</td><td>fig-30-pago-exito.png</td></tr>
+<tr><td>10.3</td><td>Reserva confirmada tras el pago</td><td>fig-31-reserva-confirmada.png</td></tr>
+<tr><td>11.1</td><td>Avisos en el perfil del cliente</td><td>fig-32-avisos-perfil.png</td></tr>
+<tr><td>11.2</td><td>Notas internas del administrador</td><td>fig-33-notas-internas.png</td></tr>
+<tr><td>11.3</td><td>Asistente de ayuda Junquillo</td><td>fig-34-junquillo.png</td></tr>
+</table>
+</div>
+
+<!-- CAP 1 -->
+<h1 class="chapter">1. Introducción</h1>
+<h2>¿Qué es esta aplicación?</h2>
+<p>La aplicación de <strong>La Purísima Conchi</strong> permite a los clientes reservar clases, talleres y experiencias de cerámica, y al equipo del taller gestionar reservas, pagos, bonos y tarjetas regalo desde un panel de administración.</p>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 1.1</div><div class="figure-title">Portada de la aplicación</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-01-portada.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla de entrada <strong>/portada</strong> sin iniciar sesión.</dd>
+<dt>Qué debe verse</dt><dd>Logo del taller centrado · Título «Hazte un hueco. Y una taza.» · Botones <strong>Registrarse</strong> e <strong>Iniciar sesión</strong> · Enlace «Ver clases sin registrarse» · Fondo color crema.</dd>
+<dt>Consejo</dt><dd>Captura en escritorio (1280 px ancho). Sin barra de favoritos si es posible.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-01-portada.png</div>
+<div class="figure-caption">Figura 1.1 — Portada de la aplicación con acceso a registro e inicio de sesión.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 1.2</div><div class="figure-title">Página principal de reservas</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-02-donde-reservar.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/dondereservar</strong> con usuario logueado (vista cliente).</dd>
+<dt>Qué debe verse</dt><dd>Título «Reserva tu experiencia» · Bloques «Crear desde cero», «Pinta y decora», «Grupos», «Tarjeta regalo», «Mi perfil» · Cabecera con logo.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-02-donde-reservar.png</div>
+<div class="figure-caption">Figura 1.2 — Hub principal donde el cliente elige el tipo de actividad.</div>
+</div>
+
+<h2>Beneficios para el taller</h2>
+<ul>
+<li>Reservas y pagos centralizados</li>
+<li>Control de plazas por fecha y turno</li>
+<li>Gestión de bonos, regalos y grupos</li>
+<li>Acceso desde móvil u ordenador</li>
+</ul>
+
+<!-- CAP 2 -->
+<h1 class="chapter">2. Acceso al panel de administración</h1>
+<h2>Iniciar sesión</h2>
+<ol class="steps">
+<li>Entra en <strong>app.lapurisimaconchi.com</strong></li>
+<li>Pulsa <strong>Iniciar sesión</strong></li>
+<li>Introduce correo y contraseña autorizados</li>
+</ol>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 2.1</div><div class="figure-title">Pantalla de inicio de sesión</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-03-login.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/login</strong> completa.</dd>
+<dt>Qué debe verse</dt><dd>Logo · Título «Iniciar sesión» · Campos email y contraseña · Botón de acceso · Enlace recuperar contraseña · Botón volver.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-03-login.png</div>
+<div class="figure-caption">Figura 2.1 — Formulario de acceso para administradores y clientes.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 2.2</div><div class="figure-title">Recuperación de contraseña</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-04-recuperar-password.png</dd>
+<dt>Qué capturar</dt><dd>Misma pantalla <strong>/login</strong> tras pulsar recuperar contraseña, mostrando el mensaje de confirmación.</dd>
+<dt>Qué debe verse</dt><dd>Campo email rellenado · Mensaje verde: «Si el correo es correcto, te hemos enviado un enlace…»</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-04-recuperar-password.png</div>
+<div class="figure-caption">Figura 2.2 — Confirmación de envío del correo de recuperación.</div>
+</div>
+
+<h2>Acceder al panel admin</h2>
+<ol class="steps">
+<li>Inicia sesión con email autorizado</li>
+<li>Ve a <strong>Dónde reservar</strong></li>
+<li>Desplázate al final · Pulsa el icono <strong>Panel admin</strong></li>
+</ol>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 2.3</div><div class="figure-title">Acceso al panel de administración</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-05-panel-admin-icono.png</dd>
+<dt>Qué capturar</dt><dd>Parte inferior de <strong>/dondereservar</strong> con cuenta admin logueada.</dd>
+<dt>Qué debe verse</dt><dd>Icono amarillo «Panel admin» · Texto debajo del icono · Debe quedar claro que solo aparece con cuenta de administrador.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-05-panel-admin-icono.png</div>
+<div class="figure-caption">Figura 2.3 — Icono de acceso al panel visible solo para administradores.</div>
+</div>
+
+<div class="box-warning"><strong>AVISO IMPORTANTE</strong>Si el icono del panel no aparece, la cuenta no tiene permisos de administrador.</div>
+
+<!-- CAP 3 -->
+<h1 class="chapter">3. Vista general del panel</h1>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 3.1</div><div class="figure-title">Panel de control — Dashboard</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-06-admin-dashboard.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/admin-dashboard</strong> completa.</dd>
+<dt>Qué debe verse</dt><dd>Tarjetas: reservas totales, clases activas, usuarios, ingresos estimados · Sección «Accesos rápidos» con todos los botones · Botón Volver arriba.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-06-admin-dashboard.png</div>
+<div class="figure-caption">Figura 3.1 — Dashboard principal del panel de administración.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 3.2</div><div class="figure-title">Resumen de reservas del día</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-07-admin-resumen.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/admin-nuevo</strong>.</dd>
+<dt>Qué debe verse</dt><dd>Tres tarjetas: Reservas hoy · Reservas esta semana · Reservas futuras · Listado «Próximas reservas» con al menos 2 entradas visibles.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-07-admin-resumen.png</div>
+<div class="figure-caption">Figura 3.2 — Vista resumen con indicadores del día y la semana.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 3.3</div><div class="figure-title">Accesos rápidos del panel</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-08-accesos-rapidos.png</dd>
+<dt>Qué capturar</dt><dd>Recorte de la sección «Accesos rápidos» del dashboard.</dd>
+<dt>Qué debe verse</dt><dd>Botones: Ver calendario · Ver reservas · Ver reservas de grupo · Ver clases · Ver usuarios · Ver tarjetas regalo · Bloquear fechas · Habilitar fechas y Turnos · Ver bonos.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-08-accesos-rapidos.png</div>
+<div class="figure-caption">Figura 3.3 — Menú de accesos rápidos a todas las secciones del panel.</div>
+</div>
+
+<table class="data">
+<tr><th>Apartado</th><th>Función</th></tr>
+<tr><td>Ver calendario</td><td>Ocupación mensual por día</td></tr>
+<tr><td>Ver reservas</td><td>Listado con filtros</td></tr>
+<tr><td>Ver reservas de grupo</td><td>Grupos de 5 a 45 personas</td></tr>
+<tr><td>Ver clases</td><td>Precios, plazas y horarios</td></tr>
+<tr><td>Ver usuarios</td><td>Clientes registrados</td></tr>
+<tr><td>Ver tarjetas regalo</td><td>Regalos comprados y canjeados</td></tr>
+<tr><td>Bloquear fechas</td><td>Cerrar días</td></tr>
+<tr><td>Habilitar fechas y Turnos</td><td>Abrir días especiales</td></tr>
+<tr><td>Ver bonos</td><td>Bonos mensuales</td></tr>
+</table>
+
+<!-- CAP 4 -->
+<h1 class="chapter">4. Gestión de reservas</h1>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 4.1</div><div class="figure-title">Listado de reservas</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-09-listado-reservas.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/admin-reservas-nuevo</strong> con varias reservas cargadas.</dd>
+<dt>Qué debe verse</dt><dd>Tabla o tarjetas con: fecha, clase, turno, plazas, estado, teléfono · Al menos una Confirmada y una Pendiente · Botón Volver.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-09-listado-reservas.png</div>
+<div class="figure-caption">Figura 4.1 — Listado general de reservas del taller.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 4.2</div><div class="figure-title">Filtros de búsqueda</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-10-filtros-reservas.png</dd>
+<dt>Qué capturar</dt><dd>Parte superior del listado con filtros activos.</dd>
+<dt>Qué debe verse</dt><dd>Filtro de fecha rellenado · Filtro de clase seleccionado · Filtro de estado en «Confirmada» · Campo teléfono visible · Resultados filtrados debajo.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-10-filtros-reservas.png</div>
+<div class="figure-caption">Figura 4.2 — Filtros para localizar reservas por fecha, clase, estado o teléfono.</div>
+</div>
+
+<table class="data">
+<tr><th>Estado</th><th>Significado</th><th>Acción</th></tr>
+<tr><td>Confirmada</td><td>Pagada o con tarjeta regalo</td><td>Preparar la clase</td></tr>
+<tr><td>Pendiente</td><td>Pago no completado</td><td>Contactar al cliente</td></tr>
+<tr><td>Cancelada</td><td>Anulada</td><td>No esperar al cliente</td></tr>
+</table>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 4.3</div><div class="figure-title">Detalle de una reserva</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-11-detalle-reserva.png</dd>
+<dt>Qué capturar</dt><dd>Pantalla <strong>/admin-detalle-reserva</strong> de una reserva Confirmada.</dd>
+<dt>Qué debe verse</dt><dd>Nombre y teléfono del cliente · Clase, fecha, turno, plazas · Estado y estado de pago · Sección de notas internas · Botones reprogramar y cancelar.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-11-detalle-reserva.png</div>
+<div class="figure-caption">Figura 4.3 — Ficha completa de una reserva individual.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 4.4</div><div class="figure-title">Cancelación de reserva</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-12-cancelar-reserva.png</dd>
+<dt>Qué capturar</dt><dd>Detalle de reserva mostrando campo «motivo de cancelación» y botón Cancelar reserva.</dd>
+<dt>Qué debe verse</dt><dd>Campo de texto con motivo escrito · Botón de cancelación visible · Preferible: diálogo de confirmación del navegador si es posible capturarlo.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-12-cancelar-reserva.png</div>
+<div class="figure-caption">Figura 4.4 — Proceso de cancelación con motivo registrado.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 4.5</div><div class="figure-title">Reprogramación de reserva</div></div>
+<dl class="figure-spec">
+<dt>Archivo sugerido</dt><dd>fig-13-reprogramar-reserva.png</dd>
+<dt>Qué capturar</dt><dd>Detalle de reserva con selectores de nueva fecha y turno abiertos.</dd>
+<dt>Qué debe verse</dt><dd>Fecha actual de la reserva · Selector de nueva fecha · Selector de nuevo turno · Botón guardar reprogramación.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-13-reprogramar-reserva.png</div>
+<div class="figure-caption">Figura 4.5 — Cambio de fecha y turno de una reserva existente.</div>
+</div>
+
+<!-- CAP 5-7 abbreviated with figures - continue in same file -->
+
+<h1 class="chapter">5. Gestión de usuarios</h1>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 5.1</div><div class="figure-title">Listado de usuarios</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-14-listado-usuarios.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-usuarios-nuevo</strong></dd>
+<dt>Debe verse</dt><dd>Lista con nombre, email, teléfono y número de reservas · Varios usuarios visibles.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-14-listado-usuarios.png</div>
+<div class="figure-caption">Figura 5.1 — Listado de clientes registrados.</div>
+</div>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 5.2</div><div class="figure-title">Detalle de usuario</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-15-detalle-usuario.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-detalle-usuario</strong></dd>
+<dt>Debe verse</dt><dd>Datos personales · Historial de reservas · Bonos y tarjetas del usuario · Zona de notas internas.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-15-detalle-usuario.png</div>
+<div class="figure-caption">Figura 5.2 — Ficha de un cliente con su historial.</div>
+</div>
+
+<h1 class="chapter">6. Gestión de bonos</h1>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 6.1</div><div class="figure-title">Listado de bonos</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-16-listado-bonos.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-bonos-nuevo</strong></dd>
+<dt>Debe verse</dt><dd>Columnas: cliente, clase, clases restantes, estado (Activo/Agotado/Caducado), estado pago · Filtros visibles.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-16-listado-bonos.png</div>
+<div class="figure-caption">Figura 6.1 — Todos los bonos mensuales comprados.</div>
+</div>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 6.2</div><div class="figure-title">Detalle de bono</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-17-detalle-bono.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-detalle-bono</strong></dd>
+<dt>Debe verse</dt><dd>Clases totales, consumidas y restantes · Fecha inicio y caducidad · Historial de sesiones reservadas.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-17-detalle-bono.png</div>
+<div class="figure-caption">Figura 6.2 — Detalle de un bono con sesiones consumidas.</div>
+</div>
+
+<h1 class="chapter">7. Gestión de tarjetas regalo</h1>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 7.1</div><div class="figure-title">Listado de tarjetas regalo</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-18-listado-tarjetas.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-tarjetas-regalo</strong></dd>
+<dt>Debe verse</dt><dd>Código, clase regalada, comprador, fecha, estado canje (Pendiente/Usada), estado pago.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-18-listado-tarjetas.png</div>
+<div class="figure-caption">Figura 7.1 — Tarjetas regalo compradas y su estado.</div>
+</div>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 7.2</div><div class="figure-title">Detalle con código</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-19-detalle-tarjeta.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-detalle-tarjeta-regalo</strong></dd>
+<dt>Debe verse</dt><dd>Código REGALO-XXXXXX · Taller incluido · Precio · Estado canje · Datos del comprador.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-19-detalle-tarjeta.png</div>
+<div class="figure-caption">Figura 7.2 — Ficha de tarjeta regalo con código visible.</div>
+</div>
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 7.3</div><div class="figure-title">Canje de tarjeta (cliente)</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-20-canjear-tarjeta.png</dd>
+<dt>Capturar</dt><dd><strong>/canjear-tarjeta</strong> con código introducido.</dd>
+<dt>Debe verse</dt><dd>Campo de código · Botón validar · Mensaje de éxito o redirección al taller correspondiente.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-20-canjear-tarjeta.png</div>
+<div class="figure-caption">Figura 7.3 — Pantalla de canje desde la perspectiva del cliente.</div>
+</div>
+
+<h1 class="chapter">8. Reservas de grupo</h1>
+<p>Reservas para <strong>5 a 45 personas</strong>. El organizador debe contactar previamente con el taller por WhatsApp.</p>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 8.1</div><div class="figure-title">Formulario de reserva de grupo</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-21-reserva-grupo.png</dd>
+<dt>Capturar</dt><dd><strong>/reserva-grupos</strong> con formulario parcialmente rellenado.</dd>
+<dt>Debe verse</dt><dd>Selector de taller · Fecha y horario · Número de personas · Modo de pago · Casilla de confirmación de contacto WhatsApp.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-21-reserva-grupo.png</div>
+<div class="figure-caption">Figura 8.1 — Formulario de reserva grupal (vista cliente).</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 8.2</div><div class="figure-title">Panel de reservas de grupo</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-22-admin-grupos.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-reservas-grupos</strong></dd>
+<dt>Debe verse</dt><dd>Nombre del grupo · Plazas totales / pagadas / pendientes · Total pagado y pendiente · Tiempo restante (72h) · Estado de la reserva.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-22-admin-grupos.png</div>
+<div class="figure-caption">Figura 8.2 — Gestión de reservas de grupo en el panel admin.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 8.3</div><div class="figure-title">Pago individual de grupo</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-23-pago-grupo-individual.png</dd>
+<dt>Capturar</dt><dd><strong>/pago-grupo/{id}</strong> (enlace compartido con asistentes).</dd>
+<dt>Debe verse</dt><dd>Nombre del grupo y taller · Importe por persona · Campos nombre y teléfono del asistente · Botón para pagar.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-23-pago-grupo-individual.png</div>
+<div class="figure-caption">Figura 8.3 — Página donde cada asistente paga su plaza.</div>
+</div>
+
+<table class="data">
+<tr><th>Estado grupo</th><th>Significado</th></tr>
+<tr><td>Pendiente pago individual</td><td>Esperando pagos de los asistentes</td></tr>
+<tr><td>Confirmada</td><td>Todas las plazas pagadas</td></tr>
+<tr><td>Cancelada</td><td>Reserva anulada; enlace inactivo</td></tr>
+</table>
+
+<h1 class="chapter">9. Calendario y plazas</h1>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 9.1</div><div class="figure-title">Calendario mensual</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-24-calendario.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-calendario-reservas-nuevo</strong> vista mes completo.</dd>
+<dt>Debe verse</dt><dd>Nombre del mes · Flechas anterior/siguiente · Días con indicadores de reservas · Día actual resaltado.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-24-calendario.png</div>
+<div class="figure-caption">Figura 9.1 — Vista mensual de ocupación del taller.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 9.2</div><div class="figure-title">Detalle de un día</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-25-calendario-dia.png</dd>
+<dt>Capturar</dt><dd>Mismo calendario con un día seleccionado y listado de reservas debajo.</dd>
+<dt>Debe verse</dt><dd>Fecha seleccionada · Lista de reservas de ese día con clase, turno, plazas y nombre.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-25-calendario-dia.png</div>
+<div class="figure-caption">Figura 9.2 — Reservas detalladas de un día concreto.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 9.3</div><div class="figure-title">Bloqueo de fechas</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-26-bloquear-fechas.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-bloqueos-fechas</strong></dd>
+<dt>Debe verse</dt><dd>Selector rango de fechas · Campo motivo · Lista de fechas ya bloqueadas · Botón guardar.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-26-bloquear-fechas.png</div>
+<div class="figure-caption">Figura 9.3 — Cierre de días no disponibles (festivos, vacaciones).</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 9.4</div><div class="figure-title">Habilitación de fechas y turnos</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-27-habilitar-fechas.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-habilitar-fechas</strong></dd>
+<dt>Debe verse</dt><dd>Fecha inicio y fin · Checkboxes turno mañana/tarde · Listado de fechas habilitadas · Botón guardar.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-27-habilitar-fechas.png</div>
+<div class="figure-caption">Figura 9.4 — Apertura de días o turnos especiales.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 9.5</div><div class="figure-title">Gestión de clases</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-28-gestion-clases.png</dd>
+<dt>Capturar</dt><dd><strong>/admin-clases-nuevo</strong> con una clase expandida o en edición.</dd>
+<dt>Debe verse</dt><dd>Nombre de la clase · Precio · Plazas (torno/modelado) · Horarios por día · Estado activa/oculta.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-28-gestion-clases.png</div>
+<div class="figure-caption">Figura 9.5 — Configuración de precios, plazas y horarios por clase.</div>
+</div>
+
+<div class="box-warning"><strong>AVISO</strong>Los cambios de precio afectan solo a nuevas reservas, no a las ya confirmadas.</div>
+
+<h1 class="chapter">10. Pagos</h1>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 10.1</div><div class="figure-title">Resumen de pago</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-29-resumen-pago.png</dd>
+<dt>Capturar</dt><dd><strong>/resumen-pago</strong> antes de ir al banco.</dd>
+<dt>Debe verse</dt><dd>Clase, fecha, turno, plazas · Precio total · Casilla aceptar condiciones · Botón confirmar y pagar.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-29-resumen-pago.png</div>
+<div class="figure-caption">Figura 10.1 — Resumen que ve el cliente antes del pago.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 10.2</div><div class="figure-title">Confirmación de pago exitoso</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-30-pago-exito.png</dd>
+<dt>Capturar</dt><dd><strong>/pago/exito</strong> tras un pago de prueba.</dd>
+<dt>Debe verse</dt><dd>Mensaje de confirmación · Resumen de la reserva pagada · Enlace o botón para volver al perfil.</dd>
+<dt>Nota</dt><dd>No hace falta capturar la pantalla del banco (Redsys); es externa.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-30-pago-exito.png</div>
+<div class="figure-caption">Figura 10.2 — Pantalla de confirmación tras pago correcto.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 10.3</div><div class="figure-title">Reserva confirmada en el panel</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-31-reserva-confirmada.png</dd>
+<dt>Capturar</dt><dd>Listado de reservas mostrando la misma reserva del pago de prueba.</dd>
+<dt>Debe verse</dt><dd>Estado <strong>Confirmada</strong> · Estado pago <strong>pagado</strong> · Misma fecha y clase que fig-10.2.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-31-reserva-confirmada.png</div>
+<div class="figure-caption">Figura 10.3 — Misma reserva visible como confirmada en el panel admin.</div>
+</div>
+
+<table class="data">
+<tr><th>Situación</th><th>Qué hacer</th></tr>
+<tr><td>Confirmada + pagado</td><td>Confirmar al cliente que todo está correcto</td></tr>
+<tr><td>Pendiente + pendiente</td><td>Pedir que intente pagar de nuevo</td></tr>
+<tr><td>Cliente dice que pagó pero aparece pendiente</td><td>Esperar 10 min y actualizar; si persiste, soporte técnico</td></tr>
+</table>
+
+<h1 class="chapter">11. Notificaciones</h1>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 11.1</div><div class="figure-title">Avisos en el perfil del cliente</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-32-avisos-perfil.png</dd>
+<dt>Capturar</dt><dd><strong>/perfil</strong> de un usuario con aviso tras cancelación.</dd>
+<dt>Debe verse</dt><dd>Sección «Avisos del administrador» en recuadro rojo · Mensaje de cancelación · Fecha del aviso.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-32-avisos-perfil.png</div>
+<div class="figure-caption">Figura 11.1 — Aviso automático visible para el cliente en su perfil.</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 11.2</div><div class="figure-title">Notas internas</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-33-notas-internas.png</dd>
+<dt>Capturar</dt><dd>Detalle de reserva o usuario con nota añadida.</dd>
+<dt>Debe verse</dt><dd>Campo de texto para nueva nota · Listado de notas previas con fecha · Solo visible en panel admin.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-33-notas-internas.png</div>
+<div class="figure-caption">Figura 11.2 — Notas internas del equipo (no visibles para el cliente).</div>
+</div>
+
+<div class="figure">
+<div class="figure-head"><div class="figure-num">Figura 11.3</div><div class="figure-title">Asistente Junquillo</div></div>
+<dl class="figure-spec">
+<dt>Archivo</dt><dd>fig-34-junquillo.png</dd>
+<dt>Capturar</dt><dd><strong>/ayuda</strong> o botón flotante en cualquier página.</dd>
+<dt>Debe verse</dt><dd>Botón flotante «¿Tienes dudas?» · Pantalla de chat con mensaje de bienvenida · Sugerencias rápidas.</dd>
+</dl>
+<div class="figure-placeholder">INSERTAR IMAGEN — fig-34-junquillo.png</div>
+<div class="figure-caption">Figura 11.3 — Asistente de ayuda para clientes.</div>
+</div>
+
+<h1 class="chapter">12. Casos prácticos</h1>
+
+<h2>Ejemplo 1 — Cancelar una reserva</h2>
+<ol class="steps">
+<li>Ver reservas → filtrar por fecha o teléfono</li>
+<li>Abrir detalle (Fig. 4.3)</li>
+<li>Escribir motivo → Cancelar (Fig. 4.4)</li>
+<li>Comunicar al cliente</li>
+</ol>
+<p><strong>Capturas recomendadas:</strong> Figuras 4.2, 4.3 y 4.4.</p>
+
+<h2>Ejemplo 2 — Cambiar de fecha</h2>
+<ol class="steps">
+<li>Localizar reserva → abrir detalle</li>
+<li>Consultar calendario (Fig. 9.1) para ver disponibilidad</li>
+<li>Reprogramar con nueva fecha y turno (Fig. 4.5)</li>
+<li>Confirmar al cliente por WhatsApp</li>
+</ol>
+
+<h2>Ejemplo 3 — Cliente con bono</h2>
+<ol class="steps">
+<li>Ver bonos → buscar cliente (Fig. 6.1)</li>
+<li>Verificar Activo + pagado + clases restantes</li>
+<li>Abrir detalle si hace falta (Fig. 6.2)</li>
+<li>Indicar al cliente que reserve desde su perfil</li>
+</ol>
+
+<h2>Ejemplo 4 — Tarjeta regalo</h2>
+<ol class="steps">
+<li>Cliente canjea en /canjear-tarjeta (Fig. 7.3)</li>
+<li>Verificar en panel: estado Pendiente → Usada (Fig. 7.1)</li>
+<li>Confirmar reserva Confirmada en listado (Fig. 4.1)</li>
+</ol>
+
+<h2>Ejemplo 5 — Grupo de 20 personas</h2>
+<ol class="steps">
+<li>Contacto previo por WhatsApp</li>
+<li>Organizador crea reserva (Fig. 8.1)</li>
+<li>Seguimiento en admin grupos (Fig. 8.2)</li>
+<li>Compartir enlace de pago individual (Fig. 8.3)</li>
+<li>Confirmada cuando plazas pagadas = totales</li>
+</ol>
+
+<h1 class="chapter">13. Preguntas frecuentes</h1>
+<table class="data">
+<tr><th>Pregunta</th><th>Respuesta</th></tr>
+<tr><td>¿Los clientes deben registrarse?</td><td>Sí, para reservar y pagar.</td></tr>
+<tr><td>¿Funciona en el móvil?</td><td>Sí, app y panel admin.</td></tr>
+<tr><td>¿Puedo bloquear un día por error?</td><td>Sí, elimínalo en Bloquear fechas.</td></tr>
+<tr><td>¿Reserva sin pagar?</td><td>Solo con tarjeta regalo o sesión de bono.</td></tr>
+<tr><td>¿El taller guarda tarjetas?</td><td>No, solo ve si el pago se confirmó.</td></tr>
+</table>
+
+<h1 class="chapter">14. Buenas prácticas</h1>
+<ul>
+<li>Revisar el panel cada mañana (Fig. 3.2)</li>
+<li>Bloquear festivos con antelación (Fig. 9.3)</li>
+<li>Pedir teléfono o email para localizar reservas</li>
+<li>Anotar motivo al cancelar</li>
+<li>Para grupos, confirmar siempre por WhatsApp antes</li>
+<li>No compartir contraseña del panel</li>
+</ul>
+
+<h1 class="chapter">15. Contacto técnico</h1>
+<div class="box-info">
+<strong>Contacto del taller</strong>
+Correo: lapurisimaconchioficial@gmail.com · WhatsApp: 644 67 16 64
+</div>
+<p>El mantenimiento técnico puede ser realizado por cualquier desarrollador con experiencia en React, Firebase y Vercel.</p>
+<p><strong>Contactar soporte técnico si:</strong> la app no carga, los pagos no se confirman, necesitas nueva clase en la app, cambio de email admin o migración de cuentas.</p>
+
+<h1 class="chapter">Anexo A — Checklist de capturas</h1>
+<p>Realiza las 34 capturas en orden. Resolución mínima recomendada: <strong>1280×800 px</strong>. Formato: <strong>PNG</strong>. Oculta datos personales reales si es posible (usa cuenta de prueba).</p>
+
+<table class="data">
+<tr><th>✓</th><th>Fig.</th><th>Archivo</th><th>Ruta URL</th></tr>
+<tr><td>☐</td><td>1.1</td><td>fig-01-portada.png</td><td>/portada</td></tr>
+<tr><td>☐</td><td>1.2</td><td>fig-02-donde-reservar.png</td><td>/dondereservar</td></tr>
+<tr><td>☐</td><td>2.1</td><td>fig-03-login.png</td><td>/login</td></tr>
+<tr><td>☐</td><td>2.2</td><td>fig-04-recuperar-password.png</td><td>/login</td></tr>
+<tr><td>☐</td><td>2.3</td><td>fig-05-panel-admin-icono.png</td><td>/dondereservar</td></tr>
+<tr><td>☐</td><td>3.1</td><td>fig-06-admin-dashboard.png</td><td>/admin-dashboard</td></tr>
+<tr><td>☐</td><td>3.2</td><td>fig-07-admin-resumen.png</td><td>/admin-nuevo</td></tr>
+<tr><td>☐</td><td>3.3</td><td>fig-08-accesos-rapidos.png</td><td>/admin-dashboard</td></tr>
+<tr><td>☐</td><td>4.1</td><td>fig-09-listado-reservas.png</td><td>/admin-reservas-nuevo</td></tr>
+<tr><td>☐</td><td>4.2</td><td>fig-10-filtros-reservas.png</td><td>/admin-reservas-nuevo</td></tr>
+<tr><td>☐</td><td>4.3</td><td>fig-11-detalle-reserva.png</td><td>/admin-detalle-reserva</td></tr>
+<tr><td>☐</td><td>4.4</td><td>fig-12-cancelar-reserva.png</td><td>/admin-detalle-reserva</td></tr>
+<tr><td>☐</td><td>4.5</td><td>fig-13-reprogramar-reserva.png</td><td>/admin-detalle-reserva</td></tr>
+<tr><td>☐</td><td>5.1</td><td>fig-14-listado-usuarios.png</td><td>/admin-usuarios-nuevo</td></tr>
+<tr><td>☐</td><td>5.2</td><td>fig-15-detalle-usuario.png</td><td>/admin-detalle-usuario</td></tr>
+<tr><td>☐</td><td>6.1</td><td>fig-16-listado-bonos.png</td><td>/admin-bonos-nuevo</td></tr>
+<tr><td>☐</td><td>6.2</td><td>fig-17-detalle-bono.png</td><td>/admin-detalle-bono</td></tr>
+<tr><td>☐</td><td>7.1</td><td>fig-18-listado-tarjetas.png</td><td>/admin-tarjetas-regalo</td></tr>
+<tr><td>☐</td><td>7.2</td><td>fig-19-detalle-tarjeta.png</td><td>/admin-detalle-tarjeta-regalo</td></tr>
+<tr><td>☐</td><td>7.3</td><td>fig-20-canjear-tarjeta.png</td><td>/canjear-tarjeta</td></tr>
+<tr><td>☐</td><td>8.1</td><td>fig-21-reserva-grupo.png</td><td>/reserva-grupos</td></tr>
+<tr><td>☐</td><td>8.2</td><td>fig-22-admin-grupos.png</td><td>/admin-reservas-grupos</td></tr>
+<tr><td>☐</td><td>8.3</td><td>fig-23-pago-grupo-individual.png</td><td>/pago-grupo/{id}</td></tr>
+<tr><td>☐</td><td>9.1</td><td>fig-24-calendario.png</td><td>/admin-calendario-reservas-nuevo</td></tr>
+<tr><td>☐</td><td>9.2</td><td>fig-25-calendario-dia.png</td><td>/admin-calendario-reservas-nuevo</td></tr>
+<tr><td>☐</td><td>9.3</td><td>fig-26-bloquear-fechas.png</td><td>/admin-bloqueos-fechas</td></tr>
+<tr><td>☐</td><td>9.4</td><td>fig-27-habilitar-fechas.png</td><td>/admin-habilitar-fechas</td></tr>
+<tr><td>☐</td><td>9.5</td><td>fig-28-gestion-clases.png</td><td>/admin-clases-nuevo</td></tr>
+<tr><td>☐</td><td>10.1</td><td>fig-29-resumen-pago.png</td><td>/resumen-pago</td></tr>
+<tr><td>☐</td><td>10.2</td><td>fig-30-pago-exito.png</td><td>/pago/exito</td></tr>
+<tr><td>☐</td><td>10.3</td><td>fig-31-reserva-confirmada.png</td><td>/admin-reservas-nuevo</td></tr>
+<tr><td>☐</td><td>11.1</td><td>fig-32-avisos-perfil.png</td><td>/perfil</td></tr>
+<tr><td>☐</td><td>11.2</td><td>fig-33-notas-internas.png</td><td>/admin-detalle-reserva</td></tr>
+<tr><td>☐</td><td>11.3</td><td>fig-34-junquillo.png</td><td>/ayuda</td></tr>
+</table>
+
+<div class="box-tip">
+<strong>CONSEJO PARA CAPTURAS PROFESIONALES</strong>
+Usa la misma cuenta de prueba en todas las capturas · Mantén el zoom del navegador al 100% · Recorta bordes innecesarios · Inserta las imágenes en los recuadros punteados de este documento antes de exportar a PDF.
+</div>
+
+<div class="footer-note">
+<strong>La Purísima Conchi</strong> — Manual Premium de Uso y Administración · Versión 1.0 · Junio 2025<br>
+34 figuras · 15 capítulos · 1 anexo
+</div>
+
+</body>
+</html>
+

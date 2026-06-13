@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { ref, get, push, update } from "firebase/database";
+import { ref, get, update } from "firebase/database";
 import { dbRealtime } from "./firebase";
 import BotonVolver from "./BotonVolver";
 import DateInputReserva from "./components/DateInputReserva";
@@ -343,50 +343,9 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
         sesionesConsumidas: {},
       };
 
-      const reserva = {
-        clase: claseConfig?.nombre || "Torno alfarero empezar desde cero",
-        claseId: CLASE_ID,
-        tipoTaller: "bono_mensual",
-        subtipo,
-        fechaInicio,
-        fechaFinMes: sumarUnMes(fechaInicio),
-        fechaCaducidadBono: sumarUnMesCaducidad(fechaInicio),
-        turno,
-        numeroClases,
-        duracionClase,
-        modalidad,
-        incluyeDecoracion,
-        precio: precioTotal,
-        precioBase,
-        precioTotal,
-        desdeTarjeta,
-        estado: desdeTarjeta ? "Confirmada" : "Pendiente",
-        estadoPago: desdeTarjeta ? "pagado" : "pendiente",
-        orderId,
-        clasesConsumidas: 0,
-        clasesRestantes: numeroClases,
-        timestamp,
-      };
-
-      const generalRef = ref(
-        dbRealtime,
-        `reservas/${RESERVAS_PATH_KEY}/${fechaInicio}/${turno}`
-      );
-
-      const nuevaReservaRef = push(generalRef);
-      await update(nuevaReservaRef, { uid: user.uid, ...reserva });
-
       if (desdeTarjeta) {
         const tarjetaRegaloId = location.state?.tarjetaRegaloId || "";
         const codigoTarjeta = location.state?.codigoTarjeta || "";
-
-        await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
-          ...reserva,
-          uid: user.uid,
-          tarjetaRegaloId,
-          codigoTarjeta,
-          creadaDesde: "tarjeta_regalo",
-        });
 
         const bonosRef = ref(dbRealtime, `usuarios/${user.uid}/bonos`);
         const bonosSnap = await get(bonosRef);
@@ -452,7 +411,6 @@ export default function ReservaTornoAlfareroEmpezarDesdeCero() {
           fechaCanje: timestamp,
           fechaUso: timestamp,
           actualizadoEn: timestamp,
-          reservaId: nuevaReservaRef.key || "",
           fechaReserva: fechaInicio,
           turnoReserva: turno,
           subtipoReserva: subtipo,

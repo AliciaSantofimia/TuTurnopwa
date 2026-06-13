@@ -280,7 +280,13 @@ async function guardarBonoPagado(orderId, pedido, timestamp) {
   const bonoSnap = await bonoRef.get();
 
   if (bonoSnap.exists()) {
-    return bonoSnap.val();
+    const bonoExistente = bonoSnap.val() || {};
+    return {
+      ...bonoExistente,
+      bonoId: bonoExistente.bonoId || orderId,
+      orderId: bonoExistente.orderId || orderId,
+      uid: bonoExistente.uid || pedido.uid,
+    };
   }
 
   const bonoData = {
@@ -560,6 +566,13 @@ if (pedido?.tipo === "pago_grupo_individual") {
           bonoId: bonoGuardado?.bonoId || order,
           uid: pedido.uid,
         });
+
+        if (bonoGuardado) {
+          await ref.update({
+            procesado: true,
+            actualizadoEn: timestamp,
+          });
+        }
 
         return res.status(200).send("OK");
       }

@@ -124,11 +124,62 @@ export const crearBonoActivo = async ({
   orderId = "",
   datosExtra = {},
 }) => {
+  const orderIdLimpio = String(orderId || "").trim();
+  const tarjetaRegaloId = String(datosExtra?.tarjetaRegaloId || "").trim();
   const bonosRef = ref(dbRealtime, `usuarios/${uid}/bonos`);
-  const nuevoBonoRef = push(bonosRef);
+
+  if (orderIdLimpio) {
+    const bonoPorOrderRef = ref(
+      dbRealtime,
+      `usuarios/${uid}/bonos/${orderIdLimpio}`
+    );
+    const bonoPorOrderSnap = await get(bonoPorOrderRef);
+
+    if (bonoPorOrderSnap.exists()) {
+      return orderIdLimpio;
+    }
+  }
+
+  if (tarjetaRegaloId) {
+    const bonosSnap = await get(bonosRef);
+
+    if (bonosSnap.exists()) {
+      for (const [bonoId, bono] of Object.entries(bonosSnap.val() || {})) {
+        if (bono?.tarjetaRegaloId === tarjetaRegaloId) {
+          return bonoId;
+        }
+      }
+    }
+  }
+
+  const camposProtegidos = new Set([
+    "clasesConsumidas",
+    "clasesRestantes",
+    "sesionesConsumidas",
+    "estadoPago",
+    "estadoBono",
+    "uid",
+    "bonoId",
+    "orderId",
+  ]);
+
+  const datosExtraSeguros = {};
+  Object.entries(datosExtra || {}).forEach(([key, value]) => {
+    if (!camposProtegidos.has(key)) {
+      datosExtraSeguros[key] = value;
+    }
+  });
+
+  const nuevoBonoRef = orderIdLimpio
+    ? ref(dbRealtime, `usuarios/${uid}/bonos/${orderIdLimpio}`)
+    : push(bonosRef);
+
+  const bonoId = orderIdLimpio ? orderIdLimpio : nuevoBonoRef.key;
+  const timestamp = new Date().toISOString();
 
   const bonoData = {
-    bonoId: nuevoBonoRef.key,
+    ...datosExtraSeguros,
+    bonoId,
     uid,
     clase,
     claseId,
@@ -144,16 +195,15 @@ export const crearBonoActivo = async ({
     turnoHabitual: turno,
     estadoBono: "activo",
     estadoPago: "pagado",
-    orderId,
-    creadoEn: new Date().toISOString(),
-    actualizadoEn: new Date().toISOString(),
+    orderId: orderIdLimpio || bonoId,
+    creadoEn: timestamp,
+    actualizadoEn: timestamp,
     sesionesConsumidas: {},
-    ...datosExtra,
   };
 
   await update(nuevoBonoRef, bonoData);
 
-  return nuevoBonoRef.key;
+  return bonoId;
 };
 export const usarSesionDeBono = async ({
   uid,

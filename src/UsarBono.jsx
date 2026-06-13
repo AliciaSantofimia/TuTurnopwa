@@ -273,6 +273,7 @@ const turnosDisponibles = useMemo(() => {
         precio: 0,
         precioBase: 0,
         precioTotal: 0,
+        plazas: 1,
         desdeBono: true,
         bonoId,
         estado: "Confirmada",
@@ -288,10 +289,12 @@ const turnosDisponibles = useMemo(() => {
       const nuevaReservaRef = push(generalRef);
       await update(nuevaReservaRef, { uid: user.uid, ...reserva });
 
+      const reservaId = nuevaReservaRef.key || "";
+
       await push(ref(dbRealtime, `usuarios/${user.uid}/listaReservas`), {
         ...reserva,
         uid: user.uid,
-        reservaId: nuevaReservaRef.key || "",
+        reservaId,
       });
 
       await usarSesionDeBono({
@@ -300,6 +303,8 @@ const turnosDisponibles = useMemo(() => {
         fechaSesion,
         turno: turnoElegido,
         taller: nombreClase,
+        reservaId,
+        clase: nombreClase,
       });
 
       alert("Sesión reservada correctamente con tu bono.");

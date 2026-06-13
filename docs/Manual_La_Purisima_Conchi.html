@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual de Uso y Administración — La Purísima Conchi</title>
+<style>
+@page { margin: 2.5cm; }
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #2d2d2d; max-width: 21cm; margin: 0 auto; padding: 1.5cm; }
+.cover { text-align: center; page-break-after: always; padding-top: 4cm; min-height: 24cm; }
+.cover-logo { width: 5cm; margin-bottom: 1.5cm; }
+.cover h1 { font-size: 28pt; color: #5c2e00; font-family: Georgia, serif; margin: 0.5cm 0; font-weight: normal; }
+.cover h2 { font-size: 18pt; color: #8b6914; font-weight: normal; margin: 0.3cm 0 1cm; }
+.cover-meta { font-size: 11pt; color: #666; margin-top: 3cm; line-height: 1.8; }
+.cover-line { width: 8cm; height: 2px; background: #d4a84b; margin: 1.5cm auto; }
+.toc { page-break-after: always; }
+.toc h1 { font-size: 20pt; color: #5c2e00; border-bottom: 2px solid #d4a84b; padding-bottom: 0.3cm; }
+.toc table { width: 100%; border-collapse: collapse; margin-top: 1cm; }
+.toc td { padding: 0.25cm 0; vertical-align: bottom; }
+.toc td.num { width: 1.2cm; color: #8b6914; font-weight: bold; }
+.toc td.title { }
+.toc td.dots { border-bottom: 1px dotted #ccc; width: auto; }
+.toc td.page { width: 1.5cm; text-align: right; color: #666; }
+h1.chapter { font-size: 20pt; color: #5c2e00; border-bottom: 2px solid #d4a84b; padding-bottom: 0.2cm; margin-top: 1.5cm; page-break-before: always; }
+h1.chapter:first-of-type { page-break-before: auto; }
+h2 { font-size: 14pt; color: #5c2e00; margin-top: 1cm; }
+h3 { font-size: 12pt; color: #6b4f3f; margin-top: 0.7cm; }
+table.data { width: 100%; border-collapse: collapse; margin: 0.5cm 0; font-size: 10pt; }
+table.data th { background: #f5f0e6; color: #5c2e00; padding: 0.3cm 0.4cm; text-align: left; border: 1px solid #ddd; }
+table.data td { padding: 0.3cm 0.4cm; border: 1px solid #ddd; vertical-align: top; }
+.box-info { background: #f8f6f0; border-left: 4px solid #d4a84b; padding: 0.5cm 0.7cm; margin: 0.6cm 0; }
+.box-info strong { color: #5c2e00; display: block; margin-bottom: 0.2cm; }
+.box-warning { background: #fff8f0; border-left: 4px solid #c45c26; padding: 0.5cm 0.7cm; margin: 0.6cm 0; }
+.box-warning strong { color: #8b3a1a; display: block; margin-bottom: 0.2cm; }
+.box-tip { background: #f0f7f0; border-left: 4px solid #5a8f5a; padding: 0.5cm 0.7cm; margin: 0.6cm 0; }
+.box-tip strong { color: #2d5a2d; display: block; margin-bottom: 0.2cm; }
+.screenshot { border: 2px dashed #ccc; background: #fafafa; padding: 1.5cm; text-align: center; color: #999; margin: 0.6cm 0; font-style: italic; min-height: 3cm; }
+ul, ol { margin: 0.3cm 0; padding-left: 1cm; }
+li { margin-bottom: 0.2cm; }
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps li { counter-increment: step; padding-left: 1.2cm; position: relative; margin-bottom: 0.4cm; }
+.steps li::before { content: counter(step); position: absolute; left: 0; background: #d4a84b; color: white; width: 0.8cm; height: 0.8cm; border-radius: 50%; text-align: center; line-height: 0.8cm; font-size: 9pt; font-weight: bold; }
+.footer-note { text-align: center; font-size: 9pt; color: #999; margin-top: 2cm; border-top: 1px solid #eee; padding-top: 0.5cm; }
+.summary-table td:first-child { font-weight: bold; width: 40%; }
+.page-break { page-break-after: always; }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+  <p style="font-size:10pt; color:#999; letter-spacing:2px; text-transform:uppercase;">Manual de usuario</p>
+  <div class="cover-line"></div>
+  <h1>Manual de Uso<br>y Administración</h1>
+  <h2>La Purísima Conchi</h2>
+  <p style="font-size:13pt; color:#666;">Aplicación de reservas online</p>
+  <div class="cover-line"></div>
+  <p style="font-size:12pt; color:#5c2e00;"><strong>https://app.lapurisimaconchi.com</strong></p>
+  <div class="cover-meta">
+    Versión 1.0<br>
+    Junio 2025<br><br>
+    Documento de uso interno<br>
+    Equipo del taller
+  </div>
+</div>
+
+<!-- ÍNDICE -->
+<div class="toc">
+<h1>Índice</h1>
+<table class="toc">
+<tr><td class="num">1.</td><td class="title">Introducción</td><td class="dots"></td><td class="page">3</td></tr>
+<tr><td class="num">2.</td><td class="title">Acceso al panel de administración</td><td class="dots"></td><td class="page">5</td></tr>
+<tr><td class="num">3.</td><td class="title">Vista general del panel</td><td class="dots"></td><td class="page">7</td></tr>
+<tr><td class="num">4.</td><td class="title">Gestión de reservas</td><td class="dots"></td><td class="page">10</td></tr>
+<tr><td class="num">5.</td><td class="title">Gestión de usuarios</td><td class="dots"></td><td class="page">14</td></tr>
+<tr><td class="num">6.</td><td class="title">Gestión de bonos</td><td class="dots"></td><td class="page">16</td></tr>
+<tr><td class="num">7.</td><td class="title">Gestión de tarjetas regalo</td><td class="dots"></td><td class="page">18</td></tr>
+<tr><td class="num">8.</td><td class="title">Reservas de grupo</td><td class="dots"></td><td class="page">20</td></tr>
+<tr><td class="num">9.</td><td class="title">Calendario y plazas</td><td class="dots"></td><td class="page">23</td></tr>
+<tr><td class="num">10.</td><td class="title">Pagos</td><td class="dots"></td><td class="page">26</td></tr>
+<tr><td class="num">11.</td><td class="title">Notificaciones</td><td class="dots"></td><td class="page">29</td></tr>
+<tr><td class="num">12.</td><td class="title">Casos prácticos</td><td class="dots"></td><td class="page">30</td></tr>
+<tr><td class="num">13.</td><td class="title">Preguntas frecuentes</td><td class="dots"></td><td class="page">35</td></tr>
+<tr><td class="num">14.</td><td class="title">Buenas prácticas</td><td class="dots"></td><td class="page">37</td></tr>
+<tr><td class="num">15.</td><td class="title">Contacto técnico</td><td class="dots"></td><td class="page">39</td></tr>
+<tr><td class="num"></td><td class="title">Resumen rápido de accesos</td><td class="dots"></td><td class="page">40</td></tr>
+</table>
+</div>
+
+<!-- CAPÍTULO 1 -->
+<h1 class="chapter">1. Introducción</h1>
+
+<h2>¿Qué es esta aplicación?</h2>
+<p>La aplicación de <strong>La Purísima Conchi</strong> es la herramienta digital del taller para gestionar reservas de clases, talleres y experiencias de cerámica. Los clientes pueden registrarse, elegir actividad, reservar fecha y pagar desde el móvil u ordenador.</p>
+<p>Como equipo del taller, utilizáis el <strong>panel de administración</strong> para consultar reservas, usuarios, bonos, tarjetas regalo y la ocupación del calendario.</p>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Portada de la aplicación con los botones «Registrarse» e «Iniciar sesión» ]</div>
+
+<h2>¿Qué permite hacer?</h2>
+<table class="data">
+<tr><th>Para el cliente</th><th>Para el taller</th></tr>
+<tr><td>Registrarse y crear cuenta</td><td>Ver todas las reservas</td></tr>
+<tr><td>Reservar clases y talleres</td><td>Consultar usuarios y su historial</td></tr>
+<tr><td>Pagar con tarjeta de forma segura</td><td>Gestionar bonos y tarjetas regalo</td></tr>
+<tr><td>Comprar y canjear tarjetas regalo</td><td>Controlar reservas de grupo</td></tr>
+<tr><td>Reservar en grupo (5 o más personas)</td><td>Bloquear o habilitar fechas</td></tr>
+<tr><td>Consultar su perfil y reservas</td><td>Cancelar o cambiar fechas de reservas</td></tr>
+<tr><td>Usar bonos mensuales</td><td>Ver calendario y plazas ocupadas</td></tr>
+</table>
+
+<h2>Beneficios para el taller</h2>
+<ul>
+<li><strong>Menos llamadas y mensajes</strong> para gestionar reservas básicas.</li>
+<li><strong>Pagos anticipados</strong>, con confirmación automática tras el cobro.</li>
+<li><strong>Información centralizada:</strong> quién reserva, cuándo, cuántas plazas y si ha pagado.</li>
+<li><strong>Control del aforo</strong> por fecha, turno y tipo de clase.</li>
+<li><strong>Gestión de bonos y regalos</strong> sin papeles ni hojas de cálculo.</li>
+<li><strong>Acceso desde cualquier dispositivo</strong> con conexión a internet.</li>
+</ul>
+
+<!-- CAPÍTULO 2 -->
+<h1 class="chapter">2. Acceso al panel de administración</h1>
+
+<h2>Dirección de la aplicación</h2>
+<p>Abre el navegador (Chrome, Safari, Firefox o Edge) y entra en:</p>
+<div class="box-info">
+<strong>Dirección web</strong>
+https://app.lapurisimaconchi.com
+</div>
+<p>También puedes guardar la página en la pantalla de inicio del móvil, como si fuera una aplicación.</p>
+
+<h2>Cómo acceder al panel</h2>
+<ol class="steps">
+<li>Inicia sesión con el <strong>correo electrónico autorizado</strong> del taller.</li>
+<li>Ve a la página <strong>«Dónde reservar»</strong> (menú principal tras iniciar sesión).</li>
+<li>Al final de la página verás el icono <strong>«Panel admin»</strong> (solo visible para cuentas de administrador).</li>
+<li>Pulsa el icono para entrar al <strong>Panel de control</strong>.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Página «Dónde reservar» mostrando el icono «Panel admin» al final ]</div>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+Solo las cuentas de correo autorizadas por el taller pueden ver el panel. Si no aparece el icono, comprueba que has iniciado sesión con el email correcto.
+</div>
+
+<h2>Cómo iniciar sesión</h2>
+<ol class="steps">
+<li>En la portada, pulsa <strong>«Iniciar sesión»</strong>.</li>
+<li>Escribe tu <strong>correo electrónico</strong> y tu <strong>contraseña</strong>.</li>
+<li>Pulsa el botón para entrar.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Pantalla de inicio de sesión ]</div>
+
+<h2>Si olvida la contraseña</h2>
+<ol class="steps">
+<li>En la pantalla de inicio de sesión, escribe tu correo electrónico.</li>
+<li>Pulsa la opción para <strong>recuperar la contraseña</strong>.</li>
+<li>Revisa tu bandeja de entrada (y la carpeta de spam).</li>
+<li>Abre el enlace que recibirás por correo y crea una nueva contraseña.</li>
+</ol>
+
+<div class="box-info">
+<strong>NOTA</strong>
+Si no recibes el correo de recuperación, comprueba que el email escrito es correcto o contacta con soporte técnico.
+</div>
+
+<!-- CAPÍTULO 3 -->
+<h1 class="chapter">3. Vista general del panel</h1>
+
+<p>El panel de administración se organiza en varias secciones. Desde el <strong>Panel de control</strong> tienes acceso rápido a todas ellas.</p>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Panel de control con resumen de reservas y accesos rápidos ]</div>
+
+<h2>Resumen del panel principal</h2>
+<p>Al entrar verás:</p>
+<table class="data">
+<tr><th>Indicador</th><th>Qué muestra</th></tr>
+<tr><td>Reservas totales</td><td>Número global de reservas registradas</td></tr>
+<tr><td>Clases activas</td><td>Talleres disponibles para reservar</td></tr>
+<tr><td>Usuarios registrados</td><td>Clientes con cuenta en la aplicación</td></tr>
+<tr><td>Ingresos estimados</td><td>Cálculo orientativo de facturación</td></tr>
+</table>
+
+<p>En el <strong>Panel de control</strong> (pantalla resumen) también verás:</p>
+<ul>
+<li>Reservas de <strong>hoy</strong></li>
+<li>Reservas de <strong>esta semana</strong></li>
+<li>Reservas <strong>futuras</strong></li>
+<li>Listado de las <strong>próximas reservas</strong></li>
+</ul>
+
+<h2>Menú de accesos rápidos</h2>
+<table class="data">
+<tr><th>Apartado</th><th>Para qué sirve</th></tr>
+<tr><td>Ver calendario</td><td>Vista mensual de reservas por día</td></tr>
+<tr><td>Ver reservas</td><td>Listado completo con filtros</td></tr>
+<tr><td>Ver reservas de grupo</td><td>Reservas de 5 o más personas</td></tr>
+<tr><td>Ver clases</td><td>Configuración de precios, plazas y horarios</td></tr>
+<tr><td>Ver usuarios</td><td>Listado de clientes registrados</td></tr>
+<tr><td>Ver tarjetas regalo</td><td>Tarjetas compradas y su estado</td></tr>
+<tr><td>Bloquear fechas</td><td>Cerrar días en los que no hay clase</td></tr>
+<tr><td>Habilitar fechas y turnos</td><td>Abrir días especiales o turnos concretos</td></tr>
+<tr><td>Ver bonos</td><td>Bonos mensuales comprados por clientes</td></tr>
+</table>
+
+<h2>Otras pantallas del panel</h2>
+<table class="data">
+<tr><th>Pantalla</th><th>Función</th></tr>
+<tr><td>Detalle de reserva</td><td>Ver, cancelar o reprogramar una reserva</td></tr>
+<tr><td>Detalle de usuario</td><td>Ver perfil, reservas y notas del cliente</td></tr>
+<tr><td>Detalle de clase</td><td>Editar precios, plazas y horarios</td></tr>
+<tr><td>Detalle de bono</td><td>Ver sesiones consumidas</td></tr>
+<tr><td>Detalle de tarjeta regalo</td><td>Ver código y estado de canje</td></tr>
+<tr><td>Historial</td><td>Consultar reservas pasadas</td></tr>
+</table>
+
+<div class="box-tip">
+<strong>CONSEJO</strong>
+En todas las pantallas del panel hay un botón <strong>«Volver»</strong> en la parte superior. Úsalo para regresar a la pantalla anterior sin cerrar sesión.
+</div>
+
+<!-- CAPÍTULO 4 -->
+<h1 class="chapter">4. Gestión de reservas</h1>
+
+<h2>Cómo ver las reservas</h2>
+<ol class="steps">
+<li>Entra en el panel de administración.</li>
+<li>Pulsa <strong>«Ver reservas»</strong>.</li>
+<li>Verás un listado con todas las reservas registradas en la aplicación.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Listado de reservas con filtros de fecha, clase y estado ]</div>
+
+<p>Puedes filtrar por:</p>
+<ul>
+<li><strong>Fecha</strong></li>
+<li><strong>Clase o taller</strong></li>
+<li><strong>Estado</strong> (Confirmada, Pendiente, Cancelada)</li>
+<li><strong>Teléfono</strong> del cliente</li>
+</ul>
+
+<h2>Cómo localizar una reserva concreta</h2>
+<table class="data">
+<tr><th>Método</th><th>Cómo hacerlo</th></tr>
+<tr><td>Por fecha</td><td>Usa el filtro de fecha para ver solo las reservas de un día</td></tr>
+<tr><td>Por teléfono</td><td>Escribe el número del cliente en el filtro de teléfono</td></tr>
+<tr><td>Por clase</td><td>Elige el nombre del taller en el filtro de clase</td></tr>
+<tr><td>Desde el calendario</td><td>En «Ver calendario», pulsa un día y accede a sus reservas</td></tr>
+</table>
+
+<h2>Cómo interpretar la información</h2>
+<table class="data">
+<tr><th>Dato</th><th>Significado</th></tr>
+<tr><td>Clase</td><td>Nombre del taller o experiencia reservada</td></tr>
+<tr><td>Fecha</td><td>Día de la reserva</td></tr>
+<tr><td>Turno</td><td>Horario (ejemplo: 10:00-13:00)</td></tr>
+<tr><td>Plazas</td><td>Número de personas incluidas en la reserva</td></tr>
+<tr><td>Estado</td><td>Situación de la reserva (ver tabla siguiente)</td></tr>
+<tr><td>Estado de pago</td><td>Si el cliente ha pagado o no</td></tr>
+<tr><td>Nombre / teléfono</td><td>Datos del cliente</td></tr>
+</table>
+
+<h3>Estados de una reserva</h3>
+<table class="data">
+<tr><th>Estado</th><th>Significado</th><th>Qué hacer</th></tr>
+<tr><td>Confirmada</td><td>Reserva activa y pagada (o con tarjeta regalo)</td><td>Preparar la clase con normalidad</td></tr>
+<tr><td>Pendiente</td><td>Reserva creada pero pago no completado</td><td>Verificar si el cliente necesita ayuda para pagar</td></tr>
+<tr><td>Cancelada</td><td>Reserva anulada</td><td>La plaza queda liberada; no esperar al cliente</td></tr>
+</table>
+
+<h2>Detalle de una reserva</h2>
+<p>Al pulsar sobre una reserva accedes a su <strong>ficha completa</strong>, donde puedes:</p>
+<ul>
+<li>Ver todos los datos del cliente y de la actividad</li>
+<li>Añadir <strong>notas internas</strong> (solo visibles para el equipo)</li>
+<li><strong>Reprogramar</strong> la reserva a otra fecha u horario</li>
+<li><strong>Cancelar</strong> la reserva</li>
+</ul>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Ficha de detalle de reserva con opciones de reprogramar y cancelar ]</div>
+
+<h3>Cancelar una reserva</h3>
+<ol class="steps">
+<li>Abre el detalle de la reserva.</li>
+<li>Escribe un <strong>motivo de cancelación</strong> (opcional pero recomendable).</li>
+<li>Pulsa <strong>Cancelar reserva</strong>.</li>
+<li>Confirma la acción.</li>
+</ol>
+
+<div class="box-info">
+<strong>NOTA</strong>
+La reserva no se borra del sistema; queda registrada como <strong>Cancelada</strong> para mantener el historial. El cliente verá un aviso en su perfil.
+</div>
+
+<h3>Reprogramar una reserva</h3>
+<ol class="steps">
+<li>Abre el detalle de la reserva.</li>
+<li>Elige la <strong>nueva fecha</strong> y el <strong>nuevo turno</strong> disponibles.</li>
+<li>Guarda los cambios.</li>
+</ol>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+Comprueba siempre que haya plazas libres en la nueva fecha antes de confirmar la reprogramación.
+</div>
+
+<!-- CAPÍTULO 5 -->
+<h1 class="chapter">5. Gestión de usuarios</h1>
+
+<h2>Cómo consultar usuarios</h2>
+<ol class="steps">
+<li>En el panel, pulsa <strong>«Ver usuarios»</strong>.</li>
+<li>Verás el listado de personas registradas en la aplicación.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Listado de usuarios registrados ]</div>
+
+<p>Cada usuario muestra, entre otros datos:</p>
+<ul>
+<li>Nombre</li>
+<li>Correo electrónico</li>
+<li>Teléfono</li>
+<li>Número de reservas realizadas</li>
+</ul>
+
+<h2>Cómo localizar a un cliente</h2>
+<table class="data">
+<tr><th>Método</th><th>Cómo hacerlo</th></tr>
+<tr><td>Por nombre</td><td>Recorre el listado de usuarios</td></tr>
+<tr><td>Por teléfono</td><td>Filtra por teléfono desde el listado de reservas</td></tr>
+<tr><td>Por correo</td><td>Busca el email en el listado de usuarios</td></tr>
+</table>
+
+<h2>Ficha de usuario</h2>
+<p>Al abrir el detalle de un usuario puedes consultar:</p>
+<ul>
+<li>Sus <strong>datos personales</strong></li>
+<li>Su <strong>historial de reservas</strong></li>
+<li>Sus <strong>bonos</strong> activos</li>
+<li>Sus <strong>tarjetas regalo</strong> compradas</li>
+<li><strong>Notas internas</strong> del equipo sobre ese cliente</li>
+</ul>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Ficha de detalle de usuario ]</div>
+
+<div class="box-tip">
+<strong>CONSEJO</strong>
+Las notas internas son útiles para recordar incidencias, preferencias o acuerdos previos. Solo las ve el equipo del taller.
+</div>
+
+<!-- CAPÍTULO 6 -->
+<h1 class="chapter">6. Gestión de bonos</h1>
+
+<h2>¿Qué es un bono?</h2>
+<p>Un bono es un <strong>pack mensual de clases</strong> (por ejemplo, 4 clases de torno alfarero). El cliente lo compra una vez y luego va reservando sus sesiones una a una hasta agotar las clases incluidas.</p>
+
+<h2>Cómo ver los bonos</h2>
+<ol class="steps">
+<li>En el panel, pulsa <strong>«Ver bonos»</strong>.</li>
+<li>Verás el listado de todos los bonos comprados por los clientes.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Listado de bonos con filtros ]</div>
+
+<p>Puedes filtrar por estado del bono, estado del pago y texto de búsqueda.</p>
+
+<h2>Cómo comprobar clases consumidas</h2>
+<table class="data">
+<tr><th>Dato</th><th>Significado</th></tr>
+<tr><td>Número de clases</td><td>Total incluido en el bono (ejemplo: 4)</td></tr>
+<tr><td>Clases consumidas</td><td>Cuántas ya ha reservado el cliente</td></tr>
+<tr><td>Clases restantes</td><td>Cuántas le quedan por usar</td></tr>
+</table>
+
+<p>Para más detalle, abre la <strong>ficha del bono</strong> y consulta el historial de sesiones reservadas.</p>
+
+<h2>Cómo identificar bonos activos</h2>
+<table class="data">
+<tr><th>Estado</th><th>Significado</th></tr>
+<tr><td>Activo</td><td>El cliente puede seguir reservando sesiones</td></tr>
+<tr><td>Agotado</td><td>Ya ha usado todas las clases del bono</td></tr>
+<tr><td>Caducado</td><td>Ha pasado la fecha límite del bono</td></tr>
+</table>
+
+<div class="box-info">
+<strong>NOTA</strong>
+Un bono solo es utilizable si está <strong>Activo</strong> y el <strong>pago está confirmado</strong>.
+</div>
+
+<!-- CAPÍTULO 7 -->
+<h1 class="chapter">7. Gestión de tarjetas regalo</h1>
+
+<h2>¿Qué es una tarjeta regalo?</h2>
+<p>Es un vale para regalar una experiencia del taller. Quien la recibe introduce un <strong>código</strong> en la aplicación y reserva su clase <strong>sin pagar de nuevo</strong> (el pago ya lo hizo quien compró el regalo).</p>
+
+<h2>Cómo consultar tarjetas regalo</h2>
+<ol class="steps">
+<li>En el panel, pulsa <strong>«Ver tarjetas regalo»</strong>.</li>
+<li>Verás todas las tarjetas compradas.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Listado de tarjetas regalo ]</div>
+
+<h2>Cómo comprobar códigos</h2>
+<p>Cada tarjeta regalo tiene un <strong>código único</strong> con formato similar a:</p>
+<div class="box-info">
+<strong>Ejemplo de código</strong>
+REGALO-XXXXXX
+</div>
+
+<p>En la ficha de la tarjeta verás el código, quién la compró, qué taller regala y si ya ha sido canjeada.</p>
+
+<h2>Cómo verificar si han sido utilizadas</h2>
+<table class="data">
+<tr><th>Estado de canje</th><th>Significado</th></tr>
+<tr><td>Pendiente</td><td>Comprada pero aún no canjeada; el código sigue siendo válido</td></tr>
+<tr><td>Usada / Canjeada</td><td>El beneficiario ya reservó su clase con el código</td></tr>
+</table>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+Si un cliente dice que su código no funciona: busca la tarjeta en el panel, comprueba si el estado es Pendiente o Usada, y verifica que el código esté escrito correctamente (mayúsculas, sin espacios).
+</div>
+
+<!-- CAPÍTULO 8 -->
+<h1 class="chapter">8. Reservas de grupo</h1>
+
+<h2>¿Cómo funcionan?</h2>
+<p>Las reservas de grupo están pensadas para <strong>5 a 45 personas</strong>. El organizador crea la reserva desde la aplicación indicando nombre del grupo, taller, fecha, horario, número de personas y forma de pago.</p>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+Antes de confirmar, el sistema pide que el organizador haya <strong>contactado previamente con el taller por WhatsApp</strong> para concretar los detalles.
+</div>
+
+<h2>Modos de pago en grupo</h2>
+<table class="data">
+<tr><th>Modo</th><th>Descripción</th></tr>
+<tr><td>Pago único</td><td>Una sola persona paga el total del grupo</td></tr>
+<tr><td>Pago individual</td><td>Cada asistente paga su plaza por separado mediante un enlace compartido</td></tr>
+</table>
+
+<h2>Cómo identificar pagos pendientes</h2>
+<p>En <strong>«Ver reservas de grupo»</strong> verás para cada reserva:</p>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Listado de reservas de grupo con plazas pagadas y pendientes ]</div>
+
+<table class="data">
+<tr><th>Dato</th><th>Significado</th></tr>
+<tr><td>Plazas totales</td><td>Número de personas del grupo</td></tr>
+<tr><td>Plazas pagadas</td><td>Cuántas personas ya han pagado</td></tr>
+<tr><td>Plazas pendientes</td><td>Cuántas faltan por pagar</td></tr>
+<tr><td>Total pagado / Total pendiente</td><td>Importes en euros</td></tr>
+<tr><td>Tiempo restante</td><td>En pago individual: plazo de 72 horas para completar los pagos</td></tr>
+</table>
+
+<h3>Estados de una reserva grupal</h3>
+<table class="data">
+<tr><th>Estado</th><th>Significado</th></tr>
+<tr><td>Pendiente</td><td>Creada pero no confirmada del todo</td></tr>
+<tr><td>Pendiente pago individual</td><td>Esperando que los asistentes paguen sus plazas</td></tr>
+<tr><td>Confirmada</td><td>Todas las plazas pagadas; grupo listo</td></tr>
+<tr><td>Cancelada</td><td>Reserva anulada por el taller</td></tr>
+</table>
+
+<h2>Qué hacer si un grupo no completa el pago</h2>
+<ol class="steps">
+<li>Consulta cuántas plazas faltan en el panel.</li>
+<li>Contacta con el organizador para recordarle que comparta el enlace de pago.</li>
+<li>Si el plazo de 72 horas ha expirado, la reserva puede quedar incompleta.</li>
+<li>Si es necesario, cancela la reserva desde el panel de grupos.</li>
+</ol>
+
+<!-- CAPÍTULO 9 -->
+<h1 class="chapter">9. Calendario y plazas</h1>
+
+<h2>Cómo consultar la ocupación</h2>
+<ol class="steps">
+<li>En el panel, pulsa <strong>«Ver calendario»</strong>.</li>
+<li>Navega entre meses con las flechas.</li>
+<li>Los días con reservas muestran indicadores de actividad.</li>
+<li>Pulsa un día para ver el detalle de reservas de esa fecha.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Calendario mensual con reservas marcadas ]</div>
+
+<h2>Cómo bloquear fechas</h2>
+<p>Usa <strong>«Bloquear fechas»</strong> cuando el taller esté cerrado (festivos, vacaciones, eventos privados).</p>
+<ol class="steps">
+<li>Entra en <strong>Bloquear fechas</strong>.</li>
+<li>Selecciona el rango de fechas a cerrar.</li>
+<li>Escribe un <strong>motivo</strong> (opcional).</li>
+<li>Guarda.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Pantalla de bloqueo de fechas ]</div>
+
+<div class="box-info">
+<strong>NOTA</strong>
+Los clientes no podrán reservar en las fechas bloqueadas.
+</div>
+
+<h2>Cómo habilitar fechas y turnos especiales</h2>
+<p>Usa <strong>«Habilitar fechas y Turnos»</strong> cuando quieras abrir un día que normalmente no tiene clase, o activar turnos concretos.</p>
+<ol class="steps">
+<li>Entra en <strong>Habilitar fechas y Turnos</strong>.</li>
+<li>Indica fecha de inicio y fin.</li>
+<li>Selecciona los turnos que quieres habilitar (mañana, tarde, etc.).</li>
+<li>Guarda.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Pantalla de habilitación de fechas y turnos ]</div>
+
+<h2>Cómo interpretar la disponibilidad</h2>
+<p>La disponibilidad depende de tres factores:</p>
+<ol>
+<li><strong>Configuración de la clase</strong> — plazas máximas por turno (en «Ver clases»).</li>
+<li><strong>Reservas ya confirmadas</strong> en esa fecha y turno.</li>
+<li><strong>Bloqueos o habilitaciones</strong> de fechas.</li>
+</ol>
+
+<h2>Gestión de clases (precios, plazas y horarios)</h2>
+<p>En <strong>«Ver clases»</strong> puedes consultar y modificar precios, plazas, horarios por día de la semana y estado de la clase (activa u oculta).</p>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Pantalla de gestión de clases con precios y plazas ]</div>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+Los cambios de precio y plazas afectan a las <strong>nuevas reservas</strong>. Las reservas ya confirmadas conservan el precio con el que se crearon.
+</div>
+
+<!-- CAPÍTULO 10 -->
+<h1 class="chapter">10. Pagos</h1>
+
+<h2>¿Cómo funciona el pago para el cliente?</h2>
+<ol class="steps">
+<li>El cliente confirma su reserva.</li>
+<li>Ve un resumen con el importe.</li>
+<li>Es redirigido a la <strong>pasarela bancaria segura</strong>.</li>
+<li>Introduce los datos de su tarjeta.</li>
+<li>Si el pago es correcto, vuelve a la aplicación con mensaje de confirmación.</li>
+</ol>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Resumen de pago antes de ir al banco ]</div>
+
+<h2>Cómo comprobar pagos realizados</h2>
+<table class="data">
+<tr><th>Indicador en el panel</th><th>Significado</th></tr>
+<tr><td>Estado: Confirmada + Pago: pagado</td><td>Todo correcto; el cliente ha pagado</td></tr>
+<tr><td>Estado: Confirmada + tarjeta regalo</td><td>Reserva válida sin pago adicional</td></tr>
+<tr><td>Estado: Pendiente + Pago: pendiente</td><td>El cliente no ha completado el pago</td></tr>
+</table>
+
+<h2>Cómo identificar pagos pendientes</h2>
+<p>Una reserva con <strong>estado Pendiente</strong> y <strong>pago pendiente</strong> significa que el cliente inició la reserva pero no terminó de pagar, o el pago falló en el banco. Estas reservas no ocupan plaza de forma definitiva hasta que se confirman.</p>
+
+<h2>Qué hacer si un cliente tiene dudas sobre un pago</h2>
+
+<h3>Paso 1 — Pregunta al cliente</h3>
+<ul>
+<li>¿Llegó a la pantalla del banco?</li>
+<li>¿Vio mensaje de confirmación al volver a la aplicación?</li>
+<li>¿Le llegó cargo en su cuenta bancaria?</li>
+</ul>
+
+<h3>Paso 2 — Busca la reserva en el panel</h3>
+<p>Localiza al cliente por teléfono o fecha. Comprueba el estado de la reserva y del pago.</p>
+
+<h3>Paso 3 — Interpreta el resultado</h3>
+<table class="data">
+<tr><th>Situación</th><th>Qué significa</th><th>Qué hacer</th></tr>
+<tr><td>Confirmada + pagado</td><td>Pago correcto</td><td>Confirmar al cliente que todo está en orden</td></tr>
+<tr><td>Pendiente + pendiente</td><td>Pago no completado</td><td>Pedir al cliente que intente pagar de nuevo</td></tr>
+<tr><td>Cliente dice que pagó pero aparece pendiente</td><td>Posible retraso en confirmación</td><td>Esperar unos minutos y actualizar. Si persiste, contactar soporte técnico</td></tr>
+</table>
+
+<div class="box-warning">
+<strong>AVISO IMPORTANTE</strong>
+La aplicación no dispone de botón de reembolso. Los reembolsos se tramitan a través del banco o con ayuda del soporte técnico.
+</div>
+
+<div class="box-info">
+<strong>NOTA</strong>
+Los datos de tarjeta los introduce el cliente directamente en la pasarela bancaria. El taller no almacena números de tarjeta.
+</div>
+
+<!-- CAPÍTULO 11 -->
+<h1 class="chapter">11. Notificaciones</h1>
+
+<h2>Avisos que ve el cliente en su perfil</h2>
+<p>Cuando el taller <strong>cancela o modifica</strong> una reserva, el cliente puede ver un mensaje en su perfil. Por ejemplo:</p>
+<div class="box-info">
+<strong>Ejemplo de aviso al cliente</strong>
+«Tu reserva ha sido cancelada. Si lo necesitas, contacta con el taller.»
+</div>
+
+<h2>Notas internas (solo para el equipo)</h2>
+<p>En las fichas de reservas, usuarios, clases y grupos puedes añadir <strong>notas internas</strong>. Estas notas solo las ve el equipo del taller y son útiles para registrar acuerdos, incidencias o recordatorios.</p>
+
+<h2>Chat de ayuda «Junquillo»</h2>
+<p>Los clientes tienen acceso a un asistente de ayuda llamado <strong>Junquillo</strong> (botón flotante «¿Tienes dudas?»). Responde preguntas frecuentes sobre reservas, pagos, bonos y tarjetas regalo.</p>
+<p>Si un cliente tiene una duda que Junquillo no resuelve, le indicará que contacte con el taller por <strong>WhatsApp: 644 67 16 64</strong>.</p>
+
+<div class="screenshot">[ CAPTURA DE PANTALLA — Botón flotante de ayuda «Junquillo» ]</div>
+
+<!-- CAPÍTULO 12 -->
+<h1 class="chapter">12. Casos prácticos</h1>
+
+<h2>Ejemplo 1: Un cliente quiere cancelar una reserva</h2>
+<p><strong>Situación:</strong> María llama para cancelar su clase del sábado.</p>
+<ol class="steps">
+<li>Entra en el panel → <strong>Ver reservas</strong>.</li>
+<li>Filtra por la fecha del sábado o por el teléfono de María.</li>
+<li>Abre el <strong>detalle de la reserva</strong>.</li>
+<li>Escribe en motivo: «Cancelación solicitada por la clienta».</li>
+<li>Pulsa <strong>Cancelar reserva</strong> y confirma.</li>
+<li>Comunica a María que su reserva ha quedado cancelada.</li>
+</ol>
+
+<h2>Ejemplo 2: Un cliente quiere cambiar de fecha</h2>
+<p><strong>Situación:</strong> Pedro quiere mover su clase del martes al jueves.</p>
+<ol class="steps">
+<li>Localiza la reserva de Pedro en el panel.</li>
+<li>Abre el <strong>detalle de la reserva</strong>.</li>
+<li>Comprueba que hay <strong>plazas libres</strong> el jueves (consulta el calendario).</li>
+<li>Selecciona la <strong>nueva fecha</strong> y el <strong>nuevo turno</strong>.</li>
+<li>Guarda la reprogramación.</li>
+<li>Confirma a Pedro los nuevos datos por WhatsApp o teléfono.</li>
+</ol>
+
+<h2>Ejemplo 3: Un cliente ha comprado un bono</h2>
+<p><strong>Situación:</strong> Laura ha comprado el bono de 4 clases de torno.</p>
+<ol class="steps">
+<li>Ve a <strong>Ver bonos</strong> en el panel.</li>
+<li>Busca el bono de Laura.</li>
+<li>Comprueba que el estado es <strong>Activo</strong> y el pago <strong>pagado</strong>.</li>
+<li>Verifica que tiene <strong>4 clases restantes</strong>.</li>
+<li>Explica a Laura que desde su <strong>perfil</strong> puede reservar cada sesión.</li>
+</ol>
+
+<h2>Ejemplo 4: Un cliente quiere utilizar una tarjeta regalo</h2>
+<p><strong>Situación:</strong> Antonio recibió una tarjeta regalo con código REGALO-ABC123.</p>
+<p><strong>Guía para el cliente (puedes orientarle por teléfono):</strong></p>
+<ol class="steps">
+<li>Entrar en la aplicación e iniciar sesión.</li>
+<li>Ir a <strong>Canjear tarjeta regalo</strong>.</li>
+<li>Introducir el código.</li>
+<li>Elegir fecha y turno.</li>
+<li>Confirmar la reserva (sin pago).</li>
+</ol>
+<p><strong>Verificación en el panel:</strong></p>
+<ol class="steps">
+<li>En <strong>Ver tarjetas regalo</strong>, busca el código.</li>
+<li>Comprueba que el estado pase de Pendiente a Usada.</li>
+<li>En <strong>Ver reservas</strong>, confirma que la reserva aparece como Confirmada.</li>
+</ol>
+
+<h2>Ejemplo 5: Un grupo quiere reservar varias plazas</h2>
+<p><strong>Situación:</strong> Un instituto quiere reservar 20 plazas para «Pinta tu pieza».</p>
+<ol class="steps">
+<li>El organizador contacta primero con el taller por <strong>WhatsApp</strong>.</li>
+<li>El organizador crea la reserva en <strong>Reservas para grupos</strong> (mínimo 5 personas).</li>
+<li>Elige pago individual o pago único según corresponda.</li>
+<li>En el panel → <strong>Ver reservas de grupo</strong>, localiza la reserva.</li>
+<li>Si es pago individual: comparte el enlace, controla plazas pagadas (plazo 72 horas).</li>
+<li>Cuando todas las plazas estén pagadas, el estado cambiará a <strong>Confirmada</strong>.</li>
+</ol>
+
+<!-- CAPÍTULO 13 -->
+<h1 class="chapter">13. Preguntas frecuentes</h1>
+
+<table class="data">
+<tr><th>Pregunta</th><th>Respuesta</th></tr>
+<tr><td>¿Necesitan los clientes registrarse para reservar?</td><td>Sí, para reservar y pagar. Pueden ver clases sin registrarse en «Ver clases sin registrarse».</td></tr>
+<tr><td>¿Puedo ver las reservas desde el móvil?</td><td>Sí. La aplicación y el panel funcionan en móvil, tablet y ordenador.</td></tr>
+<tr><td>¿Qué hago si un cliente no puede iniciar sesión?</td><td>Pídele que use recuperar contraseña. Comprueba que usa el mismo correo con el que se registró.</td></tr>
+<tr><td>¿Puedo añadir una clase nueva desde el panel?</td><td>Puedes editar precios, plazas y horarios en «Ver clases». Para una clase completamente nueva, contacta con soporte técnico.</td></tr>
+<tr><td>¿Qué pasa si bloqueo un día por error?</td><td>Entra en Bloquear fechas, localiza el bloqueo y elimínalo.</td></tr>
+<tr><td>¿Un cliente puede reservar sin pagar?</td><td>Solo con tarjeta regalo válida o usando sesión de bono ya pagado.</td></tr>
+<tr><td>¿Cómo sé si una tarjeta regalo sigue siendo válida?</td><td>En Ver tarjetas regalo: Pendiente = válida; Usada = ya canjeada.</td></tr>
+<tr><td>¿Puedo cancelar una reserva de grupo?</td><td>Sí, desde Ver reservas de grupo. El enlace de pago dejará de funcionar.</td></tr>
+<tr><td>¿El taller guarda los datos de tarjeta?</td><td>No. El cliente los introduce en la pasarela bancaria. Solo veis si el pago se confirmó.</td></tr>
+<tr><td>¿Qué hago si la aplicación no carga?</td><td>Comprueba internet, prueba otro navegador, espera y recarga. Si persiste, contacta soporte técnico.</td></tr>
+</table>
+
+<!-- CAPÍTULO 14 -->
+<h1 class="chapter">14. Buenas prácticas</h1>
+
+<h2>Gestión diaria</h2>
+<ul>
+<li><strong>Revisa el panel cada mañana</strong> para ver las reservas del día.</li>
+<li><strong>Consulta el calendario semanal</strong> para anticipar picos de ocupación.</li>
+<li><strong>Bloquea con antelación</strong> festivos y vacaciones.</li>
+<li><strong>Responde rápido</strong> a clientes con reservas pendientes de pago.</li>
+</ul>
+
+<h2>Al atender clientes</h2>
+<ul>
+<li>Pide siempre el <strong>teléfono o correo</strong> con el que se registraron.</li>
+<li>Antes de reprogramar, <strong>comprueba disponibilidad</strong> en el calendario.</li>
+<li>Al cancelar, <strong>escribe el motivo</strong> para tener historial.</li>
+<li>Para grupos, confirma siempre por <strong>WhatsApp</strong> antes de que creen la reserva.</li>
+</ul>
+
+<h2>Sobre precios y plazas</h2>
+<ul>
+<li>Cambia precios y plazas desde <strong>Ver clases</strong>.</li>
+<li>Si una clase se llena rápido, valora aumentar plazas o añadir turnos.</li>
+<li>Si una clase no tiene demanda, puedes ocultarla cambiando su estado.</li>
+</ul>
+
+<h2>Sobre pagos</h2>
+<ul>
+<li>Si un cliente dice que ha pagado pero aparece pendiente, <strong>espera 5-10 minutos</strong> antes de escalar.</li>
+<li>Anota siempre la <strong>hora, el nombre y el importe</strong> antes de contactar soporte técnico.</li>
+<li>No compartas contraseñas del panel por WhatsApp o correo.</li>
+</ul>
+
+<h2>Seguridad</h2>
+<ul>
+<li>Usa una <strong>contraseña segura</strong> para la cuenta de administrador.</li>
+<li>No compartas el acceso al panel con personas no autorizadas.</li>
+<li>Cierra sesión si usas un ordenador compartido.</li>
+</ul>
+
+<!-- CAPÍTULO 15 -->
+<h1 class="chapter">15. Contacto técnico</h1>
+
+<h2>Soporte para el día a día del taller</h2>
+<p>Para dudas sobre cómo usar el panel, consulta este manual o la sección de Preguntas frecuentes.</p>
+
+<div class="box-info">
+<strong>Contacto del taller con clientes</strong>
+Correo: lapurisimaconchioficial@gmail.com<br>
+WhatsApp: 644 67 16 64
+</div>
+
+<h2>Soporte técnico (mantenimiento de la aplicación)</h2>
+<p>La aplicación puede ser mantenida, actualizada y mejorada por cualquier desarrollador con experiencia en:</p>
+<table class="data">
+<tr><th>Área</th><th>Para qué sirve</th></tr>
+<tr><td>React</td><td>La parte visual de la aplicación (pantallas y botones)</td></tr>
+<tr><td>Firebase</td><td>Base de datos y cuentas de usuario</td></tr>
+<tr><td>Vercel</td><td>Alojamiento de la aplicación en internet</td></tr>
+</table>
+
+<h3>Cuándo contactar con soporte técnico</h3>
+<ul>
+<li>La aplicación no carga o da error de forma continuada</li>
+<li>Los pagos no se confirman de forma sistemática</li>
+<li>Necesitas añadir una clase o funcionalidad nueva</li>
+<li>Necesitas cambiar el correo de administrador</li>
+<li>Necesitas migrar la aplicación a otras cuentas o dominio</li>
+</ul>
+
+<!-- RESUMEN -->
+<h1 class="chapter">Resumen rápido de accesos</h1>
+
+<table class="data summary-table">
+<tr><td>Entrar al panel</td><td>Dónde reservar → Panel admin</td></tr>
+<tr><td>Ver reservas de hoy</td><td>Panel de control o Calendario</td></tr>
+<tr><td>Buscar un cliente</td><td>Ver reservas (filtro teléfono) o Ver usuarios</td></tr>
+<tr><td>Cancelar una reserva</td><td>Detalle de reserva → Cancelar</td></tr>
+<tr><td>Cambiar fecha</td><td>Detalle de reserva → Reprogramar</td></tr>
+<tr><td>Cerrar un día</td><td>Bloquear fechas</td></tr>
+<tr><td>Abrir un día especial</td><td>Habilitar fechas y Turnos</td></tr>
+<tr><td>Ver bonos</td><td>Ver bonos</td></tr>
+<tr><td>Ver tarjetas regalo</td><td>Ver tarjetas regalo</td></tr>
+<tr><td>Ver grupos</td><td>Ver reservas de grupo</td></tr>
+<tr><td>Cambiar precios</td><td>Ver clases</td></tr>
+</table>
+
+<div class="footer-note">
+<strong>La Purísima Conchi</strong><br>
+Manual de Uso y Administración — Aplicación de reservas online<br>
+Versión 1.0 — Junio 2025
+</div>
+
+</body>
+</html>
