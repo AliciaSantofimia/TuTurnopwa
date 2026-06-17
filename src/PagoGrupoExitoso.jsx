@@ -29,23 +29,19 @@ const PagoGrupoExitoso = () => {
       <div style={styles.card}>
         <div style={styles.icono}>✓</div>
 
-        <h1 style={styles.titulo}>¡Pago realizado con éxito!</h1>
+        <h1 style={styles.titulo}>Pago recibido</h1>
 
         <p style={styles.texto}>
-          Tu plaza se ha pagado correctamente
+          Pago recibido. Estamos confirmando tu reserva. En unos segundos
+          aparecerá actualizada en el sistema.
           {grupo?.nombreGrupo ? (
             <>
+              {" "}
               <strong style={{ wordBreak: "break-word" }}>
-  {grupo.nombreGrupo}
-</strong>
+                {grupo.nombreGrupo}
+              </strong>
             </>
-          ) : (
-            "."
-          )}
-        </p>
-
-        <p style={styles.detalle}>
-          El taller ya tiene registrada tu plaza dentro de esta reserva de grupo.
+          ) : null}
         </p>
 
         <Link to="/portada" style={styles.boton}>

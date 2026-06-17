@@ -431,8 +431,22 @@ function App() {
               </RutaAdmin>
             }
           />
-          <Route path="/admin-habilitar-fechas" element={<AdminHabilitarFechas />} />
-          <Route path="/admin-bonos-nuevo" element={<AdminBonosNuevo />} />
+          <Route
+            path="/admin-habilitar-fechas"
+            element={
+              <RutaAdmin>
+                <AdminHabilitarFechas />
+              </RutaAdmin>
+            }
+          />
+          <Route
+            path="/admin-bonos-nuevo"
+            element={
+              <RutaAdmin>
+                <AdminBonosNuevo />
+              </RutaAdmin>
+            }
+          />
           <Route
             path="/admin-tarjetas-regalo"
             element={
