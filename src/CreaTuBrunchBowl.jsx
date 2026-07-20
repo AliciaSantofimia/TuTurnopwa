@@ -37,7 +37,9 @@ export default function CreaTuBrunchBowl() {
     cargarClase();
   }, []);
 
-  const nombreClase = datosClase?.nombre || "CREA TU BRUNCH BOWL";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu brunch bowl"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -150,6 +152,8 @@ export default function CreaTuBrunchBowl() {
               {precioClase}
             </p>
 
+            <BotonReserva destino="/reserva-crea-tu-brunch-bowl" className="shrink-0" />
+
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
@@ -254,10 +258,6 @@ export default function CreaTuBrunchBowl() {
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-brunch-bowl" />
             </div>
           </div>
         </div>

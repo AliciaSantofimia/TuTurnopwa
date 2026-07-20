@@ -37,7 +37,9 @@ export default function CreaTuTazaFavorita() {
     cargarClase();
   }, []);
 
-  const nombreClase = datosClase?.nombre || "CREA TU TAZA FAVORITA";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu taza favorita"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -149,6 +151,8 @@ export default function CreaTuTazaFavorita() {
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               {precioClase}
             </p>
+
+            <BotonReserva destino="/reserva-crea-tu-taza-favorita" className="shrink-0" />
 
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
@@ -266,10 +270,6 @@ export default function CreaTuTazaFavorita() {
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-taza-favorita" />
             </div>
           </div>
         </div>

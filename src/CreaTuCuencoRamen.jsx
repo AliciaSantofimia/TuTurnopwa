@@ -37,7 +37,9 @@ export default function CreaTuCuencoRamen() {
     cargarClase();
   }, []);
 
-  const nombreClase = datosClase?.nombre || "CREA TU CUENCO PARA RAMEN";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu cuenco para ramen"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -150,6 +152,8 @@ export default function CreaTuCuencoRamen() {
               {precioClase}
             </p>
 
+            <BotonReserva destino="/reserva-crea-tu-cuenco-ramen" className="shrink-0" />
+
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
                 Información del producto
@@ -256,10 +260,6 @@ export default function CreaTuCuencoRamen() {
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-cuenco-ramen" />
             </div>
           </div>
         </div>

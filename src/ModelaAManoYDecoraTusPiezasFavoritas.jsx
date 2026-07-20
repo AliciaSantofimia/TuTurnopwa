@@ -145,7 +145,7 @@ export default function ModelaAManoYDecoraTusPiezasFavoritas() {
 
           {/* TEXTO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
               {nombreClase}
             </h1>
 

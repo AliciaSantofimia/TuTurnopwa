@@ -37,7 +37,9 @@ export default function CreaTuSetSake() {
     cargarClase();
   }, []);
 
-  const nombreClase = datosClase?.nombre || "CREA TU SET DE SAKE";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu set de sake"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -140,13 +142,17 @@ export default function CreaTuSetSake() {
           </div>
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              {nombreClase}
-            </h1>
-
-            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              {precioClase}
-            </p>
+            <div className="flex flex-col gap-3 mb-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-0 leading-tight break-words">
+                  {nombreClase}
+                </h1>
+                <p className="text-lg sm:text-xl font-semibold text-[#6b3700] leading-snug break-words">
+                  {precioClase}
+                </p>
+              </div>
+              <BotonReserva destino="/reserva-crea-tu-set-sake" className="self-start" />
+            </div>
 
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
@@ -279,10 +285,6 @@ export default function CreaTuSetSake() {
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-set-sake" />
             </div>
           </div>
         </div>

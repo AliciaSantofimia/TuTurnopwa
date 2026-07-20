@@ -39,8 +39,9 @@ export default function EspecialPintaTuPieza() {
     cargarClase();
   }, []);
 
-  const nombreClase =
-    datosClase?.nombre || "Especial pinta tu pieza de cerámica";
+  const nombreClase = String(
+    datosClase?.nombre || "Especial pinta tu pieza de cerámica"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -135,13 +136,19 @@ export default function EspecialPintaTuPieza() {
 
           {/* TEXTO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 uppercase leading-tight break-words">
-              {nombreClase}
-            </h1>
-
-            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-relaxed break-words">
-              {precioClase}
-            </p>
+            <div className="flex flex-col gap-3 mb-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-0 leading-tight break-words">
+                  {nombreClase}
+                </h1>
+                <p className="text-lg sm:text-xl font-semibold text-[#6b3700] leading-relaxed break-words">
+                  {precioClase}
+                </p>
+              </div>
+              {!desdeGrupos && (
+                <BotonReserva destino="/reserva-especial-pinta-tu-pieza" className="self-start" />
+              )}
+            </div>
 
             {desdeGrupos && (
               <div className="bg-[#fff8df] border border-[#f1e7c6] rounded-xl p-4 mb-5">
@@ -227,7 +234,7 @@ export default function EspecialPintaTuPieza() {
                   Volver a reservas de grupo
                 </button>
               ) : (
-                <BotonReserva destino="/reserva-especial-pinta-tu-pieza" />
+                <div></div>
               )}
             </div>
           </div>

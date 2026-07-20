@@ -99,12 +99,14 @@ export default function ClaseSueltaContinuidad() {
 
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              CLASE SUELTA CON CONTINUIDAD
+              Clase suelta con continuidad
             </h1>
 
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               Torno: 32,00 € · Modelado a mano o decoración: 27,00 €
             </p>
+
+            <BotonReserva destino="/reserva-clase-suelta-continuidad" className="shrink-0" />
 
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
@@ -248,10 +250,6 @@ Ahí encontrarás siempre la información actualizada.
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-clase-suelta-continuidad" />
             </div>
           </div>
         </div>

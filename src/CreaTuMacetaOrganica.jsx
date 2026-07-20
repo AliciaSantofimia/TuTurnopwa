@@ -36,7 +36,9 @@ export default function CreaTuMacetaOrganica() {
     cargarClase();
   }, []);
 
-  const nombreClase = datosClase?.nombre || "CREA TU MACETA ORGÁNICA";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu maceta orgánica"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -146,6 +148,8 @@ export default function CreaTuMacetaOrganica() {
             <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
               {precioClase}
             </p>
+
+            <BotonReserva destino="/reserva-crea-tu-maceta-organica" className="shrink-0" />
 
             <div className="mb-5 min-w-0">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
@@ -276,10 +280,6 @@ export default function CreaTuMacetaOrganica() {
                 Política de Reservas. Al proceder con la reserva, confirmas que
                 has leído y aceptado los términos.
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-maceta-organica" />
             </div>
           </div>
         </div>

@@ -36,8 +36,9 @@ export default function CreaTuPiezaFavorita() {
     cargarClase();
   }, []);
 
-  const nombreClase =
-    datosClase?.nombre || "CREA TU PIEZA FAVORITA DESDE CERO";
+  const nombreClase = String(
+    datosClase?.nombre || "Crea tu pieza favorita desde cero"
+  );
 
   const precioClase =
     typeof datosClase?.precio === "number"
@@ -144,13 +145,17 @@ export default function CreaTuPiezaFavorita() {
 
           {/* CONTENIDO */}
           <div className="p-4 sm:p-6 flex flex-col justify-start min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] mb-2 leading-tight break-words">
-              {nombreClase}
-            </h1>
-
-            <p className="text-lg sm:text-xl font-semibold text-[#6b3700] mb-4 leading-snug break-words">
-              {precioClase}
-            </p>
+            <div className="flex flex-col gap-3 mb-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-[#3b3025] leading-tight break-words">
+                  {nombreClase}
+                </h1>
+                <p className="text-lg sm:text-xl font-semibold text-[#6b3700] leading-snug break-words">
+                  {precioClase}
+                </p>
+              </div>
+              <BotonReserva destino="/reserva-crea-tu-pieza-favorita" className="self-start" />
+            </div>
 
             <div className="mb-5">
               <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 mb-2">
@@ -201,10 +206,6 @@ export default function CreaTuPiezaFavorita() {
               <p className="text-sm text-gray-700 italic leading-relaxed break-words">
                 <strong>Nota importante:</strong> {notaImportanteFirebase}
               </p>
-            </div>
-
-            <div className="mt-auto">
-              <BotonReserva destino="/reserva-crea-tu-pieza-favorita" />
             </div>
           </div>
         </div>
